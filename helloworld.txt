@@ -1,1 +1,2 @@
 Hello World.
+Test du bot discord
