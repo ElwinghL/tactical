@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+#PDF
+
+*.aux
+*.log
+*.toc
