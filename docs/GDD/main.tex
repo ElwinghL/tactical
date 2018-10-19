@@ -13,6 +13,7 @@
 \usepackage{graphicx}
 \usepackage[colorinlistoftodos]{todonotes}
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{colortbl}
 
 \title{Cthulhu vs Satan\footnote{Nom provisoire}}
 \subtitle{Tactical-RPG}
@@ -110,18 +111,239 @@ Les personnages seront exclusivement des cultistes ainsi que Cthulhu et Satan.
 
 \section{Objectif principal}
 
-L'unique objectif est de gagner la partie, il n'y a pas d'objectif global extrinsèque, intrinsèquement le joueur voudra améliorer ses stratégies.
+L'unique objectif est de gagner la partie, en plaçant un cultiste sur chacun des deux zones sur le plateau de jeu, dans le camp de l'adversaire (voire figure~\ref{fig:plateau}), il n'y a pas d'objectif global extrinsèque, intrinsèquement le joueur voudra améliorer ses stratégies.
 
 \section{Mécaniques principales}
 
-La mécanique principale de jeu est le déplacement et les actions entreprises par les personnages.
-
-Il existe 3 types de personnages :
+La mécanique principale de jeu est le déplacement et les actions entreprises par les personnages. Il existe 3 types de personnages :
 \begin{itemize}
-    \item Les tanks : Ils peuvent encaisser plus de dégâts avant de mourir, et bloquer le déplacement d'adversaires proches.
-    \item Les soutiens : Ils peuvent déplacer leurs alliés et leurs ennemis.
-    \item Les attaquants : Ils se déplacent plus vites que les autres unités mais sont assez fragiles.
+    \item Les scouts : Ils se déplacent plus vites que les autres unités mais sont assez fragiles. Leur compétence consiste en une ruée d'une case, qui n'est pas affectée par le blocage des tanks.
+    \item Les soutiens : Avec leur compétence ils peuvent pousser leurs alliés et leurs ennemis de 2 cases, et anéantir les unités en les poussant contre une autre unité ou une extrémité du plateau de jeu, ce qui leur inflige 3 de dégâts.
+    \item Les tanks : Ils encaissent plus de dégâts avant de mourir, et peuvent attraper les unités en ligne avec leur compétence et bloquer passivement le déplacement des adversaires adjacents.
 \end{itemize}
+
+\begin{table}
+    \centering
+    \begin{tabular}{|c|c|c|}
+        \hline
+        Unité & Points de vie & Dégâts \\
+        \hline
+        \hline
+        Scout (s) & 3 & 1\\ \hline
+        Soutien (S) & 5 & 2\\ \hline
+        Tank (T) & 8 & 2\\ \hline
+    \end{tabular}
+    \caption{Caractéristiques des classes de personnage}
+    \label{tab:tabstats}
+\end{table}
+
+\definecolor{cblue}{rgb}{0.39,0.58,92}
+\definecolor{cred}{rgb}{0.69,0.13,0.13}
+\definecolor{cgreen}{rgb}{0,0.97,0.60}
+
+\begin{figure}
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|c|}
+    \hline
+         &&\cellcolor{cgreen}s&&&&&&&\cellcolor{cred}s&&  \\ \hline
+         &\cellcolor{yellow}&\cellcolor{cgreen}T&&&&&&&\cellcolor{cred}T&\cellcolor{yellow}&  \\ \hline
+         &&\cellcolor{cgreen}S&&&&&&&\cellcolor{cred}S&&  \\ \hline
+         &&\cellcolor{cgreen}S&&&&&&&\cellcolor{cred}S&&  \\ \hline
+         &\cellcolor{yellow}&\cellcolor{cgreen}T&&&&&&&\cellcolor{cred}T&\cellcolor{yellow}&  \\ \hline
+         &&\cellcolor{cgreen}s&&&&&&&\cellcolor{cred}s&&  \\ \hline
+    \end{tabular}
+    \caption{Plateau de jeu au départ}
+    \label{fig:plateau}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+        \hline
+        &&&&&&&&&&\\ \hline
+        &\cellcolor{cblue}&&&&\cellcolor{cblue}&&&&\cellcolor{cblue}  &\\ \hline
+        &&\cellcolor{cblue}&&&\cellcolor{cblue}&&&\cellcolor{cblue}&&\\ \hline
+        &&&\cellcolor{cblue}&&\cellcolor{cblue}&&\cellcolor{cblue}&&  &\\ \hline
+        &&&&\cellcolor{cblue}&\cellcolor{cblue}&\cellcolor{cblue}&&& &\\ \hline
+        &\cellcolor{cblue}&\cellcolor{cblue}&\cellcolor{cblue}&\cellcolor{cblue}&\cellcolor{yellow}&\cellcolor{cblue}&\cellcolor{cblue}&\cellcolor{cblue}&\cellcolor{cblue}  &\\ \hline
+        &&&&\cellcolor{cblue}&\cellcolor{cblue}&\cellcolor{cblue}&&& &\\ \hline
+        &&&\cellcolor{cblue}&&\cellcolor{cblue}&&\cellcolor{cblue}&&  &\\ \hline
+        &&\cellcolor{cblue}&&&\cellcolor{cblue}&&&\cellcolor{cblue}& &\\ \hline
+        &\cellcolor{cblue}&&&&\cellcolor{cblue}&&&&\cellcolor{cblue} &\\ \hline
+        &&&&&&&&&&\\ \hline
+    \end{tabular}
+    \caption{Déplacement du scout}
+    \label{fig:scoutdep}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+        \hline
+        &&&&&&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        &&&&&\cellcolor{cred}&&&&&\\ \hline
+        &&&&\cellcolor{cred}&\cellcolor{cred}&\cellcolor{cred}&&&&\\ \hline
+        &&&\cellcolor{cred}&\cellcolor{cred}&\cellcolor{yellow}&\cellcolor{cred}&\cellcolor{cred}&&&\\ \hline
+        &&&&\cellcolor{cred}&\cellcolor{cred}&\cellcolor{cred}&&&&\\ \hline
+        &&&&&\cellcolor{cred}&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        
+    \end{tabular}
+    \caption{Attaque du scout}
+    \label{fig:scoutatt}
+\end{figure}
+
+
+\begin{figure}
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+        \hline
+        &&&&&&&&&&\\ \hline  
+        &&&&&&&&&&\\ \hline 
+        &&&&&&&&&&\\ \hline 
+        &&&&&&&&&&\\ \hline 
+        &&&&&\cellcolor{cgreen}&&&&&\\ \hline 
+        &&&&\cellcolor{cgreen}&\cellcolor{yellow}&\cellcolor{cgreen}&&&&\\ \hline 
+        &&&&&\cellcolor{cgreen}&&&&&\\ \hline 
+        &&&&&&&&&&\\ \hline 
+        &&&&&&&&&&\\ \hline 
+        &&&&&&&&&&\\ \hline 
+        &&&&&&&&&&\\ \hline
+    
+    \end{tabular}
+    \caption{Compétence du scout (ruée : déplacement non affecté par le passif du tank)}
+    \label{fig:scoutcomp}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+        \hline
+        &&&&&&&&&&\\ \hline  
+        &&&&&&&&&&\\ \hline 
+        &&&&&&&&&&\\ \hline
+        &&&&\cellcolor{cblue}&&\cellcolor{cblue}&&&&\\ \hline
+        &&&\cellcolor{cblue}&&&&\cellcolor{cblue}&&&\\ \hline
+        &&&&&\cellcolor{yellow}&&&&&\\ \hline
+        &&&\cellcolor{cblue}&&&&\cellcolor{cblue}&&&\\ \hline
+        &&&&\cellcolor{cblue}&&\cellcolor{cblue}&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        
+    \end{tabular}
+    \caption{Déplacement du soutien}
+    \label{fig:soutiendep}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+        \hline
+        &&&&&&&&&&\\ \hline  
+        &&&&&&&&&&\\ \hline 
+        &&&&&\cellcolor{cred}&&&&&\\ \hline
+        &&&&&\cellcolor{cred}&&&&&\\ \hline
+        &&&&&\cellcolor{cred}&&&&&\\ \hline
+        &&\cellcolor{cred}&\cellcolor{cred}&\cellcolor{cred}&\cellcolor{yellow}&\cellcolor{cred}&\cellcolor{cred}&\cellcolor{cred}&&\\ \hline
+        &&&&&\cellcolor{cred}&&&&&\\ \hline
+        &&&&&\cellcolor{cred}&&&&&\\ \hline
+        &&&&&\cellcolor{cred}&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        
+    \end{tabular}
+    \caption{Attaque du soutien}
+    \label{fig:soutienatt}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+        \hline
+        &&&&&&&&&&\\ \hline  
+        &&&&&&&&&&\\ \hline 
+        &&&&&&&&&&\\ \hline
+        &&&&&\cellcolor{cgreen}&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        &&&\cellcolor{cgreen}&&\cellcolor{yellow}&&\cellcolor{cgreen}&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        &&&&&\cellcolor{cgreen}&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        
+    \end{tabular}
+    \caption{Compétence du soutien (poussée : pousse de 2 cases, si la cible rencontre une unité ou une extrémité de plateau, la stoppe et lui inflige 3 dégâts)}
+    \label{fig:soutiencomp}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+        \hline
+        &&&&&&&&&&\\ \hline  
+        &&&&&&&&&&\\ \hline 
+        &&&&&&&&&&\\ \hline
+        &&&&&\cellcolor{cblue}&&&&&\\ \hline
+        &&&&\cellcolor{cblue}&\cellcolor{cblue}&\cellcolor{cblue}&&&&\\ \hline
+        &&&&\cellcolor{cblue}&\cellcolor{yellow}&\cellcolor{cblue}&&&&\\ \hline
+        &&&&\cellcolor{cblue}&\cellcolor{cblue}&\cellcolor{cblue}&&&&\\ \hline
+        &&&&&\cellcolor{cblue}&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        
+    \end{tabular}
+    \caption{Déplacement du tank}
+    \label{fig:tankdep}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+        \hline
+        &&&&&&&&&&\\ \hline  
+        &&&&&&&&&&\\ \hline 
+        &&&&&&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        &&&&\cellcolor{cred}&\cellcolor{cred}&\cellcolor{cred}&&&&\\ \hline
+        &&&&\cellcolor{cred}&\cellcolor{yellow}&\cellcolor{cred}&&&&\\ \hline
+        &&&&\cellcolor{cred}&\cellcolor{cred}&\cellcolor{cred}&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        
+    \end{tabular}
+    \caption{Attaque du tank}
+    \label{fig:tankatt}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|c|}
+        \hline
+        &&&&&&&&&&\\ \hline  
+        &&&&&&&&&&\\ \hline 
+        &&&&&\cellcolor{cgreen}&&&&&\\ \hline
+        &&&&&\cellcolor{cgreen}&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        &&\cellcolor{cgreen}&\cellcolor{cgreen}&&\cellcolor{yellow}&&\cellcolor{cgreen}&\cellcolor{cgreen}&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        &&&&&\cellcolor{cgreen}&&&&&\\ \hline
+        &&&&&\cellcolor{cgreen}&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        &&&&&&&&&&\\ \hline
+        
+    \end{tabular}
+    \caption{Compétence du tank (grab : attire la cible au corps-à-corps)}
+    \label{fig:tankcomp}
+\end{figure}
 
 \section{Contrôles}
 Le jeu se jouera exclusivement à la souris, avec le clic gauche pour interagir.
