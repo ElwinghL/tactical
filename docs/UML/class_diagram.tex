@@ -1,0 +1,52 @@
+\documentclass[margin=10pt]{standalone}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+\usepackage{tikz-uml}
+
+\tikzumlset{fill class=white}
+
+\begin{document}
+	\begin{tikzpicture}
+		\umlclass[x=-3,y=-3]{Game}{
+			
+		}{
+			
+		}
+	
+		\umlclass[x=5,y=0]{Player}{
+			-- theirTurn : \texttt{bool}\\
+			-- win : \texttt{bool}
+		}{
+		}
+	
+		\umlclass[x=5,y=-3]{AI}{
+		}{
+		}
+	
+		\umlclass[x=-3,y=5]{Character}{
+			-- pos : \texttt{gf::Vector2u}\\
+			-- hp : \texttt{float}
+		}{
+		}
+	
+		\umlenum[x=-3,y=0]{CharacterType}{
+			Tank\\
+			Support\\
+			Scout
+		}{}
+	
+		\umlclass[x=5,y=5]{Target}{
+			-- pos : \texttt{gf::Vector2u}
+		}{
+		}
+	
+		\umlinherit{AI}{Player}
+		\umlassoc[geometry=-|-,attr1=game|1,attr2=players|2,anchor2=-160,pos2=2.7]{Game}{Player}
+		\umlassoc[attr1=player|1,attr2=targets|2]{Player}{Target}
+		\umlassoc[geometry=-|-,attr1=player|1,attr2=characters|6,anchor1=160,weight=0.4,pos1=0.5,pos2=2.5]{Player}{Character}
+		\umluniassoc[attr2=type|1,attr1=characters|*]{Character}{CharacterType}
+	\end{tikzpicture}
+\end{document}

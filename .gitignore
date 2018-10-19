@@ -1,3 +1,6 @@
+# Build directory
+build
+
 # Prerequisites
 *.d
 
@@ -36,3 +39,4 @@
 *.aux
 *.log
 *.toc
+*.synctex.gz
