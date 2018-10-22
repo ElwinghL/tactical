@@ -12,8 +12,40 @@
 
 \usepackage{graphicx}
 
-\usepackage{minted}
-\setminted[c++]{tabsize=4}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstset{literate=
+  {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+  {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+  {à}{{\`a}}1 {è}{{\`e}}1 {ì}{{\`i}}1 {ò}{{\`o}}1 {ù}{{\`u}}1
+  {À}{{\`A}}1 {È}{{\'E}}1 {Ì}{{\`I}}1 {Ò}{{\`O}}1 {Ù}{{\`U}}1
+  {ä}{{\"a}}1 {ë}{{\"e}}1 {ï}{{\"i}}1 {ö}{{\"o}}1 {ü}{{\"u}}1
+  {Ä}{{\"A}}1 {Ë}{{\"E}}1 {Ï}{{\"I}}1 {Ö}{{\"O}}1 {Ü}{{\"U}}1
+  {â}{{\^a}}1 {ê}{{\^e}}1 {î}{{\^i}}1 {ô}{{\^o}}1 {û}{{\^u}}1
+  {Â}{{\^A}}1 {Ê}{{\^E}}1 {Î}{{\^I}}1 {Ô}{{\^O}}1 {Û}{{\^U}}1
+  {œ}{{\oe}}1 {Œ}{{\OE}}1 {æ}{{\ae}}1 {Æ}{{\AE}}1 {ß}{{\ss}}1
+  {ű}{{\H{u}}}1 {Ű}{{\H{U}}}1 {ő}{{\H{o}}}1 {Ő}{{\H{O}}}1
+  {ç}{{\c c}}1 {Ç}{{\c C}}1 {ø}{{\o}}1 {å}{{\r a}}1 {Å}{{\r A}}1
+  {€}{{\euro}}1 {£}{{\pounds}}1 {«}{{\guillemotleft}}1
+  {»}{{\guillemotright}}1 {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {¿}{{?`}}1
+}
+
+\definecolor{commentcolor}{named}{lightgray}
+\definecolor{numbercolor}{RGB}{152,204,112}
+\definecolor{keywordcolor}{RGB}{60,128,49}
+\definecolor{stringcolor}{named}{orange}
+
+\lstset{language=C++,
+  tabsize=4,
+  basicstyle=\ttfamily,
+  keywordstyle=\color{keywordcolor}\ttfamily\bfseries,
+  stringstyle=\color{stringcolor}\ttfamily,
+  numberstyle=\color{numbercolor}\ttfamily,
+  commentstyle=\color{commentcolor}\itshape\ttfamily
+}
+
+\lstset{language=[11]C++}
 
 \newcommand{\flenglish}[1]{\emph{\foreignlanguage{english}{#1}}}
 
@@ -32,10 +64,10 @@ Les différents opérateurs seront séparés d'une espace avec le reste de l'exp
 
 \section{Règles de nommage}
 Il a été décidé d'utiliser le \texttt{camelCase} pour les différents identifiants (variables, fonctions, classes, etc.), puisque c'est également le style du \flenglish{Gamedev Framework}.
-Seuls les \mintinline{c++}|class|es (ou \flenglish{templates} de classes), \mintinline{c++}|struct|s, \mintinline{c++}|union|s, \mintinline{c++}|enum|s et constantes d'énumération auront des noms commençant par une majuscule.
+Seuls les \lstinline|class|es (ou \flenglish{templates} de classes), \lstinline|struct|s, \lstinline|union|s, \lstinline|enum|s et constantes d'énumération auront des noms commençant par une majuscule.
 Si un sigle ou un acronyme est utilisé, il est considéré comme tout autre mot : tout en minuscule, seule la première lettre est en majuscule sauf si c'est le premier mot d'un identificateur de variable, de fonction, etc.
 
-\begin{minted}{c++}
+\begin{lstlisting}
 class MyClass {};
 
 enum MyEnum {
@@ -47,7 +79,7 @@ enum MyEnum {
 class HtmlParser {};
 
 HtmlParser htmlParser, otherHtmlParser;
-\end{minted}
+\end{lstlisting}
 
 \section{Code source}
 
@@ -58,24 +90,23 @@ Les fichiers sources auront pour extension \texttt{.cpp}.
 \subsection{Définitions de variables, appels de fonction}
 Notez que, contrairement au C, les caractères \og * \fg{} et \og \& \fg{} sont collés au type, plutôt qu'à l'identificateur. Évitez les déclarations de plusieurs pointeurs (et, généralement, de variables) sur une seule ligne.
 
-\begin{minted}[showspaces,escapeinside=\$\$]{c++}
+\begin{lstlisting}[breaklines]
 double* p {makePointer("blabla", 1337, {'a', 'b'})};
 int i {-1};
 int& j {i};
 int* ptr = &j;
 
-std::map<char, std::pair<int, int>> myMap {{'z', {0, 0}},
-$\hspace*{21.5em}${'H', {4, 2}}};
+std::map<char, std::pair<int, int>> myMap {{'z', {0, 0}}, {'H', {4, 2}}};
 
 std::vector<int> myVector {4}; // 1 élément: 4
 std::vector<int> otherVector(4); // 4 éléments
-\end{minted}
+\end{lstlisting}
 
 \subsection{Contrôle de flux}
 
 Contrairement aux fonctions (cf. §\ref{sec:fct}), les mots-clefs des structures de contrôle sont suivis d'une espace avant une parenthèse ouvrante. L'accolade ouvrant le bloc est située en fin de ligne, après une espace.
 
-\begin{minted}[showspaces]{c++}
+\begin{lstlisting}
 for (int i = 0; i < nElementCount; ++i) {
 	int* p = nullptr;
 	if (1 == i) {
@@ -99,7 +130,7 @@ do {
 
 	// ...
 } while (answer != 42 && !earthDestroyed);
-\end{minted}
+\end{lstlisting}
 
 \subsection{Définition de fonctions}
 \label{sec:fct}
@@ -108,7 +139,7 @@ Les fonctions sont le \emph{seul} cas où l'accolade est seule sur une ligne. Ce
 
 Lors d'une définition ou d'un appel de fonction, son nom est collé à la parenthèse ouvrante.
 
-\begin{minted}{c++}
+\begin{lstlisting}
 namespace myNamespace {
 	std::string myFunction()
 	{
@@ -122,14 +153,14 @@ namespace myNamespace {
 		// Nothing
 	}
 } // namespace myNamespace
-\end{minted}
+\end{lstlisting}
 
 \section{Fichiers d'entête}
-Les définitions se feront dans des fichiers \texttt{.h}. Les attributs d'une classe suivent la syntaxe \texttt{\_}<\emph{nom}>.
+Les définitions se feront dans des fichiers \texttt{.h}. Les attributs d'une classe suivent la syntaxe \texttt{m\_}<\emph{nom}>.
 
 \medskip
-Rappelons qu'il faut protéger les fichiers d'entête par la \textbf{garde d'inclusion} et qu'\textbf{il ne faut pas y écrire d'implantation} (sauf \flenglish{templates} et fonctions \mintinline{c++}|inline|).
-\begin{minted}{c++}
+Rappelons qu'il faut protéger les fichiers d'entête par la \textbf{garde d'inclusion} et qu'\textbf{il ne faut pas y écrire d'implantation} (sauf \flenglish{templates} et fonctions \lstinline|inline|).
+\begin{lstlisting}
 // MyClass.hpp
 
 #ifndef MYCLASS_HPP
@@ -145,16 +176,16 @@ public:
 	int getElementCount(void);
 
 private:
-	bool _dead;
-	int _element;
-	char* _charList;
-	std::string _string;
+	bool m_dead;
+	int m_element;
+	char* m_charList;
+	std::string m_string;
 	
-	MyOtherClass* _otherClass;
+	MyOtherClass* m_otherClass;
 };
 
 #endif //MYCLASS_HPP
-\end{minted}
+\end{lstlisting}
 
 \section{Indications et bonnes pratiques}
 Cette section est un peu en dehors du \flenglish{coding standard}, mais certaines règles méritent d'être rappelées. La plupart sont inspirées des \flenglish{C++ guidelines} \footnote{\url{https://github.com/isocpp/CppCoreGuidelines}}.
@@ -164,35 +195,35 @@ Ces règles ne sont pas à respecter au pied de la lettre dans tous les cas. Vou
 \begin{itemize}
 \item Préférez les implantations utilisant les vérifications de type. Notamment, préférez :
 	\begin{itemize}
-	\item les fonctions \mintinline{c++}|constexpr| aux macros ;
-	\item \mintinline{c++}|enum class| à \mintinline{c++}|enum| ;
+	\item les fonctions \lstinline|constexpr| aux macros ;
+	\item \lstinline|enum class| à \lstinline|enum| ;
 	\item les \flenglish{templates} variadiques pour les fonctions variadiques.
 	\end{itemize}
 \item Utilisez les bibliothèques au lieu de refaire une fonctionnalité \og maison \fg{} : celles-ci sont souvent mieux codés et testés qu'un code fait en cinq minutes\dots{}
 \item Bannissez le code \og à la C \fg{} en faveur du C++ moderne, par exemple, servez-vous de :
 	\begin{itemize}
-	\item \mintinline{c++}|std::shared_ptr| ou \mintinline{c++}|std::unique_ptr| pour gérer la mémoire dynamique ;
+	\item \lstinline|std::shared_ptr| ou \lstinline|std::unique_ptr| pour gérer la mémoire dynamique ;
 	\item références à la place des pointeurs, quand c'est possible ;
-	\item \mintinline{c++}|std::array| plutôt que les tableaux intégrés au langage ;
-	\item \mintinline{c++}|std::function| au lieu des pointeurs de fonction ;
+	\item \lstinline|std::array| plutôt que les tableaux intégrés au langage ;
+	\item \lstinline|std::function| au lieu des pointeurs de fonction ;
 	\item \flenglish{casts} (ou conversion de types) du C++ et pas du C.
 	\end{itemize}
-\item Rendez constant tout ce qui peut l'être avec \mintinline{c++}|const| ou \mintinline{c++}|constexpr| : le compilateur réalise une optimisation ou donne une erreur si ce qui est censé être constant est modifié.
-\item Tout ce qui peut ne pas être copié ne doit pas l'être. Utilisez le déplacement (avec \mintinline{c++}|std::move|) ou le passage par référence constante. Sauf pour les \og petits \fg{} types, pour garder un code simple.
+\item Rendez constant tout ce qui peut l'être avec \lstinline|const| ou \lstinline|constexpr| : le compilateur réalise une optimisation ou donne une erreur si ce qui est censé être constant est modifié.
+\item Tout ce qui peut ne pas être copié ne doit pas l'être. Utilisez le déplacement (avec \lstinline|std::move|) ou le passage par référence constante. Sauf pour les \og petits \fg{} types, pour garder un code simple.
 \item Si une classe est vouée à être héritée :
 	\begin{itemize}
-	\item déclarer le destructeur avec \mintinline{c++}|virtual| (même vide !) ;
-	\item utiliser \mintinline{c++}|virtual| pour les méthodes virtuelle.
+	\item déclarer le destructeur avec \lstinline|virtual| (même vide !) ;
+	\item utiliser \lstinline|virtual| pour les méthodes virtuelle.
 	\item supprimer la copie.
 	\end{itemize}
-\item Si une classe hérite d'une autre, spécifier soit \mintinline{c++}|override|, soit \mintinline{c++}|final| pour les méthodes héritées.
-\item Un objet doit toujours être valide. C'est pour cette raison que les attributs d'une classe doivent toujours être privés. Oui, avec \mintinline{c++}|private| pas \mintinline{c++}|protected|. Si le constructeur ou une autre méthode échoue à garder l'objet valide, l'objet invalide ne doit pas pouvoir être utilisé.
+\item Si une classe hérite d'une autre, spécifier soit \lstinline|override|, soit \lstinline|final| pour les méthodes héritées.
+\item Un objet doit toujours être valide. C'est pour cette raison que les attributs d'une classe doivent toujours être privés. Oui, avec \lstinline|private| pas \lstinline|protected|. Si le constructeur ou une autre méthode échoue à garder l'objet valide, l'objet invalide ne doit pas pouvoir être utilisé.
 \item La création d'objets globaux non-constants doit être utilisée avec parcimonie.
 \item Ne vous répétez pas. Vous pouvez :
 	\begin{itemize}
 	\item factoriser du code dans des fonctions ;
 	\item remplacer les \og constantes magiques \fg{} par de vraies constantes ;
-	\item utiliser \mintinline{c++}|auto| quand le type utilisé est clair.
+	\item utiliser \lstinline|auto| quand le type utilisé est clair.
 	\end{itemize}
 \end{itemize}
 
