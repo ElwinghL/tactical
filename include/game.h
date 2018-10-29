@@ -8,6 +8,7 @@
 #include <gf/Event.h>
 #include <gf/Font.h>
 #include <gf/RenderWindow.h>
+#include <gf/ResourceManager.h>
 #include <gf/Text.h>
 #include <gf/ViewContainer.h>
 #include <gf/Views.h>
@@ -17,7 +18,7 @@
 
 class Game {
 public:
-    Game();
+    Game(gf::ResourceManager* resMgr);
     Game(const Game& other) = delete;
     Game(Game&& other) = default;
 
@@ -56,6 +57,8 @@ private:
 
     GameState m_gameState {GameState::MainMenu};
 
+    gf::ResourceManager* m_resMgr {};
+
     gf::Window m_window {"Cthulhu vs Satan", m_screenSize};
     gf::RenderWindow m_renderer {m_window};
 
@@ -68,15 +71,12 @@ private:
     gf::Action m_fullscreenAction {"Fullscreen"};
     gf::Action m_leftClickAction {"Left click"};
 
-    gf::Font m_buttonFont { [] {
-        gf::Font font {};
-        font.loadFromFile("../assets/fonts/button.ttf");
-        return font;
-    } ()};
-
-    gf::Text m_title {"Cthulhu vs Satan", m_buttonFont};
+    gf::Text m_title {"Cthulhu vs Satan", m_resMgr->getFont("fonts/title.ttf")};
 
     gf::WidgetContainer m_menuWidgets {};
+
+    gf::Font& m_buttonFont {m_resMgr->getFont("fonts/button.ttf")};
+
     gf::TextButtonWidget m_playButton {"Play!", m_buttonFont};
     gf::TextButtonWidget m_quitButton {"Quit", m_buttonFont};
 

@@ -1,7 +1,12 @@
 #include "game.h"
 
+#include <gf/ResourceManager.h>
+
 int main() {
-    Game game {};
+    gf::ResourceManager resMgr {};
+    resMgr.addSearchDir("../assets/");
+
+    Game game {&resMgr};
 
     while (game.isRunning()) {
         game.processEvents();

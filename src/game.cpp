@@ -1,8 +1,10 @@
 #include "game.h"
 
 #include <iostream>
+#include <utility>
 
-Game::Game()
+Game::Game(gf::ResourceManager* resMgr)
+: m_resMgr {resMgr}
 {
     initWindow();
     initViews();
