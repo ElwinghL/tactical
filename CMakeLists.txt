@@ -16,6 +16,7 @@ find_package(gf REQUIRED)
 
 add_executable(game
     src/main.cpp
+    src/game.cpp
 )
 
 target_include_directories(game PRIVATE include)
