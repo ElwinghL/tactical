@@ -19,11 +19,6 @@
 class Game {
 public:
     Game(gf::ResourceManager* resMgr);
-    Game(const Game& other) = delete;
-    Game(Game&& other) = default;
-
-    Game& operator=(const Game& other) = delete;
-    Game& operator=(Game&& other) = default;
 
     bool isRunning();
 
@@ -47,42 +42,42 @@ private:
     void initWidgets();
     void initEntities();
 
-    const gf::Vector2u m_screenSize {1024, 576};
-    const gf::Vector2f m_viewSize {100.0f, 100.0f};
-    const gf::Vector2f m_viewCenter {0.0f, 0.0f};
+    const gf::Vector2u m_screenSize{1024, 576};
+    const gf::Vector2f m_viewSize{100.0f, 100.0f};
+    const gf::Vector2f m_viewCenter{0.0f, 0.0f};
 
-    gf::Vector4f m_clearColor {gf::Color::White};
+    gf::Vector4f m_clearColor{gf::Color::White};
 
-    gf::Vector2f m_mouseCoords {};
+    gf::Vector2f m_mouseCoords{};
 
-    GameState m_gameState {GameState::MainMenu};
+    GameState m_gameState{GameState::MainMenu};
 
-    gf::ResourceManager* m_resMgr {};
+    gf::ResourceManager* m_resMgr{};
 
-    gf::Window m_window {"Cthulhu vs Satan", m_screenSize};
-    gf::RenderWindow m_renderer {m_window};
+    gf::Window m_window{"Cthulhu vs Satan", m_screenSize};
+    gf::RenderWindow m_renderer{m_window};
 
-    gf::ViewContainer m_views {};
-    gf::ExtendView m_mainView {m_viewCenter, m_viewSize};
-    gf::ExtendView m_menuView {m_viewCenter, gf::Vector2f{800.0f, 450.0f}};
+    gf::ViewContainer m_views{};
+    gf::ExtendView m_mainView{m_viewCenter, m_viewSize};
+    gf::ExtendView m_menuView{m_viewCenter, gf::Vector2f{800.0f, 450.0f}};
 
-    gf::ActionContainer m_actions {};
-    gf::Action m_closeWindowAction {"Close window"};
-    gf::Action m_fullscreenAction {"Fullscreen"};
-    gf::Action m_leftClickAction {"Left click"};
+    gf::ActionContainer m_actions{};
+    gf::Action m_closeWindowAction{"Close window"};
+    gf::Action m_fullscreenAction{"Fullscreen"};
+    gf::Action m_leftClickAction{"Left click"};
 
-    gf::Text m_title {"Cthulhu vs Satan", m_resMgr->getFont("fonts/title.ttf")};
+    gf::Text m_title{"Cthulhu vs Satan", m_resMgr->getFont("fonts/title.ttf")};
 
-    gf::WidgetContainer m_menuWidgets {};
+    gf::WidgetContainer m_menuWidgets{};
 
-    gf::Font& m_buttonFont {m_resMgr->getFont("fonts/button.ttf")};
+    gf::Font& m_buttonFont{m_resMgr->getFont("fonts/button.ttf")};
 
-    gf::TextButtonWidget m_playButton {"Play!", m_buttonFont};
-    gf::TextButtonWidget m_quitButton {"Quit", m_buttonFont};
+    gf::TextButtonWidget m_playButton{"Play!", m_buttonFont};
+    gf::TextButtonWidget m_quitButton{"Quit", m_buttonFont};
 
-    gf::EntityContainer m_mainEntities {};
+    gf::EntityContainer m_mainEntities{};
 
-    gf::Clock m_clock {};
+    gf::Clock m_clock{};
 };
 
 #endif // GAME_H

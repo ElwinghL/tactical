@@ -3,8 +3,8 @@
 #include <iostream>
 #include <utility>
 
-Game::Game(gf::ResourceManager* resMgr)
-: m_resMgr {resMgr}
+Game::Game(gf::ResourceManager* resMgr) :
+    m_resMgr{resMgr}
 {
     initWindow();
     initViews();
@@ -20,7 +20,7 @@ bool Game::isRunning()
 
 void Game::processEvents()
 {
-    gf::Event event;
+    gf::Event event{};
 
     while (m_window.pollEvent(event)) {
         if (event.type == gf::EventType::MouseMoved) {
@@ -47,33 +47,22 @@ void Game::processEvents()
                 m_menuWidgets.triggerAction();
             }
         }
-    }
-    break;
+    } break;
 
     case GameState::Pause: {
-
-    }
-    break;
+    } break;
 
     case GameState::GameStart: {
-
-    }
-    break;
+    } break;
 
     case GameState::PlayerTurn: {
-
-    }
-    break;
+    } break;
 
     case GameState::WaitingForAI: {
-
-    }
-    break;
+    } break;
 
     case GameState::GameEnd: {
-
-    }
-    break;
+    } break;
     }
 
     m_actions.reset();
@@ -84,36 +73,27 @@ void Game::update()
     gf::Time time = m_clock.restart();
     switch (m_gameState) {
     case GameState::MainMenu: {
-
-    }
-    break;
+    } break;
 
     case GameState::Pause: {
-
-    }
-    break;
+    } break;
 
     case GameState::GameStart: {
         m_clearColor = gf::Color::Black;
 
         m_gameState = GameState::PlayerTurn;
-    }
-    break;
+    } break;
 
     case GameState::PlayerTurn: {
         m_mainEntities.update(time);
-    }
-    break;
+    } break;
 
     case GameState::WaitingForAI: {
         m_mainEntities.update(time);
-    }
-    break;
+    } break;
 
     case GameState::GameEnd: {
-
-    }
-    break;
+    } break;
     }
 }
 
@@ -126,36 +106,28 @@ void Game::render()
         m_renderer.setView(m_menuView);
         m_renderer.draw(m_title);
         m_menuWidgets.render(m_renderer);
-    }
-    break;
+    } break;
 
     case GameState::Pause: {
         m_renderer.setView(m_mainView);
         m_mainEntities.render(m_renderer);
-    }
-    break;
+    } break;
 
     case GameState::GameStart: {
-
-    }
-    break;
+    } break;
 
     case GameState::PlayerTurn: {
         m_renderer.setView(m_mainView);
         m_mainEntities.render(m_renderer);
-    }
-    break;
+    } break;
 
     case GameState::WaitingForAI: {
         m_renderer.setView(m_mainView);
         m_mainEntities.render(m_renderer);
-    }
-    break;
+    } break;
 
     case GameState::GameEnd: {
-
-    }
-    break;
+    } break;
     }
 
     m_renderer.display();
@@ -193,7 +165,7 @@ void Game::initWidgets()
     m_title.setColor(gf::Color::Black);
     m_title.setPosition(gf::Vector2f{0.0f, -100.0f});
 
-    auto buttonInit = [this] (gf::TextButtonWidget& button, gf::Anchor anchor, const gf::Vector2f& posToCenter) {
+    auto buttonInit = [this](gf::TextButtonWidget& button, gf::Anchor anchor, const gf::Vector2f& posToCenter) {
         button.setAnchor(anchor);
         button.setPosition(posToCenter);
 

@@ -14,6 +14,12 @@ endif(LATEX_FOUND)
 
 find_package(gf REQUIRED)
 
+add_custom_target(check
+    COMMAND git clang-format --force --style file
+    COMMAND run-clang-tidy.py -p "${CMAKE_BINARY_DIR}" -header-filter=.* -checks=cppcoreguidelines-*,bugprone-*,misc-*,performance-*,portability-*,readability-*
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
 add_executable(game
     src/main.cpp
     src/game.cpp
