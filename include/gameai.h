@@ -6,7 +6,7 @@
 class GameAI : public Player {
 public:
     explicit GameAI(PlayerTeam team) :
-        Player{team, false, false}
+        Player{team, false}
     {
         // Nothing
     }

@@ -1,7 +1,6 @@
 #include "game.h"
 
 #include <iostream>
-#include <utility>
 
 Game::Game(gf::ResourceManager* resMgr) :
     m_resMgr{resMgr}
@@ -74,6 +73,27 @@ void Game::update()
     } break;
 
     case GameState::GameStart: {
+        for (int y = 0; y < m_board.getRows(); ++y) {
+            for (int x = 0; x < m_board.getCols(); ++x) {
+                if (m_board(gf::Vector2i{x, y})) {
+                    switch (m_board(gf::Vector2i{x, y})->getType()) {
+                    case CharacterType::Tank:
+                        std::cout << "T ";
+                        break;
+                    case CharacterType::Scout:
+                        std::cout << "s ";
+                        break;
+                    case CharacterType::Support:
+                        std::cout << "S ";
+                    }
+                } else {
+                    std::cout << "  ";
+                }
+            }
+
+            std::cout << std::endl;
+        }
+
         m_clearColor = gf::Color::Black;
 
         m_gameState = GameState::PlayerTurn;
@@ -188,11 +208,25 @@ void Game::initWidgets()
 
 void Game::initEntities()
 {
-    auto initGameBoard{[this](Character* character){
-        assert(m_board.isValid(character->getPosition()));
-        m_board(character->getPosition()) = character;
+    m_humanPlayer.setGoalPositions({gf::Vector2i{1, 1}, gf::Vector2i{1, 4}});
+    m_aiPlayer.setGoalPositions({gf::Vector2i{10, 1}, gf::Vector2i{10, 4}});
+
+    auto initPlayerCharacters{[this](int column, Player& player) {
+        gf::Vector2i pos{column, 0};
+
+        auto addCharacterInColumn{[this, &pos, &player](CharacterType type) {
+            addCharacter(player, Character{player.getTeam(), type, pos});
+            ++pos.y;
+        }};
+
+        addCharacterInColumn(CharacterType::Scout);
+        addCharacterInColumn(CharacterType::Support);
+        addCharacterInColumn(CharacterType::Tank);
+        addCharacterInColumn(CharacterType::Tank);
+        addCharacterInColumn(CharacterType::Support);
+        addCharacterInColumn(CharacterType::Scout);
     }};
 
-    m_humanPlayer.forEachCharacter(initGameBoard);
-    m_aiPlayer.forEachCharacter(initGameBoard);
+    initPlayerCharacters(2, m_humanPlayer);
+    initPlayerCharacters(9, m_aiPlayer);
 }

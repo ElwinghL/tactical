@@ -1,9 +1,14 @@
 #ifndef CHARACTER_H
 #define CHARACTER_H
 
+#include "action.h"
 #include "utility.h"
 
 #include <gf/Vector.h>
+#include <gf/VectorOps.h>
+
+#include <iostream>
+#include <vector>
 
 #include <cassert>
 
@@ -15,7 +20,7 @@ public:
         m_pos{pos},
         m_hpMax{getHPMaxForType(type)}
     {
-        assert(positionIsValid(pos));
+        // Nothing
     }
 
     PlayerTeam getTeam() const
@@ -55,10 +60,7 @@ public:
         m_hp = (amount > m_hp) ? 0 : m_hp - amount;
     }
 
-    bool canAttack(Character& other) const
-    {
-        return m_team != other.m_team;
-    }
+    bool canAttack(Character& other) const;
 
     bool attack(Character& other) const
     {
@@ -71,8 +73,20 @@ public:
         return success;
     }
 
-    bool move(const gf::Vector2i& pos);
-    bool canMove(const gf::Vector2i& pos) const;
+    bool move(gf::Vector2i& movement)
+    {
+        bool success{canMove(movement)};
+
+        if (success) {
+            m_pos += movement;
+        }
+
+        return success;
+    }
+
+    bool canMove(const gf::Vector2i& movement) const;
+
+    std::vector<Action> getPossibleActions();
 
 private:
     static int getHPMaxForType(CharacterType type)

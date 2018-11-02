@@ -13,7 +13,7 @@ public:
         m_team{team},
         m_pos{pos}
     {
-        assert(positionIsValid(pos));
+        // Nothing
     }
 
     PlayerTeam getTeam() const

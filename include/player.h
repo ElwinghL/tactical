@@ -4,11 +4,16 @@
 #include "character.h"
 #include "goal.h"
 #include "utility.h"
+#include <initializer_list>
+
+#include <gf/Vector.h>
 
 #include <array>
 #include <functional>
 #include <map>
 #include <tuple>
+
+constexpr std::size_t nbOfGoalsPerPlayer{2};
 
 class Player {
 public:
@@ -18,7 +23,7 @@ public:
     Player(Player&&) = default;
 
     Player& operator=(const Player&) = delete;
-    Player& operator=(Player&&) = delete;
+    Player& operator=(Player&&) = default;
 
     explicit Player(PlayerTeam team) :
         Player{team, true}
@@ -27,7 +32,10 @@ public:
     }
 
     Player(PlayerTeam team, bool playFirst) :
-        Player{team, playFirst, true}
+        m_team{team},
+        m_theirTurn{playFirst},
+        m_characters{},
+        m_goals{Goal{m_team, {0, 0}}, Goal{m_team, {0, 0}}}
     {
         // Nothing
     }
@@ -49,15 +57,21 @@ public:
         return m_won;
     }
 
-    void forEachCharacter(const std::function<void (Character*)>& doSomethingWith)
+    Character* addCharacter(Character&& character)
     {
-        for (auto& characterEntry : m_characters) {
-            doSomethingWith(&characterEntry.second);
+        auto res{m_characters.emplace(character.getPosition(), character)};
+
+        return res.second ? &res.first->second : nullptr;
+    }
+
+    void setGoalPositions(const std::array<gf::Vector2i, nbOfGoalsPerPlayer>& positions)
+    {
+        for (std::size_t i{0}; i < nbOfGoalsPerPlayer; ++i) {
+            m_goals[i] = Goal{m_team, positions[i]};
         }
     }
 
-protected:
-    Player(PlayerTeam team, bool playFirst, bool closerCharacters);
+    bool isOnAGoal(const Character& c) const;
 
 private:
     struct PositionComp {
@@ -67,13 +81,13 @@ private:
         }
     };
 
-    const PlayerTeam m_team;
+    PlayerTeam m_team;
 
     bool m_theirTurn{true};
     bool m_won{false};
 
     std::map<gf::Vector2i, Character, PositionComp> m_characters;
-    std::array<Goal, 2> m_goals;
+    std::array<Goal, nbOfGoalsPerPlayer> m_goals;
 };
 
 #endif // PLAYER_H

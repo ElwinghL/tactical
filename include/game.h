@@ -14,11 +14,15 @@
 #include <gf/RenderWindow.h>
 #include <gf/ResourceManager.h>
 #include <gf/Text.h>
+#include <gf/Vector.h>
 #include <gf/ViewContainer.h>
 #include <gf/Views.h>
 #include <gf/WidgetContainer.h>
 #include <gf/Widgets.h>
 #include <gf/Window.h>
+
+#include <string>
+#include <utility>
 
 class Game {
 public:
@@ -32,6 +36,21 @@ public:
     void processEvents();
     void update();
     void render();
+
+    std::string getName() const
+    {
+        return "Cthulhu vs Satan";
+    }
+
+    gf::Vector2i getBoardSize() const
+    {
+        return m_board.getSize();
+    }
+
+    bool positionIsValid(const gf::Vector2i& pos) const
+    {
+        return m_board.isValid(pos);
+    }
 
 private:
     enum class GameState {
@@ -49,6 +68,14 @@ private:
     void initWidgets();
     void initEntities();
 
+    void addCharacter(Player& player, Character&& character)
+    {
+        Character*& tile{m_board(character.getPosition())};
+        if (!tile) {
+            tile = player.addCharacter(std::move(character));
+        }
+    }
+
     const gf::Vector2u m_screenSize{1024, 576};
     const gf::Vector2f m_viewSize{100.0f, 100.0f};
     const gf::Vector2f m_viewCenter{0.0f, 0.0f};
@@ -61,7 +88,7 @@ private:
 
     gf::ResourceManager* m_resMgr{};
 
-    gf::Window m_window{gameName, m_screenSize};
+    gf::Window m_window{getName(), m_screenSize};
     gf::RenderWindow m_renderer{m_window};
 
     gf::ViewContainer m_views{};
@@ -73,7 +100,7 @@ private:
     gf::Action m_fullscreenAction{"Fullscreen"};
     gf::Action m_leftClickAction{"Left click"};
 
-    gf::Text m_title{gameName, m_resMgr->getFont("fonts/title.ttf")};
+    gf::Text m_title{getName(), m_resMgr->getFont("fonts/title.ttf")};
 
     gf::WidgetContainer m_menuWidgets{};
 
@@ -89,7 +116,7 @@ private:
     Player m_humanPlayer{PlayerTeam::Cthulhu};
     GameAI m_aiPlayer{PlayerTeam::Satan};
 
-    gf::Array2D<Character*, int> m_board{gameSize, nullptr};
+    gf::Array2D<Character*, int> m_board{{12, 6}, nullptr};
 };
 
 #endif // GAME_H
