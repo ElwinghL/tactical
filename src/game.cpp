@@ -13,11 +13,6 @@ Game::Game(gf::ResourceManager* resMgr) :
     initEntities();
 }
 
-bool Game::isRunning()
-{
-    return m_window.isOpen();
-}
-
 void Game::processEvents()
 {
     gf::Event event{};
@@ -193,5 +188,11 @@ void Game::initWidgets()
 
 void Game::initEntities()
 {
-    // TODO
+    auto initGameBoard{[this](Character* character){
+        assert(m_board.isValid(character->getPosition()));
+        m_board(character->getPosition()) = character;
+    }};
+
+    m_humanPlayer.forEachCharacter(initGameBoard);
+    m_aiPlayer.forEachCharacter(initGameBoard);
 }

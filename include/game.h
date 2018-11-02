@@ -1,7 +1,11 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "gameai.h"
+#include "player.h"
+
 #include <gf/Action.h>
+#include <gf/Array2D.h>
 #include <gf/Clock.h>
 #include <gf/Color.h>
 #include <gf/EntityContainer.h>
@@ -18,9 +22,12 @@
 
 class Game {
 public:
-    Game(gf::ResourceManager* resMgr);
+    explicit Game(gf::ResourceManager* resMgr);
 
-    bool isRunning();
+    bool isRunning()
+    {
+        return m_window.isOpen();
+    }
 
     void processEvents();
     void update();
@@ -54,7 +61,7 @@ private:
 
     gf::ResourceManager* m_resMgr{};
 
-    gf::Window m_window{"Cthulhu vs Satan", m_screenSize};
+    gf::Window m_window{gameName, m_screenSize};
     gf::RenderWindow m_renderer{m_window};
 
     gf::ViewContainer m_views{};
@@ -66,7 +73,7 @@ private:
     gf::Action m_fullscreenAction{"Fullscreen"};
     gf::Action m_leftClickAction{"Left click"};
 
-    gf::Text m_title{"Cthulhu vs Satan", m_resMgr->getFont("fonts/title.ttf")};
+    gf::Text m_title{gameName, m_resMgr->getFont("fonts/title.ttf")};
 
     gf::WidgetContainer m_menuWidgets{};
 
@@ -78,6 +85,11 @@ private:
     gf::EntityContainer m_mainEntities{};
 
     gf::Clock m_clock{};
+
+    Player m_humanPlayer{PlayerTeam::Cthulhu};
+    GameAI m_aiPlayer{PlayerTeam::Satan};
+
+    gf::Array2D<Character*, int> m_board{gameSize, nullptr};
 };
 
 #endif // GAME_H
