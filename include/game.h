@@ -1,3 +1,7 @@
+/**
+ * The file defining the game and how it runs
+ * \author Fabien Matusalem
+ */
 #ifndef GAME_H
 #define GAME_H
 
@@ -24,29 +28,64 @@
 #include <string>
 #include <utility>
 
+/**
+ * The game core class
+ */
 class Game {
 public:
+    /**
+     * Constructor
+     * \param resMgr The resource manager of the game
+     */
     explicit Game(gf::ResourceManager* resMgr);
 
+    /**
+     * Tell if the game is running
+     * \return True if the game is running, false if it has closed
+     */
     bool isRunning()
     {
         return m_window.isOpen();
     }
 
+    /**
+     * Update the input states
+     */
     void processEvents();
+
+    /**
+     * Update the game logic according to the inputs
+     */
     void update();
+
+    /**
+     * Display the game on the screen
+     */
     void render();
 
+    /**
+     * Give the name of the game
+     * \return The game's name, "Cthulhu vs Satan"
+     */
     std::string getName() const
     {
         return "Cthulhu vs Satan";
     }
 
+    /**
+     * Give the size of the game board
+     * \return The width and the height of the game board
+     */
     gf::Vector2i getBoardSize() const
     {
         return m_board.getSize();
     }
 
+    /**
+     * Tell if a position is valid
+     * \param pos The position to test
+     * \return True if the position is inside the game board
+     */
     bool positionIsValid(const gf::Vector2i& pos) const
     {
         return m_board.isValid(pos);
