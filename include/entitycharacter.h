@@ -4,25 +4,24 @@
 #include "character.h"
 
 #include <gf/Entity.h>
-#include <gf/RenderTarget.h>
 #include <gf/RenderStates.h>
+#include <gf/RenderTarget.h>
 #include <gf/ResourceManager.h>
 #include <gf/Sprite.h>
 #include <gf/Time.h>
 
 #include <cassert>
 
-class EntityCharacter : public gf::Entity
-{
-    public:
-        EntityCharacter(gf::ResourceManager* resMgr, const Character* characterPtr);
+class EntityCharacter : public gf::Entity {
+public:
+    EntityCharacter(gf::ResourceManager* resMgr, const Character* characterPtr);
 
-        void update(gf::Time time) override;
-        void render(gf::RenderTarget& target, const gf::RenderStates& states) override;
+    void update(gf::Time time) override;
+    void render(gf::RenderTarget& target, const gf::RenderStates& states) override;
 
-    private:
-        const Character* m_characterPtr{nullptr};
-        gf::Sprite m_sprite{};
+private:
+    const Character* m_characterPtr{nullptr};
+    gf::Sprite m_sprite{};
 };
 
 #endif // ENTITYCHARACTER_H

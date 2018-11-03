@@ -149,7 +149,7 @@ private:
     gf::TextButtonWidget m_quitButton{"Quit", m_buttonFont};
 
     std::vector<EntityCharacter> m_characterEntities{};
-//    gf::EntityContainer m_mainEntities{};
+    //    gf::EntityContainer m_mainEntities{};
 
     gf::Clock m_clock{};
 

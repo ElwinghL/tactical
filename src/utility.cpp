@@ -22,16 +22,14 @@ static constexpr gf::Vector2f halfTileSize{64.0f / 2.0f, 31.0f / 2.0f};
 static constexpr gf::Vector2f posToIso(const gf::Vector2i& gamePos)
 {
     return gf::Vector2f{
-        static_cast<float>(gamePos.y + gamePos.x),
-        static_cast<float>(gamePos.y - gamePos.x)
-    };
+            static_cast<float>(gamePos.y + gamePos.x),
+            static_cast<float>(gamePos.y - gamePos.x)};
 }
 
 gf::Vector2f gameToScreenPos(const gf::Vector2i& gamePos)
 {
     gf::Vector2f res{posToIso(gamePos)};
-    res.x *= halfTileSize.width;
-    res.y *= halfTileSize.height;
+    res *= halfTileSize;
 
     res.y -= halfTileSize.height;
 
@@ -41,15 +39,11 @@ gf::Vector2f gameToScreenPos(const gf::Vector2i& gamePos)
 static constexpr gf::Vector2i posToCart(const gf::Vector2f& pos)
 {
     return gf::Vector2i{
-        static_cast<int>(std::floor((pos.x - pos.y) / 2.0f)),
-        static_cast<int>(std::floor((pos.x + pos.y) / 2.0f))
-    };
+            static_cast<int>(std::floor((pos.x - pos.y) / 2.0f)),
+            static_cast<int>(std::floor((pos.x + pos.y) / 2.0f))};
 }
 
-gf::Vector2i screenToGamePos(gf::Vector2f screenPos)
+gf::Vector2i screenToGamePos(const gf::Vector2f& screenPos)
 {
-    screenPos.x /= halfTileSize.width;
-    screenPos.y /= halfTileSize.height;
-
-    return posToCart(screenPos);
+    return posToCart(screenPos / halfTileSize);
 }

@@ -54,6 +54,6 @@ constexpr PlayerTeam getEnemyTeam(PlayerTeam team)
 
 void resizeView(gf::View& view, const gf::Vector2i& gameSize);
 gf::Vector2f gameToScreenPos(const gf::Vector2i& gamePos);
-gf::Vector2i screenToGamePos(gf::Vector2f screenPos);
+gf::Vector2i screenToGamePos(const gf::Vector2f& screenPos);
 
 #endif // UTILITY_H

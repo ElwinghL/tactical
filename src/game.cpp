@@ -1,4 +1,5 @@
 #include "game.h"
+
 #include "utility.h"
 
 #include <gf/SpriteBatch.h>
@@ -110,7 +111,7 @@ void Game::update()
 
     case GameState::PlayerTurn:
     case GameState::WaitingForAI: {
-//        m_mainEntities.update(time);
+        //        m_mainEntities.update(time);
         for (auto& c : m_characterEntities) {
             c.update(time);
         }
@@ -134,7 +135,7 @@ void Game::render()
 
     case GameState::Pause: {
         m_renderer.setView(m_mainView);
-//        m_mainEntities.render(m_renderer);
+        //        m_mainEntities.render(m_renderer);
         for (auto& c : m_characterEntities) {
             c.render(m_renderer, gf::RenderStates());
         }
@@ -147,7 +148,7 @@ void Game::render()
     case GameState::WaitingForAI: {
         m_renderer.setView(m_mainView);
         drawBackground();
-//        m_mainEntities.render(m_renderer);
+        //        m_mainEntities.render(m_renderer);
         for (auto& c : m_characterEntities) {
             c.render(m_renderer, gf::RenderStates());
         }
@@ -257,7 +258,7 @@ void Game::addCharacter(Player& player, Character&& character)
     if (!tile) {
         tile = player.addCharacter(std::move(character));
         m_characterEntities.emplace_back(m_resMgr, tile);
-//        m_mainEntities.addEntity(m_characterEntities.back());
+        //        m_mainEntities.addEntity(m_characterEntities.back());
     }
 }
 
@@ -268,13 +269,12 @@ void Game::drawBackground()
     gf::SpriteBatch batch{m_renderer};
 
     batch.begin();
-    for (int x {size.width - 1}; x >= 0; --x) {
+    for (int x{size.width - 1}; x >= 0; --x) {
         for (int y{0}; y < size.height; ++y) {
             gf::Sprite& tileSpr{
-                ((x + y) % 2 == 0) ?
-                m_darkTile :
-                m_brightTile
-            };
+                    ((x + y) % 2 == 0) ?
+                            m_darkTile :
+                            m_brightTile};
 
             tileSpr.setPosition(gameToScreenPos({x, y}));
             batch.draw(tileSpr);
