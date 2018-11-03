@@ -55,6 +55,10 @@ void Game::processEvents()
     } break;
 
     case GameState::PlayerTurn: {
+        if (m_leftClickAction.isActive()) {
+            gf::Vector2i tile{screenToGamePos(m_mouseCoords)};
+            std::cout << "(" << tile.x << ", " << tile.y << ")" << std::endl;
+        }
     } break;
 
     case GameState::WaitingForAI: {
@@ -106,7 +110,10 @@ void Game::update()
 
     case GameState::PlayerTurn:
     case GameState::WaitingForAI: {
-        m_mainEntities.update(time);
+//        m_mainEntities.update(time);
+        for (auto& c : m_characterEntities) {
+            c.update(time);
+        }
     } break;
 
     case GameState::GameEnd: {
@@ -127,7 +134,10 @@ void Game::render()
 
     case GameState::Pause: {
         m_renderer.setView(m_mainView);
-        m_mainEntities.render(m_renderer);
+//        m_mainEntities.render(m_renderer);
+        for (auto& c : m_characterEntities) {
+            c.render(m_renderer, gf::RenderStates());
+        }
     } break;
 
     case GameState::GameStart: {
@@ -137,8 +147,10 @@ void Game::render()
     case GameState::WaitingForAI: {
         m_renderer.setView(m_mainView);
         drawBackground();
-        drawCharacters();
-        m_mainEntities.render(m_renderer);
+//        m_mainEntities.render(m_renderer);
+        for (auto& c : m_characterEntities) {
+            c.render(m_renderer, gf::RenderStates());
+        }
     } break;
 
     case GameState::GameEnd: {
@@ -212,14 +224,6 @@ void Game::initSprites()
 {
     m_brightTile.setAnchor(gf::Anchor::TopLeft);
     m_darkTile.setAnchor(gf::Anchor::TopLeft);
-
-    m_cthulhuCultist.setScale({-1.0f, 1.0f}); // Mirrored
-    m_cthulhuCultist.setAnchor(gf::Anchor::CenterRight);
-    m_cthulhuCultist.setOrigin(m_cthulhuCultist.getOrigin() + gf::Vector2f{0.0f, -4.0f});
-
-    m_satanCultist.setColor(gf::Color::Red); // Red variant
-    m_satanCultist.setAnchor(gf::Anchor::CenterLeft);
-    m_satanCultist.setOrigin(m_satanCultist.getOrigin() + gf::Vector2f{0.0f, -4.0f});
 }
 
 void Game::initEntities()
@@ -247,23 +251,14 @@ void Game::initEntities()
     initPlayerCharacters(9, m_aiPlayer);
 }
 
-void Game::drawCharacters()
+void Game::addCharacter(Player& player, Character&& character)
 {
-    gf::SpriteBatch batch{m_renderer};
-    batch.begin();
-    for (const auto& characterPtr : m_board) {
-        if (characterPtr) {
-            gf::Sprite& characterSpr{
-                (characterPtr->getTeam() == PlayerTeam::Cthulhu) ?
-                m_cthulhuCultist :
-                m_satanCultist
-            };
-
-            characterSpr.setPosition(positionToView(characterPtr->getPosition()));
-            batch.draw(characterSpr);
-        }
+    Character*& tile{m_board(character.getPosition())};
+    if (!tile) {
+        tile = player.addCharacter(std::move(character));
+        m_characterEntities.emplace_back(m_resMgr, tile);
+//        m_mainEntities.addEntity(m_characterEntities.back());
     }
-    batch.end();
 }
 
 void Game::drawBackground()
@@ -281,7 +276,7 @@ void Game::drawBackground()
                 m_brightTile
             };
 
-            tileSpr.setPosition(positionToView({x, y}));
+            tileSpr.setPosition(gameToScreenPos({x, y}));
             batch.draw(tileSpr);
         }
     }

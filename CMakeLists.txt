@@ -23,6 +23,7 @@ add_custom_target(check
 add_executable(game
     src/action.cpp
     src/character.cpp
+    src/entitycharacter.cpp
     src/game.cpp
     src/gameai.cpp
     src/goal.cpp

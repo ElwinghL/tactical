@@ -5,6 +5,7 @@
 #ifndef GAME_H
 #define GAME_H
 
+#include "entitycharacter.h"
 #include "gameai.h"
 #include "player.h"
 
@@ -28,6 +29,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 /**
  * The game core class
@@ -109,15 +111,8 @@ private:
     void initSprites();
     void initEntities();
 
-    void addCharacter(Player& player, Character&& character)
-    {
-        Character*& tile{m_board(character.getPosition())};
-        if (!tile) {
-            tile = player.addCharacter(std::move(character));
-        }
-    }
+    void addCharacter(Player& player, Character&& character);
 
-    void drawCharacters();
     void drawBackground();
 
     const gf::Vector2u m_screenSize{1024, 576};
@@ -130,7 +125,7 @@ private:
 
     GameState m_gameState{GameState::MainMenu};
 
-    gf::ResourceManager* m_resMgr{};
+    gf::ResourceManager* m_resMgr{nullptr};
 
     gf::Window m_window{getName(), m_screenSize};
     gf::RenderWindow m_renderer{m_window};
@@ -153,7 +148,8 @@ private:
     gf::TextButtonWidget m_playButton{"Play!", m_buttonFont};
     gf::TextButtonWidget m_quitButton{"Quit", m_buttonFont};
 
-    gf::EntityContainer m_mainEntities{};
+    std::vector<EntityCharacter> m_characterEntities{};
+//    gf::EntityContainer m_mainEntities{};
 
     gf::Clock m_clock{};
 
@@ -164,9 +160,6 @@ private:
 
     gf::Sprite m_darkTile{m_resMgr->getTexture("placeholders/case.png")};
     gf::Sprite m_brightTile{m_resMgr->getTexture("placeholders/case2.png")};
-
-    gf::Sprite m_cthulhuCultist{m_resMgr->getTexture("placeholders/character.png")};
-    gf::Sprite m_satanCultist{m_resMgr->getTexture("placeholders/character.png")};
 };
 
 #endif // GAME_H
