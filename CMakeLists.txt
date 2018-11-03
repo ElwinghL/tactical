@@ -28,6 +28,7 @@ add_executable(game
     src/goal.cpp
     src/main.cpp
     src/player.cpp
+    src/utility.cpp
 )
 
 target_include_directories(game PRIVATE include)

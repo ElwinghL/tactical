@@ -6,6 +6,7 @@
 #define UTILITY_H
 
 #include <gf/Vector.h>
+#include <gf/View.h>
 
 /**
  * The different teams which fight in the game
@@ -50,5 +51,8 @@ constexpr PlayerTeam getEnemyTeam(PlayerTeam team)
 {
     return (team == PlayerTeam::Cthulhu) ? PlayerTeam::Satan : PlayerTeam::Cthulhu;
 }
+
+gf::Vector2f positionToView(const gf::Vector2i& gamePos);
+void resizeView(gf::View& view, const gf::Vector2i& gameSize);
 
 #endif // UTILITY_H

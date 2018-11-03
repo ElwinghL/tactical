@@ -17,6 +17,7 @@
 #include <gf/Font.h>
 #include <gf/RenderWindow.h>
 #include <gf/ResourceManager.h>
+#include <gf/Sprite.h>
 #include <gf/Text.h>
 #include <gf/Vector.h>
 #include <gf/ViewContainer.h>
@@ -105,6 +106,7 @@ private:
     void initViews();
     void initActions();
     void initWidgets();
+    void initSprites();
     void initEntities();
 
     void addCharacter(Player& player, Character&& character)
@@ -114,6 +116,9 @@ private:
             tile = player.addCharacter(std::move(character));
         }
     }
+
+    void drawCharacters();
+    void drawBackground();
 
     const gf::Vector2u m_screenSize{1024, 576};
     const gf::Vector2f m_viewSize{100.0f, 100.0f};
@@ -156,6 +161,12 @@ private:
     GameAI m_aiPlayer{PlayerTeam::Satan};
 
     gf::Array2D<Character*, int> m_board{{12, 6}, nullptr};
+
+    gf::Sprite m_darkTile{m_resMgr->getTexture("placeholders/case.png")};
+    gf::Sprite m_brightTile{m_resMgr->getTexture("placeholders/case2.png")};
+
+    gf::Sprite m_cthulhuCultist{m_resMgr->getTexture("placeholders/character.png")};
+    gf::Sprite m_satanCultist{m_resMgr->getTexture("placeholders/character.png")};
 };
 
 #endif // GAME_H
