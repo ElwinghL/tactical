@@ -167,7 +167,7 @@ private:
     bool m_theirTurn{true}; ///< Can the player play?
     bool m_won{false}; ///< Has the player won?
 
-    std::map<int,Character> m_characters; ///< The characters controlled by this player
+    std::map<int,Character> m_characters; ///< The characters controlled by this player, the key is y starting position
     std::array<Goal, nbOfGoalsPerPlayer> m_goals; ///< The goals this player has to reach
 };
 

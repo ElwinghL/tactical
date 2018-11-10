@@ -4,7 +4,7 @@
 
 EntityCharacter::EntityCharacter(gf::ResourceManager* resMgr, const Character* characterPtr) :
     m_characterPtr{characterPtr},
-    m_sprite{resMgr->getTexture("placeholders/character.png")}
+    m_sprite{resMgr->getTexture(characterPtr->getSprite())}
 {
     assert(resMgr);
     assert(characterPtr);
