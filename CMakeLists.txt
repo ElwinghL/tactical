@@ -29,6 +29,7 @@ add_executable(game
     src/goal.cpp
     src/main.cpp
     src/player.cpp
+    src/humanplayer.cpp
     src/utility.cpp
 )
 
