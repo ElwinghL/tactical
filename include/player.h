@@ -17,6 +17,7 @@
 #include <tuple>
 
 constexpr std::size_t nbOfGoalsPerPlayer{2}; ///< The number of goal to reach for each player
+constexpr std::size_t nbOfCharactersPerPlayer{6}; ///< The number of characters each player has at the beginning of the game
 
 /**
  * A player, who is controlled by the computer of by a human
@@ -117,19 +118,10 @@ public:
      */
     Character* addCharacter(Character&& character)
     {
-        auto res{m_characters.emplace(character.getPosition(), character)};
+        auto res{m_characters.emplace(character.getPosition().y, character)};
 
         return res.second ? &res.first->second : nullptr;
     }
-    
-    /**
-     * Gets a pointer to this player's character at this position
-     * 
-     * \param pos The position
-     * \return A pointer to the character, or NULL if there is no character
-     */
-    
-    Character* getCharacter(gf::Vector2i pos);
 
     /**
      * Change the positions of this player's goals
@@ -175,7 +167,7 @@ private:
     bool m_theirTurn{true}; ///< Can the player play?
     bool m_won{false}; ///< Has the player won?
 
-    std::map<gf::Vector2i, Character, PositionComp> m_characters; ///< The characters controlled by this player
+    std::map<int,Character> m_characters; ///< The characters controlled by this player
     std::array<Goal, nbOfGoalsPerPlayer> m_goals; ///< The goals this player has to reach
 };
 

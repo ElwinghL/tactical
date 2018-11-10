@@ -60,7 +60,15 @@ void Game::processEvents()
         if (m_leftClickAction.isActive()) {
             gf::Vector2i tile{screenToGamePos(m_mouseCoords)};
             std::cout << "(" << tile.x << ", " << tile.y << ")" << std::endl;
-            m_selectedCharacter = activePlayer->getCharacter(tile);
+            bool targetIsEmpty = false;
+            if(m_selectedCharacter){
+                targetIsEmpty = (!getCharacter(tile));
+            }
+            if(!targetIsEmpty || !moveCharacter(m_selectedCharacter,tile)){
+                m_selectedCharacter = getCharacter(tile,activePlayer->getTeam());
+            }else{
+                m_selectedCharacter = nullptr;
+            }
         }
     } break;
 
@@ -265,6 +273,37 @@ void Game::addCharacter(Player& player, Character&& character)
     }
 }
 
+Character *Game::getCharacter(gf::Vector2i pos, PlayerTeam team)
+{
+    if(positionIsValid(pos) && m_board(pos) && m_board(pos)->getTeam() == team){
+        return m_board(pos);
+    }
+    return nullptr;
+}
+
+Character *Game::getCharacter(gf::Vector2i pos)
+{
+    if(positionIsValid(pos)){
+        return m_board(pos);
+    }
+    return nullptr;
+}
+
+bool Game::moveCharacter(Character *character, gf::Vector2i pos)
+{
+    if(!character || !positionIsValid(pos)){
+        return false;
+    }
+    gf::Vector2i previousPos{character->getPosition()};
+    gf::Vector2i relativeMove{pos - character->getPosition()};
+    if(character->move(relativeMove)){
+        m_board(previousPos) = nullptr;
+        m_board(pos) = character;
+        return true;
+    }
+    return false;
+}
+
 void Game::drawBackground()
 {
     const gf::Vector2i size{getBoardSize()};
@@ -274,7 +313,7 @@ void Game::drawBackground()
     batch.begin();
     for (int x{size.width - 1}; x >= 0; --x) {
         for (int y{0}; y < size.height; ++y) {
-            bool selectedTile = m_selectedCharacter != NULL && m_selectedCharacter->getPosition().x == x && m_selectedCharacter->getPosition().y == y;
+            bool selectedTile = (m_selectedCharacter && m_selectedCharacter->getPosition().x == x && m_selectedCharacter->getPosition().y == y);
             gf::Sprite& tileSpr{
                 selectedTile ?
                     m_selectedTile :

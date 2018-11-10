@@ -3,7 +3,6 @@
 #include "utility.h"
 
 EntityCharacter::EntityCharacter(gf::ResourceManager* resMgr, const Character* characterPtr) :
-    Entity{},
     m_characterPtr{characterPtr},
     m_sprite{resMgr->getTexture("placeholders/character.png")}
 {

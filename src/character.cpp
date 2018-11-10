@@ -7,7 +7,7 @@ bool Character::canAttack(Character& other) const
 
 bool Character::canMove(const gf::Vector2i& movement) const
 {
-    return false;
+    return true;
 }
 
 std::vector<Action> getPossibleActions()

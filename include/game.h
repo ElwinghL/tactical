@@ -113,7 +113,25 @@ private:
     void initEntities();
 
     void addCharacter(Player& player, Character&& character);
-
+    
+    /**
+     * Get a pointer to the character at this position, nullptr if the player
+     * has no character at this position
+     * \param pos The specified position
+     * \param team The team of the player
+     * \return The pointer to the character, or nullptr
+     */
+    Character *getCharacter(gf::Vector2i pos, PlayerTeam team);
+    
+    /**
+     * Get a pointer to the character at this position, nullptr if there is no character
+     * \param pos The specified position
+     * \return The pointer to the character, or nullptr
+     */
+    Character *getCharacter(gf::Vector2i pos);
+    
+    
+    bool moveCharacter(Character *character, gf::Vector2i pos);
     void drawBackground();
 
     const gf::Vector2u m_screenSize{1024, 576};
