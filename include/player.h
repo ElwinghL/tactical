@@ -121,6 +121,15 @@ public:
 
         return res.second ? &res.first->second : nullptr;
     }
+    
+    /**
+     * Gets a pointer to this player's character at this position
+     * 
+     * \param pos The position
+     * \return A pointer to the character, or NULL if there is no character
+     */
+    
+    Character* getCharacter(gf::Vector2i pos);
 
     /**
      * Change the positions of this player's goals

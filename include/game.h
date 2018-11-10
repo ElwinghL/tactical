@@ -7,6 +7,7 @@
 
 #include "entitycharacter.h"
 #include "gameai.h"
+#include "humanplayer.h"
 #include "player.h"
 
 #include <gf/Action.h>
@@ -153,13 +154,16 @@ private:
 
     gf::Clock m_clock{};
 
-    Player m_humanPlayer{PlayerTeam::Cthulhu};
+    HumanPlayer m_humanPlayer{PlayerTeam::Cthulhu};
     GameAI m_aiPlayer{PlayerTeam::Satan};
+    
+    Character *m_selectedCharacter = NULL;
 
     gf::Array2D<Character*, int> m_board{{12, 6}, nullptr};
 
     gf::Sprite m_darkTile{m_resMgr->getTexture("placeholders/case.png")};
     gf::Sprite m_brightTile{m_resMgr->getTexture("placeholders/case2.png")};
+    gf::Sprite m_selectedTile{m_resMgr->getTexture("placeholders/caseSelected.png")};
 };
 
 #endif // GAME_H

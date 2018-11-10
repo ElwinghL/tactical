@@ -56,9 +56,11 @@ void Game::processEvents()
     } break;
 
     case GameState::PlayerTurn: {
+        Player *activePlayer = &m_humanPlayer;
         if (m_leftClickAction.isActive()) {
             gf::Vector2i tile{screenToGamePos(m_mouseCoords)};
             std::cout << "(" << tile.x << ", " << tile.y << ")" << std::endl;
+            m_selectedCharacter = activePlayer->getCharacter(tile);
         }
     } break;
 
@@ -225,6 +227,7 @@ void Game::initSprites()
 {
     m_brightTile.setAnchor(gf::Anchor::TopLeft);
     m_darkTile.setAnchor(gf::Anchor::TopLeft);
+    m_selectedTile.setAnchor(gf::Anchor::TopLeft);
 }
 
 void Game::initEntities()
@@ -271,11 +274,13 @@ void Game::drawBackground()
     batch.begin();
     for (int x{size.width - 1}; x >= 0; --x) {
         for (int y{0}; y < size.height; ++y) {
+            bool selectedTile = m_selectedCharacter != NULL && m_selectedCharacter->getPosition().x == x && m_selectedCharacter->getPosition().y == y;
             gf::Sprite& tileSpr{
+                selectedTile ?
+                    m_selectedTile :
                     ((x + y) % 2 == 0) ?
                             m_darkTile :
                             m_brightTile};
-
             tileSpr.setPosition(gameToScreenPos({x, y}));
             batch.draw(tileSpr);
         }

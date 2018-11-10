@@ -35,7 +35,7 @@ enum class ActionType {
  */
 enum class CharacterType {
     Tank, ///< The Tank, who is slow but grabs and blocks other characters
-    Support, ///< The Support, who push its enemies
+    Support, ///< The Support, who push its enemies and allies
     Scout ///< The Scout, who is weak but fast
 };
 
