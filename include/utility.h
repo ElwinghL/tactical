@@ -7,6 +7,7 @@
 
 #include <gf/Vector.h>
 #include <gf/View.h>
+#include <tuple>
 
 /**
  * The different teams which fight in the game
@@ -51,6 +52,25 @@ constexpr PlayerTeam getEnemyTeam(PlayerTeam team)
 {
     return (team == PlayerTeam::Cthulhu) ? PlayerTeam::Satan : PlayerTeam::Cthulhu;
 }
+
+/**
+ * Position comparator
+ *
+ * Order positions by ascending x, then by ascending y
+ */
+struct PositionComp {
+    /**
+     * Compare the two positions
+     *
+     * \param lhs The first position
+     * \param rhs The second position
+     * \return True if the first position is "smaller" than the second one
+     */
+    bool operator()(const gf::Vector2i& lhs, const gf::Vector2i& rhs) const
+    {
+        return std::tie(lhs.x, lhs.y) < std::tie(rhs.x, rhs.y);
+    }
+};
 
 void resizeView(gf::View& view, const gf::Vector2i& gameSize);
 gf::Vector2f gameToScreenPos(const gf::Vector2i& gamePos);

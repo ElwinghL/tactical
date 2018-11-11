@@ -182,6 +182,7 @@ private:
     gf::Sprite m_darkTile{m_resMgr->getTexture("placeholders/case.png")};
     gf::Sprite m_brightTile{m_resMgr->getTexture("placeholders/case2.png")};
     gf::Sprite m_selectedTile{m_resMgr->getTexture("placeholders/caseSelected.png")};
+    gf::Sprite m_possibleTargetsTile{m_resMgr->getTexture("placeholders/casePossibleTargets.png")};
 };
 
 #endif // GAME_H

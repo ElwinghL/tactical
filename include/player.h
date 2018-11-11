@@ -14,7 +14,6 @@
 #include <array>
 #include <functional>
 #include <map>
-#include <tuple>
 
 constexpr std::size_t nbOfGoalsPerPlayer{2}; ///< The number of goal to reach for each player
 constexpr std::size_t nbOfCharactersPerPlayer{6}; ///< The number of characters each player has at the beginning of the game
@@ -143,24 +142,6 @@ public:
     bool isOnAGoal(const Character& c) const;
 
 private:
-    /**
-     * Position comparator
-     *
-     * Order positions by ascending x, then by ascending y
-     */
-    struct PositionComp {
-        /**
-         * Compare the two positions
-         *
-         * \param lhs The first position
-         * \param rhs The second position
-         * \return True if the first position is "smaller" than the second one
-         */
-        bool operator()(const gf::Vector2i& lhs, const gf::Vector2i& rhs) const
-        {
-            return std::tie(lhs.x, lhs.y) < std::tie(rhs.x, rhs.y);
-        }
-    };
 
     PlayerTeam m_team; ///< The team controlled by this player
 

@@ -10,9 +10,11 @@
 
 #include <gf/Vector.h>
 #include <gf/VectorOps.h>
+#include <gf/Array2D.h>
 
 #include <iostream>
 #include <vector>
+#include <set>
 
 #include <cassert>
 
@@ -152,6 +154,8 @@ public:
 
         return success;
     }
+    
+    std::set<gf::Vector2i, PositionComp> getAllPossibleMoves(gf::Array2D<Character*, int> board) const;
 
     /**
      * Move this character
@@ -160,9 +164,9 @@ public:
      *                 the start and the end of the movement
      * \return True if the character is able to move by this vector
      */
-    bool move(gf::Vector2i& movement)
+    bool move(gf::Vector2i& movement, const gf::Array2D<Character*, int>& board)
     {
-        bool success{canMove(movement)};
+        bool success{canMove(movement, board)};
 
         if (success) {
             m_pos += movement;
@@ -176,9 +180,10 @@ public:
      *
      * \param movement The movement vector, which is difference between
      *                 the start and the end of the movement
+     * \param board An array with all the characters
      * \return True if the character is able to move by this vector
      */
-    bool canMove(const gf::Vector2i& movement) const;
+    bool canMove(const gf::Vector2i& movement, const gf::Array2D<Character*, int>& board) const;
 
     /**
      * Give all the actions the character can do

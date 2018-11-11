@@ -296,7 +296,7 @@ bool Game::moveCharacter(Character *character, gf::Vector2i pos)
     }
     gf::Vector2i previousPos{character->getPosition()};
     gf::Vector2i relativeMove{pos - character->getPosition()};
-    if(character->move(relativeMove)){
+    if(character->move(relativeMove, m_board)){
         m_board(previousPos) = nullptr;
         m_board(pos) = character;
         return true;
@@ -314,10 +314,17 @@ void Game::drawBackground()
     for (int x{size.width - 1}; x >= 0; --x) {
         for (int y{0}; y < size.height; ++y) {
             bool selectedTile = (m_selectedCharacter && m_selectedCharacter->getPosition().x == x && m_selectedCharacter->getPosition().y == y);
+            std::set<gf::Vector2i, PositionComp> possibleTargets;
+            if(m_selectedCharacter){
+                possibleTargets = m_selectedCharacter->getAllPossibleMoves(m_board);
+            }
+            bool showPossibleTargets = (m_selectedCharacter && possibleTargets.end() != possibleTargets.find(gf::Vector2i{x,y}));
             gf::Sprite& tileSpr{
                 selectedTile ?
-                    m_selectedTile :
-                    ((x + y) % 2 == 0) ?
+                m_selectedTile :
+                    showPossibleTargets ?
+                    m_possibleTargetsTile :
+                        ((x + y) % 2 == 0) ?
                             m_darkTile :
                             m_brightTile};
             tileSpr.setPosition(gameToScreenPos({x, y}));
