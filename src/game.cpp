@@ -162,6 +162,7 @@ void Game::render()
         for (auto& c : m_characterEntities) {
             c.render(m_renderer, gf::RenderStates());
         }
+        drawUI();
     } break;
 
     case GameState::GameEnd: {
@@ -236,6 +237,9 @@ void Game::initSprites()
     m_brightTile.setAnchor(gf::Anchor::TopLeft);
     m_darkTile.setAnchor(gf::Anchor::TopLeft);
     m_selectedTile.setAnchor(gf::Anchor::TopLeft);
+    
+    m_buttonAttack.setAnchor(gf::Anchor::TopLeft);
+    m_buttonCapacity.setAnchor(gf::Anchor::TopLeft);
 }
 
 void Game::initEntities()
@@ -302,6 +306,27 @@ bool Game::moveCharacter(Character *character, gf::Vector2i pos)
         return true;
     }
     return false;
+}
+
+void Game::drawUI()
+{
+    gf::SpriteBatch batch{m_renderer};
+    batch.begin();
+    if(m_selectedCharacter){
+        //Dans l'idée, ça serait plus ergonomique d'afficher les boutons en bas à droite
+        gf::Sprite& buttonAttackSprite{m_buttonAttack};
+        //gf::Vector2i posButtonAttack{(int)m_screenSize.x - 70, (int)m_screenSize.y - 35};
+        gf::Vector2i posButtonAttack{0,80};
+        buttonAttackSprite.setPosition(posButtonAttack);
+        batch.draw(buttonAttackSprite);
+        
+        gf::Sprite& buttonCapacitySprite{m_buttonCapacity};
+        //gf::Vector2i posButtonCapacity{(int)m_screenSize.x - 35, (int)m_screenSize.y - 35};
+        gf::Vector2i posButtonCapacity{35,80};
+        buttonCapacitySprite.setPosition(posButtonCapacity);
+        batch.draw(buttonCapacitySprite);
+    }
+    batch.end();
 }
 
 void Game::drawBackground()

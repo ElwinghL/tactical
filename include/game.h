@@ -138,7 +138,15 @@ private:
      */
     bool moveCharacter(Character *character, gf::Vector2i pos);
     
+    /**
+     * Draw the background of the game
+     */
     void drawBackground();
+    
+    /**
+     * Draw the user interface of the game
+     */
+    void drawUI();
 
     const gf::Vector2u m_screenSize{1024, 576};
     const gf::Vector2f m_viewSize{100.0f, 100.0f};
@@ -189,6 +197,9 @@ private:
     gf::Sprite m_brightTile{m_resMgr->getTexture("placeholders/case2.png")};
     gf::Sprite m_selectedTile{m_resMgr->getTexture("placeholders/caseSelected.png")};
     gf::Sprite m_possibleTargetsTile{m_resMgr->getTexture("placeholders/casePossibleTargets.png")};
+    
+    gf::Sprite m_buttonAttack{m_resMgr->getTexture("placeholders/iconAttack.png")};
+    gf::Sprite m_buttonCapacity{m_resMgr->getTexture("placeholders/iconCapacity.png")};
 };
 
 #endif // GAME_H
