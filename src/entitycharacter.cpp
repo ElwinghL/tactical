@@ -3,9 +3,24 @@
 #include "utility.h"
 
 EntityCharacter::EntityCharacter(gf::ResourceManager* resMgr, const Character* characterPtr) :
-    m_characterPtr{characterPtr},
-    m_sprite{resMgr->getTexture(characterPtr->getSprite())}
+    m_characterPtr{characterPtr}
 {
+    std::string spriteName = "placeholders/character.png";
+    switch(characterPtr->getType()){
+        case CharacterType::Scout:{
+            spriteName = "placeholders/scout.png";
+            break;
+        }
+        case CharacterType::Tank:{
+            spriteName = "placeholders/tank.png";
+            break;
+        }
+        case CharacterType::Support:{
+            spriteName = "placeholders/support.png";
+            break;
+        }
+    }
+    m_sprite = gf::Sprite{resMgr->getTexture(spriteName)};
     assert(resMgr);
     assert(characterPtr);
 

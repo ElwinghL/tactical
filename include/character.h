@@ -36,20 +36,7 @@ public:
         m_pos{pos},
         m_hp{getHPMaxForType(type)}
     {
-        switch(m_type){
-            case CharacterType::Scout:{
-                m_sprite = "placeholders/scout.png";
-                break;
-            }
-            case CharacterType::Tank:{
-                m_sprite = "placeholders/tank.png";
-                break;
-            }
-            case CharacterType::Support:{
-                m_sprite = "placeholders/support.png";
-                break;
-            }
-        }
+        //Nothing
     }
 
     /**
@@ -98,14 +85,6 @@ public:
         return m_hp;
     }
     
-    /**
-     * Sprite getter
-     * \return The string of the sprite path
-     */
-    std::string getSprite() const
-    {
-        return m_sprite;
-    }
     /**
      * Tell if the character is dead
      * \return True if the character's HP is 0 (or below), false otherwise
@@ -239,7 +218,6 @@ private:
 
     PlayerTeam m_team; ///< The team this character belongs to
     CharacterType m_type; ///< This character's type
-    std::string m_sprite;
 
     gf::Vector2i m_pos; ///< This character's current position
 
