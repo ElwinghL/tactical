@@ -104,6 +104,13 @@ private:
         WaitingForAI,
         GameEnd
     };
+    
+    enum class PlayerTurnSelection {
+        NoSelection,
+        MoveSelection,
+        AttackSelection,
+        CapacitySelection
+    };
 
     void initWindow();
     void initViews();
@@ -157,6 +164,8 @@ private:
     gf::Vector2f m_mouseCoords{};
 
     GameState m_gameState{GameState::MainMenu};
+    
+    PlayerTurnSelection m_playerTurnSelection{PlayerTurnSelection::NoSelection};
 
     gf::ResourceManager* m_resMgr{nullptr};
 
@@ -198,8 +207,11 @@ private:
     gf::Sprite m_selectedTile{m_resMgr->getTexture("placeholders/caseSelected.png")};
     gf::Sprite m_possibleTargetsTile{m_resMgr->getTexture("placeholders/casePossibleTargets.png")};
     
-    gf::Sprite m_buttonAttack{m_resMgr->getTexture("placeholders/iconAttack.png")};
-    gf::Sprite m_buttonCapacity{m_resMgr->getTexture("placeholders/iconCapacity.png")};
+    gf::SpriteWidget m_buttonAttack{m_resMgr->getTexture("placeholders/iconAttack.png"),m_resMgr->getTexture("placeholders/iconAttack.png"),m_resMgr->getTexture("placeholders/iconAttack.png")};
+    gf::SpriteWidget m_buttonCapacity{m_resMgr->getTexture("placeholders/iconCapacity.png"),m_resMgr->getTexture("placeholders/iconCapacity.png"),m_resMgr->getTexture("placeholders/iconCapacity.png")};
+    
+    gf::WidgetContainer m_uiWidgets{};
+    
 };
 
 #endif // GAME_H

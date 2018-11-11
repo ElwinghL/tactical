@@ -110,9 +110,10 @@ public:
      * Tell if the character can attack another one
      *
      * \param other The other character this character is trying to attack
+     * \param board The board of the game
      * \return True if the other character may be attacked by this character
      */
-    bool canAttack(Character& other) const;
+    bool canAttack(Character& other, const gf::Array2D<Character*, int>& board) const;
 
     /**
      * Attack another character
@@ -121,18 +122,10 @@ public:
      * depends of the type of this one
      *
      * \param other The character to attack
+     * \param board The board of the game
      * \return True if the attack succeeds
      */
-    bool attack(Character& other) const
-    {
-        bool success{canAttack(other)};
-
-        if (success) {
-            other.damage(getDamageForType(m_type));
-        }
-
-        return success;
-    }
+    bool attack(Character& other, const gf::Array2D<Character*, int>& board) const;
     
     /**
      * Get a set of every possible movement for the character
@@ -140,6 +133,20 @@ public:
      * \return The set of possible relative vector movements
      */
     std::set<gf::Vector2i, PositionComp> getAllPossibleMoves(const gf::Array2D<Character*, int>& board) const;
+    
+    /**
+     * Get a set of every possible attack for the character
+     * \param board The board containing pointers to characters
+     * \return The set of possible relative vector attack
+     */
+    std::set<gf::Vector2i, PositionComp> getAllPossibleAttacks(const gf::Array2D<Character*, int>& board) const;
+    
+    /**
+     * Get a set of every possible capacity for the character
+     * \param board The board containing pointers to characters
+     * \return The set of possible relative vector capacity
+     */
+    std::set<gf::Vector2i, PositionComp> getAllPossibleCapacities(const gf::Array2D<Character*, int>& board) const;
 
     /**
      * Move this character
@@ -158,6 +165,15 @@ public:
 
         return success;
     }
+    
+    /**
+     * Use the character's capacity
+     *
+     * \param target The target vector, which is difference between
+     *                 the start and the end
+     * \return True if the character is able to use its capacity by this vector
+     */
+    bool useCapacity(gf::Vector2i& target, const gf::Array2D<Character*, int>& board);
 
     /**
      * Tell if this character can move along a given vector
@@ -168,6 +184,16 @@ public:
      * \return True if the character is able to move by this vector
      */
     bool canMove(const gf::Vector2i& movement, const gf::Array2D<Character*, int>& board) const;
+    
+        /**
+     * Tell if this character can use its capacity along a given vector
+     *
+     * \param target The target vector, which is difference between
+     *                 the start and the end
+     * \param board An array with all the characters
+     * \return True if the character is able to use its capacity by this vector
+     */
+    bool canUseCapacity(const gf::Vector2i& target, const gf::Array2D<Character*, int>& board) const;
 
     /**
      * Give all the actions the character can do
