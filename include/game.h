@@ -130,8 +130,14 @@ private:
      */
     Character *getCharacter(gf::Vector2i pos);
     
-    
+    /**
+     * Moves the character to the position
+     * \param character a pointer to the character to move
+     * \param pos the position where to move the character
+     * \return true if the character was successly moved
+     */
     bool moveCharacter(Character *character, gf::Vector2i pos);
+    
     void drawBackground();
 
     const gf::Vector2u m_screenSize{1024, 576};

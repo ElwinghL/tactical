@@ -155,7 +155,12 @@ public:
         return success;
     }
     
-    std::set<gf::Vector2i, PositionComp> getAllPossibleMoves(gf::Array2D<Character*, int> board) const;
+    /**
+     * Get a set of every possible movement for the character
+     * \param board The board containing pointers to characters
+     * \return The set of possible relative vector movements
+     */
+    std::set<gf::Vector2i, PositionComp> getAllPossibleMoves(const gf::Array2D<Character*, int>& board) const;
 
     /**
      * Move this character
