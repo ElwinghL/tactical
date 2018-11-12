@@ -111,9 +111,10 @@ public:
      *
      * \param other The other character this character is trying to attack
      * \param board The board of the game
+     * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
      * \return True if the other character may be attacked by this character
      */
-    bool canAttack(Character& other, const gf::Array2D<Character*, int>& board) const;
+    bool canAttack(Character& other, const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay = false) const;
 
     /**
      * Attack another character
@@ -130,23 +131,26 @@ public:
     /**
      * Get a set of every possible movement for the character
      * \param board The board containing pointers to characters
+     * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
      * \return The set of possible relative vector movements
      */
-    std::set<gf::Vector2i, PositionComp> getAllPossibleMoves(const gf::Array2D<Character*, int>& board) const;
+    std::set<gf::Vector2i, PositionComp> getAllPossibleMoves(const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay = false) const;
     
     /**
      * Get a set of every possible attack for the character
      * \param board The board containing pointers to characters
+     * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
      * \return The set of possible relative vector attack
      */
-    std::set<gf::Vector2i, PositionComp> getAllPossibleAttacks(const gf::Array2D<Character*, int>& board) const;
+    std::set<gf::Vector2i, PositionComp> getAllPossibleAttacks(const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay = false) const;
     
     /**
      * Get a set of every possible capacity for the character
      * \param board The board containing pointers to characters
+     * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
      * \return The set of possible relative vector capacity
      */
-    std::set<gf::Vector2i, PositionComp> getAllPossibleCapacities(const gf::Array2D<Character*, int>& board) const;
+    std::set<gf::Vector2i, PositionComp> getAllPossibleCapacities(const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay = false) const;
 
     /**
      * Move this character
@@ -181,9 +185,10 @@ public:
      * \param movement The movement vector, which is difference between
      *                 the start and the end of the movement
      * \param board An array with all the characters
+     * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
      * \return True if the character is able to move by this vector
      */
-    bool canMove(const gf::Vector2i& movement, const gf::Array2D<Character*, int>& board) const;
+    bool canMove(const gf::Vector2i& movement, const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay = false) const;
     
         /**
      * Tell if this character can use its capacity along a given vector
@@ -191,9 +196,10 @@ public:
      * \param target The target vector, which is difference between
      *                 the start and the end
      * \param board An array with all the characters
+     * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
      * \return True if the character is able to use its capacity by this vector
      */
-    bool canUseCapacity(const gf::Vector2i& target, const gf::Array2D<Character*, int>& board) const;
+    bool canUseCapacity(const gf::Vector2i& target, const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay = false) const;
 
     /**
      * Give all the actions the character can do

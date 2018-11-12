@@ -292,6 +292,8 @@ void Game::initSprites()
     m_brightTile.setAnchor(gf::Anchor::TopLeft);
     m_darkTile.setAnchor(gf::Anchor::TopLeft);
     m_selectedTile.setAnchor(gf::Anchor::TopLeft);
+    m_possibleTargetsTile.setAnchor(gf::Anchor::TopLeft);
+    m_targetsInRangeTile.setAnchor(gf::Anchor::TopLeft);
     
     m_buttonAttack.setAnchor(gf::Anchor::TopLeft);
     m_buttonCapacity.setAnchor(gf::Anchor::TopLeft);
@@ -380,41 +382,48 @@ void Game::drawBackground()
     const gf::Vector2i size{getBoardSize()};
 
     gf::SpriteBatch batch{m_renderer};
-
+    std::set<gf::Vector2i, PositionComp> possibleTargets;
+    std::set<gf::Vector2i, PositionComp> targetsInRange;
+    switch(m_playerTurnSelection){
+        case PlayerTurnSelection::MoveSelection: {
+            if(m_selectedCharacter){
+                possibleTargets = m_selectedCharacter->getAllPossibleMoves(m_board);
+                targetsInRange = m_selectedCharacter->getAllPossibleMoves(m_board, true);
+            }
+            break;
+        }
+        case PlayerTurnSelection::AttackSelection: {
+            if(m_selectedCharacter){
+                possibleTargets = m_selectedCharacter->getAllPossibleAttacks(m_board);
+                targetsInRange = m_selectedCharacter->getAllPossibleAttacks(m_board,true);
+            }
+            break;
+        }
+        case PlayerTurnSelection::CapacitySelection: {
+            if(m_selectedCharacter){
+                possibleTargets = m_selectedCharacter->getAllPossibleCapacities(m_board);
+                targetsInRange = m_selectedCharacter->getAllPossibleCapacities(m_board,true);
+            }
+            break;
+        }
+    }
     batch.begin();
     for (int x{size.width - 1}; x >= 0; --x) {
         for (int y{0}; y < size.height; ++y) {
             bool selectedTile = (m_selectedCharacter && m_selectedCharacter->getPosition().x == x && m_selectedCharacter->getPosition().y == y);
-            std::set<gf::Vector2i, PositionComp> possibleTargets;
-            switch(m_playerTurnSelection){
-                case PlayerTurnSelection::MoveSelection: {
-                    if(m_selectedCharacter){
-                        possibleTargets = m_selectedCharacter->getAllPossibleMoves(m_board);
-                    }
-                    break;
-                }
-                case PlayerTurnSelection::AttackSelection: {
-                    if(m_selectedCharacter){
-                        possibleTargets = m_selectedCharacter->getAllPossibleAttacks(m_board);
-                    }
-                    break;
-                }
-                case PlayerTurnSelection::CapacitySelection: {
-                    if(m_selectedCharacter){
-                        possibleTargets = m_selectedCharacter->getAllPossibleCapacities(m_board);
-                    }
-                    break;
-                }
-            }
+            
             bool showPossibleTargets = (m_selectedCharacter && possibleTargets.end() != possibleTargets.find(gf::Vector2i{x,y}));
+            bool showTargetsInRange = (m_selectedCharacter && targetsInRange.end() != targetsInRange.find(gf::Vector2i{x,y}));
             gf::Sprite& tileSpr{
                 selectedTile ?
                 m_selectedTile :
                     showPossibleTargets ?
                     m_possibleTargetsTile :
-                        ((x + y) % 2 == 0) ?
-                            m_darkTile :
-                            m_brightTile};
+                        showTargetsInRange ?
+                        m_targetsInRangeTile :
+                            ((x + y) % 2 == 0) ?
+                                m_darkTile :
+                                m_brightTile};
             tileSpr.setPosition(gameToScreenPos({x, y}));
             batch.draw(tileSpr);
         }

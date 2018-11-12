@@ -1,6 +1,6 @@
 #include "character.h"
 
-bool Character::canAttack(Character& other, const gf::Array2D<Character*, int>& board) const
+bool Character::canAttack(Character& other, const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay) const
 {
     if(other.getTeam() == m_team){
         return false;
@@ -11,11 +11,11 @@ bool Character::canAttack(Character& other, const gf::Array2D<Character*, int>& 
             if(abs(relative.x) <= 1 && abs(relative.y) <= 1){
                 return true;
             }
-            if((abs(relative.x) == 2 && abs(relative.y) == 0)||(abs(relative.x) == 2 && abs(relative.y) == 0)){
+            if((abs(relative.x) == 2 && abs(relative.y) == 0)||(abs(relative.y) == 2 && abs(relative.x) == 0)){
                 int xvalue = relative.x == 0 ? 0 : relative.x/abs(relative.x);
                 int yvalue = relative.y == 0 ? 0 : relative.y/abs(relative.y);
                 gf::Vector2i direction{xvalue,yvalue};
-                return !board(direction+m_pos);
+                return usedForNotPossibleDisplay || !board(direction+m_pos);
             }
             return false;
             break;
@@ -32,7 +32,7 @@ bool Character::canAttack(Character& other, const gf::Array2D<Character*, int>& 
                 int absoluteX = (direction*factor).x + m_pos.x;
                 int absoluteY = (direction*factor).y + m_pos.y;
                 if(board(gf::Vector2i{absoluteX, absoluteY})){
-                    return false;
+                    return usedForNotPossibleDisplay;
                 }
                 factor++;
             }    
@@ -56,11 +56,14 @@ bool Character::attack(Character& other, const gf::Array2D<Character*, int>& boa
     return false;
 }
 
-bool Character::canUseCapacity(const gf::Vector2i& target, const gf::Array2D<Character*, int>& board) const
+bool Character::canUseCapacity(const gf::Vector2i& target, const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay) const
 {
     switch(m_type){
         case CharacterType::Scout: {
-            return (abs(target.x) == 1 && abs(target.y) == 0) || (abs(target.x) == 0 && abs(target.y) == 1);
+            if((abs(target.x) == 1 && abs(target.y) == 0) || (abs(target.x) == 0 && abs(target.y) == 1)){
+                return usedForNotPossibleDisplay || !board(gf::Vector2i{target + m_pos});
+            }
+            return false;
             break;
         }
         case CharacterType::Support: {
@@ -71,6 +74,7 @@ bool Character::canUseCapacity(const gf::Vector2i& target, const gf::Array2D<Cha
                 if(board.isValid(absolute) && board(absolute)){
                     return true;
                 }
+                return usedForNotPossibleDisplay;
             }
             return false;
             break;
@@ -86,11 +90,11 @@ bool Character::canUseCapacity(const gf::Vector2i& target, const gf::Array2D<Cha
                     int absoluteX = (direction*factor).x + m_pos.x;
                     int absoluteY = (direction*factor).y + m_pos.y;
                     if(board(gf::Vector2i{absoluteX, absoluteY})){
-                        return false;
+                        return usedForNotPossibleDisplay;
                     }
                     factor++;
                 }
-                return board(gf::Vector2i{target+m_pos});
+                return usedForNotPossibleDisplay || board(gf::Vector2i{target+m_pos});
             }
             return false;
             break;
@@ -99,7 +103,7 @@ bool Character::canUseCapacity(const gf::Vector2i& target, const gf::Array2D<Cha
     return false;
 }
 
-bool Character::canMove(const gf::Vector2i& movement, const gf::Array2D<Character*, int>& board) const
+bool Character::canMove(const gf::Vector2i& movement, const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay) const
 {
     if(movement.x == 0 && movement.y == 0){
         //Le personnage a le droit de ne pas se déplacer
@@ -111,7 +115,7 @@ bool Character::canMove(const gf::Vector2i& movement, const gf::Array2D<Characte
     if(!board.isValid(absolute)){
         return false;
     }
-    if(board(absolute) && board(absolute) != this){
+    if(!usedForNotPossibleDisplay && board(absolute) && board(absolute) != this){
         return false;
     }
     switch(m_type){
@@ -125,7 +129,7 @@ bool Character::canMove(const gf::Vector2i& movement, const gf::Array2D<Characte
                     absoluteX = (direction*factor).x + m_pos.x;
                     absoluteY = (direction*factor).y + m_pos.y;
                     if(board(gf::Vector2i{absoluteX, absoluteY})){
-                        return false;
+                        return usedForNotPossibleDisplay;
                     }
                     factor++;
                 }
@@ -137,7 +141,7 @@ bool Character::canMove(const gf::Vector2i& movement, const gf::Array2D<Characte
             if(abs(movement.x) == 0 && abs(movement.y) == 2){
                 absoluteX = m_pos.x;
                 absoluteY = m_pos.y + movement.y/2;
-                return !board(gf::Vector2i{absoluteX,absoluteY});
+                return usedForNotPossibleDisplay || !board(gf::Vector2i{absoluteX,absoluteY});
             }
             return (abs(movement.x) <= 1 && abs(movement.y) <= 1);
         }
@@ -148,13 +152,13 @@ bool Character::canMove(const gf::Vector2i& movement, const gf::Array2D<Characte
     return true;
 }
 
-std::set<gf::Vector2i, PositionComp> Character::getAllPossibleMoves(const gf::Array2D<Character*, int>& board) const
+std::set<gf::Vector2i, PositionComp> Character::getAllPossibleMoves(const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay) const
 {
     std::set<gf::Vector2i, PositionComp> res;
     for(int i = 0; i < board.getSize().x; ++i){
         for(int j = 0; j < board.getSize().y; ++j){
             gf::Vector2i pos{i,j};
-            if(canMove(pos - m_pos, board)){
+            if(canMove(pos - m_pos, board, usedForNotPossibleDisplay)){
                 res.insert(pos);
             }
         }
@@ -162,13 +166,13 @@ std::set<gf::Vector2i, PositionComp> Character::getAllPossibleMoves(const gf::Ar
     return res;
 }
 
-std::set<gf::Vector2i, PositionComp> Character::getAllPossibleCapacities(const gf::Array2D<Character*, int>& board) const
+std::set<gf::Vector2i, PositionComp> Character::getAllPossibleCapacities(const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay) const
 {
     std::set<gf::Vector2i, PositionComp> res;
     for(int i = 0; i < board.getSize().x; ++i){
         for(int j = 0; j < board.getSize().y; ++j){
             gf::Vector2i pos{i,j};
-            if(canUseCapacity(pos - m_pos, board)){
+            if(canUseCapacity(pos - m_pos, board, usedForNotPossibleDisplay)){
                 res.insert(pos);
             }
         }
@@ -176,14 +180,19 @@ std::set<gf::Vector2i, PositionComp> Character::getAllPossibleCapacities(const g
     return res;
 }
 
-std::set<gf::Vector2i, PositionComp> Character::getAllPossibleAttacks(const gf::Array2D<Character*, int>& board) const
+std::set<gf::Vector2i, PositionComp> Character::getAllPossibleAttacks(const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay) const
 {
     std::set<gf::Vector2i, PositionComp> res;
     for(int i = 0; i < board.getSize().x; ++i){
         for(int j = 0; j < board.getSize().y; ++j){
             gf::Vector2i pos{i,j};
             Character *target = board(pos);
-            if(target && canAttack(*target, board)){
+            if(usedForNotPossibleDisplay){
+                //On simule une cible sur la case pour avoir toutes les possibilités lors de l'affichage
+                Character simulateCharacter{getEnemyTeam(m_team),CharacterType::Scout,gf::Vector2i{i,j}};
+                target = &simulateCharacter;
+            }
+            if(target && canAttack(*target, board, usedForNotPossibleDisplay)){
                 res.insert(pos);
             }
         }
