@@ -47,6 +47,15 @@ bool Character::canAttack(Character& other, const gf::Array2D<Character*, int>& 
     return true;
 }
 
+bool Character::useCapacity(gf::Vector2i& target, const gf::Array2D<Character*, int>& board)
+{
+    if(canUseCapacity(gf::Vector2i{target-m_pos},board)){
+        //TODO: Ajouter l'application de la capacité
+        return true;
+    }
+    return false;
+}
+
 bool Character::attack(Character& other, const gf::Array2D<Character*, int>& board) const
 {
     if(canAttack(other,board)){

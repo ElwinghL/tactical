@@ -157,6 +157,7 @@ public:
      *
      * \param movement The movement vector, which is difference between
      *                 the start and the end of the movement
+     * \param board The board with the characters
      * \return True if the character is able to move by this vector
      */
     bool move(gf::Vector2i& movement, const gf::Array2D<Character*, int>& board)

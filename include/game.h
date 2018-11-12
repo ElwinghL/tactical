@@ -145,6 +145,8 @@ private:
      */
     bool moveCharacter(Character *character, gf::Vector2i pos);
     
+    void stateSelectionUpdate(PlayerTurnSelection nextState);
+    
     /**
      * Draw the background of the game
      */
@@ -201,6 +203,9 @@ private:
     Character *m_selectedCharacter = NULL;
 
     gf::Array2D<Character*, int> m_board{{12, 6}, nullptr};
+    
+    std::set<gf::Vector2i, PositionComp> m_possibleTargets;
+    std::set<gf::Vector2i, PositionComp> m_targetsInRange;
 
     gf::Sprite m_darkTile{m_resMgr->getTexture("placeholders/case.png")};
     gf::Sprite m_brightTile{m_resMgr->getTexture("placeholders/case2.png")};
