@@ -5,6 +5,7 @@ project(CthulhuVsSatan
 )
 
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++14 -O0 -g")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(LATEX)
 
@@ -16,7 +17,7 @@ find_package(gf REQUIRED)
 
 add_custom_target(check
     COMMAND clang-format -style=file -i src/* include/*
-    COMMAND run-clang-tidy.py -p "${CMAKE_BINARY_DIR}" -header-filter=.* -checks=cppcoreguidelines-*,bugprone-*,misc-*,performance-*,portability-*,readability-*
+    COMMAND run-clang-tidy -p "${CMAKE_BINARY_DIR}" -header-filter=.* -checks=cppcoreguidelines-*,bugprone-*,misc-*,performance-*,portability-*,readability-*
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 

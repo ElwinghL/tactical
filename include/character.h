@@ -8,13 +8,13 @@
 #include "action.h"
 #include "utility.h"
 
+#include <gf/Array2D.h>
 #include <gf/Vector.h>
 #include <gf/VectorOps.h>
-#include <gf/Array2D.h>
 
 #include <iostream>
-#include <vector>
 #include <set>
+#include <vector>
 
 #include <cassert>
 
@@ -84,7 +84,7 @@ public:
     {
         return m_hp;
     }
-    
+
     /**
      * Tell if the character is dead
      * \return True if the character's HP is 0 (or below), false otherwise
@@ -127,7 +127,7 @@ public:
      * \return True if the attack succeeds
      */
     bool attack(Character& other, const gf::Array2D<Character*, int>& board) const;
-    
+
     /**
      * Get a set of every possible movement for the character
      * \param board The board containing pointers to characters
@@ -135,7 +135,7 @@ public:
      * \return The set of possible relative vector movements
      */
     std::set<gf::Vector2i, PositionComp> getAllPossibleMoves(const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay = false) const;
-    
+
     /**
      * Get a set of every possible attack for the character
      * \param board The board containing pointers to characters
@@ -143,7 +143,7 @@ public:
      * \return The set of possible relative vector attack
      */
     std::set<gf::Vector2i, PositionComp> getAllPossibleAttacks(const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay = false) const;
-    
+
     /**
      * Get a set of every possible capacity for the character
      * \param board The board containing pointers to characters
@@ -170,7 +170,7 @@ public:
 
         return success;
     }
-    
+
     /**
      * Use the character's capacity
      *
@@ -190,8 +190,8 @@ public:
      * \return True if the character is able to move by this vector
      */
     bool canMove(const gf::Vector2i& movement, const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay = false) const;
-    
-        /**
+
+    /**
      * Tell if this character can use its capacity along a given vector
      *
      * \param target The target vector, which is difference between

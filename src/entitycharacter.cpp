@@ -6,19 +6,19 @@ EntityCharacter::EntityCharacter(gf::ResourceManager* resMgr, const Character* c
     m_characterPtr{characterPtr}
 {
     std::string spriteName = "placeholders/character.png";
-    switch(characterPtr->getType()){
-        case CharacterType::Scout:{
-            spriteName = "placeholders/scout.png";
-            break;
-        }
-        case CharacterType::Tank:{
-            spriteName = "placeholders/tank.png";
-            break;
-        }
-        case CharacterType::Support:{
-            spriteName = "placeholders/support.png";
-            break;
-        }
+    switch (characterPtr->getType()) {
+    case CharacterType::Scout: {
+        spriteName = "placeholders/scout.png";
+        break;
+    }
+    case CharacterType::Tank: {
+        spriteName = "placeholders/tank.png";
+        break;
+    }
+    case CharacterType::Support: {
+        spriteName = "placeholders/support.png";
+        break;
+    }
     }
     m_sprite = gf::Sprite{resMgr->getTexture(spriteName)};
     assert(resMgr);

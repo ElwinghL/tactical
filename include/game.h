@@ -104,7 +104,7 @@ private:
         WaitingForAI,
         GameEnd
     };
-    
+
     enum class PlayerTurnSelection {
         NoSelection,
         MoveSelection,
@@ -120,7 +120,7 @@ private:
     void initEntities();
 
     void addCharacter(Player& player, Character&& character);
-    
+
     /**
      * Get a pointer to the character at this position, nullptr if the player
      * has no character at this position
@@ -128,30 +128,30 @@ private:
      * \param team The team of the player
      * \return The pointer to the character, or nullptr
      */
-    Character *getCharacter(gf::Vector2i pos, PlayerTeam team);
-    
+    Character* getCharacter(gf::Vector2i pos, PlayerTeam team);
+
     /**
      * Get a pointer to the character at this position, nullptr if there is no character
      * \param pos The specified position
      * \return The pointer to the character, or nullptr
      */
-    Character *getCharacter(gf::Vector2i pos);
-    
+    Character* getCharacter(gf::Vector2i pos);
+
     /**
      * Moves the character to the position
      * \param character a pointer to the character to move
      * \param pos the position where to move the character
      * \return true if the character was successly moved
      */
-    bool moveCharacter(Character *character, gf::Vector2i pos);
-    
+    bool moveCharacter(Character* character, gf::Vector2i pos);
+
     void stateSelectionUpdate(PlayerTurnSelection nextState);
-    
+
     /**
      * Draw the background of the game
      */
     void drawBackground();
-    
+
     /**
      * Draw the user interface of the game
      */
@@ -166,7 +166,7 @@ private:
     gf::Vector2f m_mouseCoords{};
 
     GameState m_gameState{GameState::MainMenu};
-    
+
     PlayerTurnSelection m_playerTurnSelection{PlayerTurnSelection::NoSelection};
 
     gf::ResourceManager* m_resMgr{nullptr};
@@ -199,11 +199,11 @@ private:
 
     HumanPlayer m_humanPlayer{PlayerTeam::Cthulhu};
     GameAI m_aiPlayer{PlayerTeam::Satan};
-    
-    Character *m_selectedCharacter = NULL;
+
+    Character* m_selectedCharacter = NULL;
 
     gf::Array2D<Character*, int> m_board{{12, 6}, nullptr};
-    
+
     std::set<gf::Vector2i, PositionComp> m_possibleTargets;
     std::set<gf::Vector2i, PositionComp> m_targetsInRange;
 
@@ -212,12 +212,11 @@ private:
     gf::Sprite m_selectedTile{m_resMgr->getTexture("placeholders/caseSelected.png")};
     gf::Sprite m_possibleTargetsTile{m_resMgr->getTexture("placeholders/casePossibleTargets.png")};
     gf::Sprite m_targetsInRangeTile{m_resMgr->getTexture("placeholders/caseTargetsInRange.png")};
-    
-    gf::SpriteWidget m_buttonAttack{m_resMgr->getTexture("placeholders/iconAttack.png"),m_resMgr->getTexture("placeholders/iconAttack.png"),m_resMgr->getTexture("placeholders/iconAttack.png")};
-    gf::SpriteWidget m_buttonCapacity{m_resMgr->getTexture("placeholders/iconCapacity.png"),m_resMgr->getTexture("placeholders/iconCapacity.png"),m_resMgr->getTexture("placeholders/iconCapacity.png")};
-    
+
+    gf::SpriteWidget m_buttonAttack{m_resMgr->getTexture("placeholders/iconAttack.png"), m_resMgr->getTexture("placeholders/iconAttack.png"), m_resMgr->getTexture("placeholders/iconAttack.png")};
+    gf::SpriteWidget m_buttonCapacity{m_resMgr->getTexture("placeholders/iconCapacity.png"), m_resMgr->getTexture("placeholders/iconCapacity.png"), m_resMgr->getTexture("placeholders/iconCapacity.png")};
+
     gf::WidgetContainer m_uiWidgets{};
-    
 };
 
 #endif // GAME_H

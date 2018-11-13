@@ -56,73 +56,73 @@ void Game::processEvents()
     } break;
 
     case GameState::PlayerTurn: {
-        Player *activePlayer = &m_humanPlayer;
-        Player *enemyPlayer = &m_aiPlayer;
+        Player* activePlayer = &m_humanPlayer;
+        Player* enemyPlayer = &m_aiPlayer;
         if (m_leftClickAction.isActive()) {
             gf::Vector2i tile{screenToGamePos(m_mouseCoords)};
             std::cout << "(" << tile.x << ", " << tile.y << ")" << std::endl;
             bool targetIsEmpty = false;
-            if(m_selectedCharacter){
+            if (m_selectedCharacter) {
                 targetIsEmpty = (!getCharacter(tile));
             }
-            if(m_selectedCharacter && m_buttonAttack.contains(m_mouseCoords)){
+            if (m_selectedCharacter && m_buttonAttack.contains(m_mouseCoords)) {
                 stateSelectionUpdate(PlayerTurnSelection::AttackSelection);
                 break;
             }
-            if(m_selectedCharacter && m_buttonCapacity.contains(m_mouseCoords)){
+            if (m_selectedCharacter && m_buttonCapacity.contains(m_mouseCoords)) {
                 stateSelectionUpdate(PlayerTurnSelection::CapacitySelection);
                 break;
             }
-            switch(m_playerTurnSelection){
-                case PlayerTurnSelection::NoSelection: {
-                    if(!getCharacter(tile,activePlayer->getTeam())){
+            switch (m_playerTurnSelection) {
+            case PlayerTurnSelection::NoSelection: {
+                if (!getCharacter(tile, activePlayer->getTeam())) {
+                    m_selectedCharacter = nullptr;
+                    stateSelectionUpdate(PlayerTurnSelection::NoSelection);
+                } else {
+                    m_selectedCharacter = getCharacter(tile, activePlayer->getTeam());
+                    stateSelectionUpdate(PlayerTurnSelection::MoveSelection);
+                }
+                break;
+            }
+            case PlayerTurnSelection::MoveSelection: {
+                if (getCharacter(tile, activePlayer->getTeam()) && getCharacter(tile, activePlayer->getTeam()) != m_selectedCharacter) {
+                    m_selectedCharacter = getCharacter(tile, activePlayer->getTeam());
+                    stateSelectionUpdate(PlayerTurnSelection::MoveSelection);
+                } else if (moveCharacter(m_selectedCharacter, tile)) {
+                    stateSelectionUpdate(PlayerTurnSelection::AttackSelection);
+                } else {
+                    m_selectedCharacter = nullptr;
+                    stateSelectionUpdate(PlayerTurnSelection::NoSelection);
+                }
+
+                break;
+            }
+            case PlayerTurnSelection::AttackSelection: {
+                if (!targetIsEmpty) {
+                    Character* target = getCharacter(tile, enemyPlayer->getTeam());
+                    if (target && m_selectedCharacter->attack(*target, m_board)) {
                         m_selectedCharacter = nullptr;
                         stateSelectionUpdate(PlayerTurnSelection::NoSelection);
-                    }else{
-                        m_selectedCharacter = getCharacter(tile,activePlayer->getTeam());
-                        stateSelectionUpdate(PlayerTurnSelection::MoveSelection);
-                    }
-                    break;
-                }
-                case PlayerTurnSelection::MoveSelection: {
-                    if(getCharacter(tile,activePlayer->getTeam()) && getCharacter(tile,activePlayer->getTeam()) != m_selectedCharacter){
-                        m_selectedCharacter = getCharacter(tile,activePlayer->getTeam());
-                        stateSelectionUpdate(PlayerTurnSelection::MoveSelection);
-                    }else if(moveCharacter(m_selectedCharacter,tile)){
-                        stateSelectionUpdate(PlayerTurnSelection::AttackSelection);
-                    }else{
-                        m_selectedCharacter = nullptr;
-                        stateSelectionUpdate(PlayerTurnSelection::NoSelection);
-                    }
-                    
-                    break;
-                }
-                case PlayerTurnSelection::AttackSelection: {
-                    if(!targetIsEmpty){
-                        Character *target = getCharacter(tile,enemyPlayer->getTeam());
-                        if(target && m_selectedCharacter->attack(*target,m_board)){
-                            m_selectedCharacter = nullptr;
-                            stateSelectionUpdate(PlayerTurnSelection::NoSelection);
-                        }else{
-                            m_selectedCharacter = nullptr;
-                            stateSelectionUpdate(PlayerTurnSelection::NoSelection);
-                        }
-                    }else{
+                    } else {
                         m_selectedCharacter = nullptr;
                         stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                     }
-                    break;
+                } else {
+                    m_selectedCharacter = nullptr;
+                    stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                 }
-                case PlayerTurnSelection::CapacitySelection: {
-                    if(m_selectedCharacter && m_selectedCharacter->useCapacity(tile,m_board)){
-                        m_selectedCharacter = nullptr;
-                        stateSelectionUpdate(PlayerTurnSelection::NoSelection);
-                    }else{
-                        m_selectedCharacter = nullptr;
-                        stateSelectionUpdate(PlayerTurnSelection::NoSelection);
-                    }
-                    break;
+                break;
+            }
+            case PlayerTurnSelection::CapacitySelection: {
+                if (m_selectedCharacter && m_selectedCharacter->useCapacity(tile, m_board)) {
+                    m_selectedCharacter = nullptr;
+                    stateSelectionUpdate(PlayerTurnSelection::NoSelection);
+                } else {
+                    m_selectedCharacter = nullptr;
+                    stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                 }
+                break;
+            }
             }
         }
     } break;
@@ -142,22 +142,22 @@ void Game::stateSelectionUpdate(PlayerTurnSelection nextState)
     //Mise à jour des cases à surligner visuellement :
     m_possibleTargets.clear();
     m_targetsInRange.clear();
-    switch(nextState){
-        case PlayerTurnSelection::MoveSelection: {
-            m_possibleTargets = m_selectedCharacter->getAllPossibleMoves(m_board);
-            m_targetsInRange = m_selectedCharacter->getAllPossibleMoves(m_board, true);
-            break;
-        }
-        case PlayerTurnSelection::AttackSelection: {
-            m_possibleTargets = m_selectedCharacter->getAllPossibleAttacks(m_board);
-            m_targetsInRange = m_selectedCharacter->getAllPossibleAttacks(m_board, true);
-            break;
-        }
-        case PlayerTurnSelection::CapacitySelection: {
-            m_possibleTargets = m_selectedCharacter->getAllPossibleCapacities(m_board);
-            m_targetsInRange = m_selectedCharacter->getAllPossibleCapacities(m_board, true);
-            break;
-        }
+    switch (nextState) {
+    case PlayerTurnSelection::MoveSelection: {
+        m_possibleTargets = m_selectedCharacter->getAllPossibleMoves(m_board);
+        m_targetsInRange = m_selectedCharacter->getAllPossibleMoves(m_board, true);
+        break;
+    }
+    case PlayerTurnSelection::AttackSelection: {
+        m_possibleTargets = m_selectedCharacter->getAllPossibleAttacks(m_board);
+        m_targetsInRange = m_selectedCharacter->getAllPossibleAttacks(m_board, true);
+        break;
+    }
+    case PlayerTurnSelection::CapacitySelection: {
+        m_possibleTargets = m_selectedCharacter->getAllPossibleCapacities(m_board);
+        m_targetsInRange = m_selectedCharacter->getAllPossibleCapacities(m_board, true);
+        break;
+    }
     }
     m_playerTurnSelection = nextState;
 }
@@ -285,7 +285,7 @@ void Game::initWidgets()
     m_title.setAnchor(gf::Anchor::BottomCenter);
     m_title.setColor(gf::Color::Black);
     m_title.setPosition(gf::Vector2f{0.0f, -100.0f});
-    
+
     m_uiWidgets.addWidget(m_buttonAttack);
     m_uiWidgets.addWidget(m_buttonCapacity);
 
@@ -322,7 +322,7 @@ void Game::initSprites()
     m_selectedTile.setAnchor(gf::Anchor::TopLeft);
     m_possibleTargetsTile.setAnchor(gf::Anchor::TopLeft);
     m_targetsInRangeTile.setAnchor(gf::Anchor::TopLeft);
-    
+
     m_buttonAttack.setAnchor(gf::Anchor::TopLeft);
     m_buttonCapacity.setAnchor(gf::Anchor::TopLeft);
 }
@@ -362,30 +362,30 @@ void Game::addCharacter(Player& player, Character&& character)
     }
 }
 
-Character *Game::getCharacter(gf::Vector2i pos, PlayerTeam team)
+Character* Game::getCharacter(gf::Vector2i pos, PlayerTeam team)
 {
-    if(positionIsValid(pos) && m_board(pos) && m_board(pos)->getTeam() == team){
+    if (positionIsValid(pos) && m_board(pos) && m_board(pos)->getTeam() == team) {
         return m_board(pos);
     }
     return nullptr;
 }
 
-Character *Game::getCharacter(gf::Vector2i pos)
+Character* Game::getCharacter(gf::Vector2i pos)
 {
-    if(positionIsValid(pos)){
+    if (positionIsValid(pos)) {
         return m_board(pos);
     }
     return nullptr;
 }
 
-bool Game::moveCharacter(Character *character, gf::Vector2i pos)
+bool Game::moveCharacter(Character* character, gf::Vector2i pos)
 {
-    if(!character || !positionIsValid(pos)){
+    if (!character || !positionIsValid(pos)) {
         return false;
     }
     gf::Vector2i previousPos{character->getPosition()};
     gf::Vector2i relativeMove{pos - character->getPosition()};
-    if(character->move(relativeMove, m_board)){
+    if (character->move(relativeMove, m_board)) {
         m_board(previousPos) = nullptr;
         m_board(pos) = character;
         return true;
@@ -395,11 +395,11 @@ bool Game::moveCharacter(Character *character, gf::Vector2i pos)
 
 void Game::drawUI()
 {
-    if(m_selectedCharacter){
+    if (m_selectedCharacter) {
         //Dans l'idée, ça serait plus ergonomique d'afficher les boutons en bas à droite
-        gf::Vector2i posButtonAttack{0,80};
+        gf::Vector2i posButtonAttack{0, 80};
         m_buttonAttack.setPosition(posButtonAttack);
-        gf::Vector2i posButtonCapacity{35,80};
+        gf::Vector2i posButtonCapacity{35, 80};
         m_buttonCapacity.setPosition(posButtonCapacity);
         m_uiWidgets.render(m_renderer);
     }
@@ -414,18 +414,18 @@ void Game::drawBackground()
     for (int x{size.width - 1}; x >= 0; --x) {
         for (int y{0}; y < size.height; ++y) {
             bool selectedTile = (m_selectedCharacter && m_selectedCharacter->getPosition().x == x && m_selectedCharacter->getPosition().y == y);
-            bool showPossibleTargets = (m_selectedCharacter && m_possibleTargets.end() != m_possibleTargets.find(gf::Vector2i{x,y}));
-            bool showTargetsInRange = (m_selectedCharacter && m_targetsInRange.end() != m_targetsInRange.find(gf::Vector2i{x,y}));
+            bool showPossibleTargets = (m_selectedCharacter && m_possibleTargets.end() != m_possibleTargets.find(gf::Vector2i{x, y}));
+            bool showTargetsInRange = (m_selectedCharacter && m_targetsInRange.end() != m_targetsInRange.find(gf::Vector2i{x, y}));
             gf::Sprite& tileSpr{
-                selectedTile ?
-                m_selectedTile :
-                    showPossibleTargets ?
-                    m_possibleTargetsTile :
-                        showTargetsInRange ?
-                        m_targetsInRangeTile :
+                    selectedTile ?
+                            m_selectedTile :
+                            showPossibleTargets ?
+                            m_possibleTargetsTile :
+                            showTargetsInRange ?
+                            m_targetsInRangeTile :
                             ((x + y) % 2 == 0) ?
-                                m_darkTile :
-                                m_brightTile};
+                            m_darkTile :
+                            m_brightTile};
             tileSpr.setPosition(gameToScreenPos({x, y}));
             batch.draw(tileSpr);
         }

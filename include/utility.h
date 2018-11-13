@@ -7,6 +7,7 @@
 
 #include <gf/Vector.h>
 #include <gf/View.h>
+
 #include <tuple>
 
 /**

@@ -23,22 +23,20 @@ public:
     {
         // Nothing
     }
-    
+
     /**
      * Constructor
      * \param team The team the human controls
      * \param playFirst Set it to true to make this player the first one
      */
     explicit HumanPlayer(PlayerTeam team, bool playFirst) :
-        Player{team,playFirst}
+        Player{team, playFirst}
     {
         //Nothing
     }
-    
-    
+
 
 private:
-    
 };
 
 #endif // HUMANPLAYER_H
