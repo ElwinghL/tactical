@@ -414,18 +414,20 @@ void Game::drawBackground()
     for (int x{size.width - 1}; x >= 0; --x) {
         for (int y{0}; y < size.height; ++y) {
             bool selectedTile = (m_selectedCharacter && m_selectedCharacter->getPosition().x == x && m_selectedCharacter->getPosition().y == y);
-            bool showPossibleTargets = (m_selectedCharacter && m_possibleTargets.end() != m_possibleTargets.find(gf::Vector2i{x, y}));
-            bool showTargetsInRange = (m_selectedCharacter && m_targetsInRange.end() != m_targetsInRange.find(gf::Vector2i{x, y}));
-            gf::Sprite& tileSpr{
-                    selectedTile ?
-                            m_selectedTile :
-                            showPossibleTargets ?
-                            m_possibleTargetsTile :
-                            showTargetsInRange ?
-                            m_targetsInRangeTile :
-                            ((x + y) % 2 == 0) ?
-                            m_darkTile :
-                            m_brightTile};
+            bool showPossibleTargets = (m_selectedCharacter && m_possibleTargets.end() != m_possibleTargets.find(gf::Vector2i{x,y}));
+            bool showTargetsInRange = (m_selectedCharacter && m_targetsInRange.end() != m_targetsInRange.find(gf::Vector2i{x,y}));
+            gf::Sprite tileSpr;
+            if (selectedTile) {
+                tileSpr = gf::Sprite(m_selectedTile);
+            } else if (showPossibleTargets) {
+                tileSpr = gf::Sprite(m_possibleTargetsTile);
+            } else if (showTargetsInRange) {
+                tileSpr = gf::Sprite(m_targetsInRangeTile);
+            } else if ((x + y) % 2 == 0) {
+                tileSpr = gf::Sprite(m_darkTile);
+            } else {
+                tileSpr = gf::Sprite(m_brightTile);
+            }
             tileSpr.setPosition(gameToScreenPos({x, y}));
             batch.draw(tileSpr);
         }
