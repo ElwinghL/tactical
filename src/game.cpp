@@ -88,7 +88,7 @@ void Game::processEvents()
                 if (getCharacter(tile, activePlayer->getTeam()) && getCharacter(tile, activePlayer->getTeam()) != m_selectedCharacter) {
                     m_selectedCharacter = getCharacter(tile, activePlayer->getTeam());
                     stateSelectionUpdate(PlayerTurnSelection::MoveSelection);
-                } else if (moveCharacter(m_selectedCharacter, tile)) {
+                } else if (m_selectedCharacter && m_selectedCharacter->getPosition() != tile && moveCharacter(m_selectedCharacter, tile)) {
                     stateSelectionUpdate(PlayerTurnSelection::AttackSelection);
                 } else {
                     m_selectedCharacter = nullptr;
