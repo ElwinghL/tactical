@@ -219,13 +219,14 @@ std::vector<Action> Character::getPossibleActions(const gf::Array2D<Character*, 
         Character character = Character(getTeam(), getType(), getPosition());
         thisBoard(character.getPosition()) = nullptr;
         thisBoard(*it) = &character;
+        character.move(*it - character.getPosition(), thisBoard);
         
-        std::set<gf::Vector2i, PositionComp> possibleCapacities = getAllPossibleCapacities(thisBoard);
+        std::set<gf::Vector2i, PositionComp> possibleCapacities = character.getAllPossibleCapacities(thisBoard);
         for (auto it_a = possibleCapacities.cbegin(); it_a != possibleCapacities.cend(); ++it_a) {
             res.push_back(Action(*this, ActionType::Capacity, *it-m_pos, *it_a));
         }
         
-        std::set<gf::Vector2i, PositionComp> possibleAttacks = getAllPossibleAttacks(thisBoard);
+        std::set<gf::Vector2i, PositionComp> possibleAttacks = character.getAllPossibleAttacks(thisBoard);
         for (auto it_a = possibleAttacks.cbegin(); it_a != possibleAttacks.cend(); ++it_a) {
             res.push_back(Action(*this, ActionType::Attack, *it-m_pos, *it_a));
         }

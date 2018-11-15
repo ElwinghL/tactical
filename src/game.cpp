@@ -94,7 +94,6 @@ void Game::processEvents()
                     m_selectedCharacter = nullptr;
                     stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                 }
-
                 break;
             }
             case PlayerTurnSelection::AttackSelection: {
@@ -144,6 +143,23 @@ void Game::stateSelectionUpdate(PlayerTurnSelection nextState)
     m_targetsInRange.clear();
     switch (nextState) {
     case PlayerTurnSelection::MoveSelection: {
+    
+        std::vector<Action> actions = m_selectedCharacter->getPossibleActions(m_board);
+        for(size_t i = 0; i < actions.size(); ++i){
+            std::cout << "Move : (" << m_selectedCharacter->getPosition().x+actions[i].getMove().x << ";" << m_selectedCharacter->getPosition().y+actions[i].getMove().y << ")\t";
+            ActionType type = actions[i].getType();
+            switch(type){
+                case ActionType::Attack: {
+                    std::cout << "Attack : (" << actions[i].getTarget().x << ";" << actions[i].getTarget().y << ")";
+                    break;
+                }
+                case ActionType::Capacity: {
+                    std::cout << "Capacity : (" << actions[i].getTarget().x << ";" << actions[i].getTarget().y << ")";
+                    break;
+                }
+            }
+                        std::cout << "\n";
+        }
         m_possibleTargets = m_selectedCharacter->getAllPossibleMoves(m_board);
         m_targetsInRange = m_selectedCharacter->getAllPossibleMoves(m_board, true);
         break;

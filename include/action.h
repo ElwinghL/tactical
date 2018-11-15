@@ -82,6 +82,21 @@ public:
      * Execute this action. The character moves then attacks or uses a capacity
      */
     void execute();
+    
+    gf::Vector2i getMove() const
+    {
+        return m_move;
+    }
+    
+    gf::Vector2i getTarget() const
+    {
+        return m_target;
+    }
+    
+    ActionType getType() const
+    {
+        return m_type;
+    }
 
 private:
     Character& m_character; ///< The character who is doing this action
