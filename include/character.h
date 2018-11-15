@@ -18,6 +18,8 @@
 
 #include <cassert>
 
+class Action;
+
 /**
  * Represent a playable character
  */
@@ -114,7 +116,7 @@ public:
      * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
      * \return True if the other character may be attacked by this character
      */
-    bool canAttack(Character& other, const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay = false) const;
+    bool canAttack(const Character& other, const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay = false) const;
 
     /**
      * Attack another character
@@ -160,7 +162,7 @@ public:
      * \param board The board with the characters
      * \return True if the character is able to move by this vector
      */
-    bool move(gf::Vector2i& movement, const gf::Array2D<Character*, int>& board)
+    bool move(const gf::Vector2i& movement, const gf::Array2D<Character*, int>& board)
     {
         bool success{canMove(movement, board)};
 
@@ -204,9 +206,10 @@ public:
 
     /**
      * Give all the actions the character can do
+     * \param board The board
      * \return A vector with all the possible actions
      */
-    std::vector<Action> getPossibleActions();
+    std::vector<Action> getPossibleActions(const gf::Array2D<Character*, int>& board);
 
 private:
     /**

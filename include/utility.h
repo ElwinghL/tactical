@@ -25,8 +25,7 @@ enum class PlayerTeam {
  */
 enum class ActionType {
     Attack, ///< The character attacks
-    Capacity1, ///< The character uses its first capacity
-    Capacity2, ///< The character uses its second capacity
+    Capacity, ///< The character uses its capacity
     None ///< The character does nothing, i.e. it just moves
 };
 

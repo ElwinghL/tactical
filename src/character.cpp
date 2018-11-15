@@ -1,6 +1,6 @@
 #include "character.h"
 
-bool Character::canAttack(Character& other, const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay) const
+bool Character::canAttack(const Character& other, const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay) const
 {
     if (other.getTeam() == m_team) {
         return false;
@@ -208,7 +208,28 @@ std::set<gf::Vector2i, PositionComp> Character::getAllPossibleAttacks(const gf::
     return res;
 }
 
-std::vector<Action> getPossibleActions()
+std::vector<Action> Character::getPossibleActions(const gf::Array2D<Character*, int>& board)
 {
-    return std::vector<Action>{};
+    std::vector<Action> res = std::vector<Action>{};
+    std::set<gf::Vector2i, PositionComp> possibleMovements = getAllPossibleMoves(board);
+    for (auto it = possibleMovements.cbegin(); it != possibleMovements.cend(); ++it) {
+        res.push_back(Action(*this, ActionType::None, *it-m_pos, gf::Vector2i{0,0}));
+        
+        gf::Array2D<Character*, int> thisBoard{board};
+        Character character = Character(getTeam(), getType(), getPosition());
+        thisBoard(character.getPosition()) = nullptr;
+        thisBoard(*it) = &character;
+        
+        std::set<gf::Vector2i, PositionComp> possibleCapacities = getAllPossibleCapacities(thisBoard);
+        for (auto it_a = possibleCapacities.cbegin(); it_a != possibleCapacities.cend(); ++it_a) {
+            res.push_back(Action(*this, ActionType::Capacity, *it-m_pos, *it_a));
+        }
+        
+        std::set<gf::Vector2i, PositionComp> possibleAttacks = getAllPossibleAttacks(thisBoard);
+        for (auto it_a = possibleAttacks.cbegin(); it_a != possibleAttacks.cend(); ++it_a) {
+            res.push_back(Action(*this, ActionType::Attack, *it-m_pos, *it_a));
+        }
+    }
+    
+    return res;
 }

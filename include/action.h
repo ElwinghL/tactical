@@ -6,8 +6,10 @@
 #define ACTION_H
 
 #include "utility.h"
+#include "character.h"
 
 #include <gf/Vector.h>
+#include <gf/Array2D.h>
 
 class Character;
 
@@ -71,10 +73,10 @@ public:
      *
      * For example, an attack action is valid if the movement is not blocked, if it is
      * in the bounds and if there is an enemy character at the targeted position.
-     *
+     * \param board The board of the game
      * \return True if this action is valid, false otherwise
      */
-    bool isValid() const;
+    bool isValid(gf::Array2D<Character*, int> board) const;
 
     /*
      * Execute this action. The character moves then attacks or uses a capacity
