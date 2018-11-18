@@ -57,7 +57,7 @@ void Game::processEvents()
     } break;
 
     case GameState::PlayerTurn: {
-        Player* activePlayer = &m_humanPlayer;
+        HumanPlayer* activePlayer = &m_humanPlayer;
         Player* enemyPlayer = &m_aiPlayer;
         if (m_leftClickAction.isActive()) {
             gf::Vector2i tile{screenToGamePos(m_mouseCoords)};
@@ -72,6 +72,12 @@ void Game::processEvents()
             }
             if (m_selectedCharacter && m_buttonCapacity.contains(m_mouseCoords)) {
                 stateSelectionUpdate(PlayerTurnSelection::CapacitySelection);
+                break;
+            }
+            if (m_selectedCharacter && m_buttonPass.contains(m_mouseCoords)) {
+                stateSelectionUpdate(PlayerTurnSelection::NoSelection);
+                m_selectedCharacter = nullptr;
+                switchTurn();
                 break;
             }
             switch (m_playerTurnSelection) {
@@ -90,7 +96,7 @@ void Game::processEvents()
                     m_selectedCharacter = getCharacter(tile, activePlayer->getTeam());
                     stateSelectionUpdate(PlayerTurnSelection::MoveSelection);
                 } else if (m_selectedCharacter && m_selectedCharacter->getPosition() != tile && moveCharacter(m_selectedCharacter, tile)) {
-                    switchTurn();
+                    activePlayer->setMoved(true);
                     stateSelectionUpdate(PlayerTurnSelection::AttackSelection);
                 } else {
                     m_selectedCharacter = nullptr;
@@ -104,11 +110,12 @@ void Game::processEvents()
                     if (target && m_selectedCharacter->attack(*target, m_board)) {
                         m_selectedCharacter = nullptr;
                         stateSelectionUpdate(PlayerTurnSelection::NoSelection);
-                    } else {
+                        switchTurn();
+                    } else if (!activePlayer->hasMoved()) {
                         m_selectedCharacter = nullptr;
                         stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                     }
-                } else {
+                } else if (!activePlayer->hasMoved()) {
                     m_selectedCharacter = nullptr;
                     stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                 }
@@ -118,7 +125,8 @@ void Game::processEvents()
                 if (m_selectedCharacter && m_selectedCharacter->useCapacity(tile, m_board)) {
                     m_selectedCharacter = nullptr;
                     stateSelectionUpdate(PlayerTurnSelection::NoSelection);
-                } else {
+                    switchTurn();
+                } else if (!activePlayer->hasMoved()) {
                     m_selectedCharacter = nullptr;
                     stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                 }
@@ -129,8 +137,9 @@ void Game::processEvents()
     } break;
 
     case GameState::WaitingForAI: {
-        m_aiPlayer.playTurn(&m_board);
         std::cout << "L'IA joue\n";
+        sleep(1); //temporaire, pour vraiment voir le tour de l'adversaire
+        m_aiPlayer.playTurn(&m_board);
         switchTurn();
     } break;
 
@@ -309,6 +318,7 @@ void Game::initWidgets()
 
     m_uiWidgets.addWidget(m_buttonAttack);
     m_uiWidgets.addWidget(m_buttonCapacity);
+    m_uiWidgets.addWidget(m_buttonPass);
 
     auto buttonInit = [this](gf::TextButtonWidget& button, gf::Anchor anchor, const gf::Vector2f& posToCenter) {
         button.setAnchor(anchor);
@@ -346,6 +356,7 @@ void Game::initSprites()
 
     m_buttonAttack.setAnchor(gf::Anchor::TopLeft);
     m_buttonCapacity.setAnchor(gf::Anchor::TopLeft);
+    m_buttonPass.setAnchor(gf::Anchor::TopLeft);
 }
 
 void Game::initEntities()
@@ -422,6 +433,8 @@ void Game::drawUI()
         m_buttonAttack.setPosition(posButtonAttack);
         gf::Vector2i posButtonCapacity{35, 80};
         m_buttonCapacity.setPosition(posButtonCapacity);
+        gf::Vector2i posButtonPass{70, 80};
+        m_buttonPass.setPosition(posButtonPass);
         m_uiWidgets.render(m_renderer);
     }
 }
@@ -464,5 +477,6 @@ void Game::switchTurn()
         m_gameState = GameState::WaitingForAI;
     } else if (m_gameState == GameState::WaitingForAI) {
         m_gameState = GameState::PlayerTurn;
+        m_humanPlayer.setMoved(false);
     }
 }
