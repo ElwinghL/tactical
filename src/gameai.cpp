@@ -18,4 +18,5 @@ void GameAI::playTurn(gf::Array2D<Character*, int> *board){
     }
     size_t randAction = rand() % allActions.size();
     allActions[randAction].execute(board);
+    std::cout << "Possible actions : " << allActions.size() << "\n";
 }
