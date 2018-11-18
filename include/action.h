@@ -81,7 +81,7 @@ public:
     /*
      * Execute this action. The character moves then attacks or uses a capacity
      */
-    void execute();
+    void execute(gf::Array2D<Character*, int> *board);
     
     gf::Vector2i getMove() const
     {

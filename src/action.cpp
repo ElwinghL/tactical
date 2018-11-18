@@ -29,6 +29,23 @@ bool Action::isValid(gf::Array2D<Character*, int> board) const
     return false;
 }
 
-void Action::execute()
+void Action::execute(gf::Array2D<Character*, int> *board)
 {
+    if (board == nullptr) {
+       return; 
+    }
+    Character *oldP = (*board)(m_character.getPosition());
+    (*board)(m_character.getPosition()) = nullptr;
+    m_character.move(m_move, *board);
+    (*board)(m_character.getPosition()) = oldP;
+    switch(m_type){
+        case ActionType::Capacity: {
+            m_character.useCapacity(m_target, *board);
+            break;
+        }
+        case ActionType::Attack: {
+            m_character.attack(*(*board)(m_target), *board);
+            break;
+        }
+    }
 }

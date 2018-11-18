@@ -31,6 +31,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <stdlib.h>
+#include <time.h>
 
 /**
  * The game core class
@@ -156,6 +158,11 @@ private:
      * Draw the user interface of the game
      */
     void drawUI();
+    
+    /**
+     * Switch turn
+     */
+    void switchTurn();
 
     const gf::Vector2u m_screenSize{1024, 576};
     const gf::Vector2f m_viewSize{100.0f, 100.0f};

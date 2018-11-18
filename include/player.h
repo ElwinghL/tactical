@@ -98,6 +98,14 @@ public:
     {
         return m_theirTurn;
     }
+    
+    /**
+     * Switch turn
+     */
+    void switchTurn()
+    {
+        m_theirTurn = !m_theirTurn;
+    }
 
     /**
      * Tell if the this player win the game
@@ -141,7 +149,7 @@ public:
      */
     bool isOnAGoal(const Character& c) const;
 
-private:
+protected:
     PlayerTeam m_team; ///< The team controlled by this player
 
     bool m_theirTurn{true}; ///< Can the player play?

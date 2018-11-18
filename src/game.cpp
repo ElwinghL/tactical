@@ -10,6 +10,7 @@
 Game::Game(gf::ResourceManager* resMgr) :
     m_resMgr{resMgr}
 {
+    srand(time(NULL));
     initWindow();
     initViews();
     initActions();
@@ -89,6 +90,7 @@ void Game::processEvents()
                     m_selectedCharacter = getCharacter(tile, activePlayer->getTeam());
                     stateSelectionUpdate(PlayerTurnSelection::MoveSelection);
                 } else if (m_selectedCharacter && m_selectedCharacter->getPosition() != tile && moveCharacter(m_selectedCharacter, tile)) {
+                    switchTurn();
                     stateSelectionUpdate(PlayerTurnSelection::AttackSelection);
                 } else {
                     m_selectedCharacter = nullptr;
@@ -127,6 +129,9 @@ void Game::processEvents()
     } break;
 
     case GameState::WaitingForAI: {
+        m_aiPlayer.playTurn(&m_board);
+        std::cout << "L'IA joue\n";
+        switchTurn();
     } break;
 
     case GameState::GameEnd: {
@@ -146,19 +151,19 @@ void Game::stateSelectionUpdate(PlayerTurnSelection nextState)
     
         std::vector<Action> actions = m_selectedCharacter->getPossibleActions(m_board);
         for(size_t i = 0; i < actions.size(); ++i){
-            std::cout << "Move : (" << m_selectedCharacter->getPosition().x+actions[i].getMove().x << ";" << m_selectedCharacter->getPosition().y+actions[i].getMove().y << ")\t";
+            //std::cout << "Move : (" << m_selectedCharacter->getPosition().x+actions[i].getMove().x << ";" << m_selectedCharacter->getPosition().y+actions[i].getMove().y << ")\t";
             ActionType type = actions[i].getType();
             switch(type){
                 case ActionType::Attack: {
-                    std::cout << "Attack : (" << actions[i].getTarget().x << ";" << actions[i].getTarget().y << ")";
+                    //std::cout << "Attack : (" << actions[i].getTarget().x << ";" << actions[i].getTarget().y << ")";
                     break;
                 }
                 case ActionType::Capacity: {
-                    std::cout << "Capacity : (" << actions[i].getTarget().x << ";" << actions[i].getTarget().y << ")";
+                    //std::cout << "Capacity : (" << actions[i].getTarget().x << ";" << actions[i].getTarget().y << ")";
                     break;
                 }
             }
-                        std::cout << "\n";
+                        //std::cout << "\n";
         }
         m_possibleTargets = m_selectedCharacter->getAllPossibleMoves(m_board);
         m_targetsInRange = m_selectedCharacter->getAllPossibleMoves(m_board, true);
@@ -449,4 +454,15 @@ void Game::drawBackground()
         }
     }
     batch.end();
+}
+
+void Game::switchTurn()
+{
+    m_aiPlayer.switchTurn();
+    m_humanPlayer.switchTurn();
+    if (m_gameState == GameState::PlayerTurn) {
+        m_gameState = GameState::WaitingForAI;
+    } else if (m_gameState == GameState::WaitingForAI) {
+        m_gameState = GameState::PlayerTurn;
+    }
 }
