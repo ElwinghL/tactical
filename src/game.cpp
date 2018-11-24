@@ -362,7 +362,11 @@ void Game::initSprites()
     m_selectedTile.setAnchor(gf::Anchor::TopLeft);
     m_possibleTargetsTile.setAnchor(gf::Anchor::TopLeft);
     m_targetsInRangeTile.setAnchor(gf::Anchor::TopLeft);
-
+    m_goalCthulhu.setAnchor(gf::Anchor::TopLeft);
+    m_goalCthulhuActivated.setAnchor(gf::Anchor::TopLeft);
+    m_goalSatan.setAnchor(gf::Anchor::TopLeft);
+    m_goalSatanActivated.setAnchor(gf::Anchor::TopLeft);
+    
     m_buttonAttack.setAnchor(gf::Anchor::TopLeft);
     m_buttonCapacity.setAnchor(gf::Anchor::TopLeft);
     m_buttonPass.setAnchor(gf::Anchor::TopLeft);
@@ -460,19 +464,26 @@ void Game::drawBackground()
             bool showPossibleTargets = (m_selectedCharacter && m_possibleTargets.end() != m_possibleTargets.find(gf::Vector2i{x,y}));
             bool showTargetsInRange = (m_selectedCharacter && m_targetsInRange.end() != m_targetsInRange.find(gf::Vector2i{x,y}));
             gf::Sprite tileSpr;
-            if (selectedTile) {
-                tileSpr = gf::Sprite(m_selectedTile);
-            } else if (showPossibleTargets) {
-                tileSpr = gf::Sprite(m_possibleTargetsTile);
-            } else if (showTargetsInRange) {
-                tileSpr = gf::Sprite(m_targetsInRangeTile);
-            } else if ((x + y) % 2 == 0) {
+            
+            if ((x + y) % 2 == 0) {
                 tileSpr = gf::Sprite(m_darkTile);
             } else {
                 tileSpr = gf::Sprite(m_brightTile);
             }
             tileSpr.setPosition(gameToScreenPos({x, y}));
             batch.draw(tileSpr);
+            if (selectedTile || showPossibleTargets || showTargetsInRange) {
+                gf::Sprite overTileSpr;
+                if (selectedTile) {
+                    overTileSpr = gf::Sprite(m_selectedTile);
+                } else if (showPossibleTargets) {
+                    overTileSpr = gf::Sprite(m_possibleTargetsTile);
+                } else if (showTargetsInRange) {
+                    overTileSpr = gf::Sprite(m_targetsInRangeTile);
+                }
+                overTileSpr.setPosition(gameToScreenPos({x, y}));
+                batch.draw(overTileSpr);
+            }
         }
     }
     batch.end();
