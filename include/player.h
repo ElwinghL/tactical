@@ -129,6 +129,16 @@ public:
 
         return res.second ? &res.first->second : nullptr;
     }
+    
+    void removeDeadCharacters()
+    {
+        for (auto it = m_characters.begin(); it != m_characters.end(); ++it) {
+            if (it->second.getHP() <= 0) {
+                m_characters.erase(it);
+                return;
+            }
+        }
+    }
 
     /**
      * Change the positions of this player's goals

@@ -163,6 +163,12 @@ private:
      * Switch turn
      */
     void switchTurn();
+    
+    /**
+     * Remove a character everywhere its informations are saved if it is dead
+     * \param target the position of the character
+     */
+    void removeCharacterIfDead(gf::Vector2i target);
 
     const gf::Vector2u m_screenSize{1024, 576};
     const gf::Vector2f m_viewSize{100.0f, 100.0f};

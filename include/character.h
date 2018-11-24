@@ -103,9 +103,9 @@ public:
      */
     void damage(int amount)
     {
-        assert(amount >= 0);
-
-        m_hp = (amount > m_hp) ? 0 : m_hp - amount;
+        if(amount > 0){
+            m_hp = (amount > m_hp) ? 0 : m_hp - amount;
+        }
     }
 
     /**

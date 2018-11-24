@@ -32,7 +32,9 @@ bool Character::canAttack(const Character& other, const gf::Array2D<Character*, 
             int absoluteX = (direction * factor).x + m_pos.x;
             int absoluteY = (direction * factor).y + m_pos.y;
             if (board(gf::Vector2i{absoluteX, absoluteY})) {
-                return usedForNotPossibleDisplay;
+                if (!usedForNotPossibleDisplay){
+                    return false;
+                }
             }
             factor++;
         }
@@ -59,7 +61,7 @@ bool Character::useCapacity(gf::Vector2i& target, const gf::Array2D<Character*, 
 bool Character::attack(Character& other, const gf::Array2D<Character*, int>& board) const
 {
     if (canAttack(other, board)) {
-        //TODO:Ajouter l'application des dégâts
+        other.damage(getDamageForType(m_type));
         return true;
     }
     return false;
@@ -98,7 +100,9 @@ bool Character::canUseCapacity(const gf::Vector2i& target, const gf::Array2D<Cha
                 int absoluteX = (direction * factor).x + m_pos.x;
                 int absoluteY = (direction * factor).y + m_pos.y;
                 if (board(gf::Vector2i{absoluteX, absoluteY})) {
-                    return usedForNotPossibleDisplay;
+                    if (!usedForNotPossibleDisplay) {
+                        return false;
+                    }
                 }
                 factor++;
             }

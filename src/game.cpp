@@ -108,6 +108,7 @@ void Game::processEvents()
                 if (!targetIsEmpty) {
                     Character* target = getCharacter(tile, enemyPlayer->getTeam());
                     if (target && m_selectedCharacter->attack(*target, m_board)) {
+                        removeCharacterIfDead(tile);
                         m_selectedCharacter = nullptr;
                         stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                         switchTurn();
@@ -478,5 +479,27 @@ void Game::switchTurn()
     } else if (m_gameState == GameState::WaitingForAI) {
         m_gameState = GameState::PlayerTurn;
         m_humanPlayer.setMoved(false);
+    }
+}
+
+bool isDead(EntityCharacter entity)
+{
+    const Character *p = entity.getCharacterPtr();
+    return p->getHP() <= 0;
+}
+
+void Game::removeCharacterIfDead(gf::Vector2i target)
+{
+    if (m_board(target) && m_board(target)->getHP() <= 0) {
+        Player *thisPlayer;
+        PlayerTeam thisTeam = m_board(target)->getTeam();
+        if (thisTeam == PlayerTeam::Cthulhu) {
+            thisPlayer = &m_humanPlayer;
+        }else{
+            thisPlayer = &m_aiPlayer;
+        }
+        thisPlayer->removeDeadCharacters();
+        m_characterEntities.erase(std::remove_if(m_characterEntities.begin(), m_characterEntities.end(), isDead), m_characterEntities.end());
+        m_board(target) = nullptr;
     }
 }
