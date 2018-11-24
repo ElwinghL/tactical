@@ -155,6 +155,15 @@ bool Character::canMove(const gf::Vector2i& movement, const gf::Array2D<Characte
     if (!board.isValid(absolute)) {
         return false;
     }
+    for (int i = 0; i < 4; ++i) {
+        int a = (i == 3) ? -1 : i/2;
+        int b = (i == 1) ? -1 : (2-i)/2;
+        if (board.isValid(m_pos + gf::Vector2i{a,b}) && board(m_pos + gf::Vector2i{a,b}) && board(m_pos + gf::Vector2i{a,b})->getType() == CharacterType::Tank && board(m_pos + gf::Vector2i{a,b})->getTeam() != m_team) {
+            if (!usedForNotPossibleDisplay) {
+                return false;
+            }
+        }
+    }
     if (!usedForNotPossibleDisplay && board(absolute) && board(absolute) != this) {
         return false;
     }
