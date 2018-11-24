@@ -177,8 +177,8 @@ bool Character::canMove(const gf::Vector2i& movement, const gf::Array2D<Characte
             while (direction * factor != movement && factor < 4) {
                 absoluteX = (direction * factor).x + m_pos.x;
                 absoluteY = (direction * factor).y + m_pos.y;
-                if (board(gf::Vector2i{absoluteX, absoluteY})) {
-                    return usedForNotPossibleDisplay;
+                if (board(gf::Vector2i{absoluteX, absoluteY}) && !usedForNotPossibleDisplay) {
+                    return false;
                 }
                 factor++;
             }

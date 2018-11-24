@@ -17,6 +17,7 @@ Game::Game(gf::ResourceManager* resMgr) :
     initWidgets();
     initSprites();
     initEntities();
+    initGoals();
 }
 
 void Game::processEvents()
@@ -297,6 +298,16 @@ void Game::initWindow()
     m_window.setFramerateLimit(60);
 }
 
+void Game::initGoals()
+{
+    std::array<Goal, 2> &cthulhuGoal = m_humanPlayer.getGoals();
+    m_goals.push_back(&(cthulhuGoal[0]));
+    m_goals.push_back(&(cthulhuGoal[1]));
+    std::array<Goal, 2> &satanGoal = m_aiPlayer.getGoals();
+    m_goals.push_back(&(satanGoal[0]));
+    m_goals.push_back(&(satanGoal[1]));
+}
+
 void Game::initViews()
 {
     resizeView(m_mainView, getBoardSize());
@@ -465,7 +476,23 @@ void Game::drawBackground()
             bool showTargetsInRange = (m_selectedCharacter && m_targetsInRange.end() != m_targetsInRange.find(gf::Vector2i{x,y}));
             gf::Sprite tileSpr;
             
-            if ((x + y) % 2 == 0) {
+            bool isGoal = false;
+            Goal *thisGoal = nullptr;
+            for (auto it = m_goals.cbegin(); it != m_goals.cend(); ++it) {
+                std::cout << (*it)->getPosition().x << ":" << (*it)->getPosition().y << "\n";
+                if ((*it)->getPosition().x == x && (*it)->getPosition().y == y) {
+                    isGoal = true;
+                    thisGoal = *it;
+                    break;
+                }
+            }
+            if (isGoal && thisGoal) {
+                if (thisGoal->getTeam() == PlayerTeam::Cthulhu) {
+                    tileSpr = gf::Sprite(m_goalSatan);
+                } else {
+                    tileSpr = gf::Sprite(m_goalCthulhu);
+                }
+            } else if ((x + y) % 2 == 0) {
                 tileSpr = gf::Sprite(m_darkTile);
             } else {
                 tileSpr = gf::Sprite(m_brightTile);

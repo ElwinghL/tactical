@@ -89,6 +89,15 @@ public:
     {
         return m_team;
     }
+    
+    /**
+     * Goals getter
+     * \return An array containing the goals
+     */
+    std::array<Goal, 2>& getGoals()
+    {
+        return m_goals;
+    }
 
     /**
      * Tell if this player can play

@@ -120,6 +120,7 @@ private:
     void initWidgets();
     void initSprites();
     void initEntities();
+    void initGoals();
 
     void addCharacter(Player& player, Character&& character);
 
@@ -212,6 +213,8 @@ private:
 
     HumanPlayer m_humanPlayer{PlayerTeam::Cthulhu};
     GameAI m_aiPlayer{PlayerTeam::Satan};
+    
+    std::vector<Goal *> m_goals{};
 
     Character* m_selectedCharacter = NULL;
 
