@@ -52,7 +52,35 @@ bool Character::canAttack(const Character& other, const gf::Array2D<Character*, 
 bool Character::useCapacity(gf::Vector2i& target, const gf::Array2D<Character*, int>& board)
 {
     if (canUseCapacity(gf::Vector2i{target - m_pos}, board)) {
-        //TODO: Ajouter l'application de la capacité
+        switch(m_type){
+            case CharacterType::Scout: {
+                m_pos = target;
+                break;
+            }
+            case CharacterType::Tank: {
+                gf::Vector2i relative = gf::Vector2i{target - m_pos};
+                int xvalue = relative.x == 0 ? 0 : relative.x / abs(relative.x);
+                int yvalue = relative.y == 0 ? 0 : relative.y / abs(relative.y);
+                gf::Vector2i newPos = m_pos + gf::Vector2i{xvalue, yvalue};
+                board(target)->m_pos = newPos;
+                break;
+            }
+            case CharacterType::Support: {
+                gf::Vector2i relative = gf::Vector2i{target - m_pos};
+                int xvalue = relative.x == 0 ? 0 : relative.x / abs(relative.x);
+                int yvalue = relative.y == 0 ? 0 : relative.y / abs(relative.y);
+                gf::Vector2i newPos = board(target)->m_pos + gf::Vector2i{xvalue, yvalue} * 2;
+                if (board.isValid(newPos) && !board(newPos)) {
+                    board(target)->m_pos = newPos;
+                } else {
+                    newPos = board(target)->m_pos + gf::Vector2i{xvalue, yvalue};
+                    board(target)->damage(4);
+                    if (board.isValid(newPos) && !board(newPos)) {
+                        board(target)->m_pos = newPos;
+                    }
+                }
+            }
+        }
         return true;
     }
     return false;

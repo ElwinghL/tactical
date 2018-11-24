@@ -18,7 +18,7 @@ bool Action::isValid(gf::Array2D<Character*, int> board) const
             break;
         }
         case ActionType::Capacity: {
-            return character.canUseCapacity(m_target,board);
+            return character.canUseCapacity(m_target - m_character.getPosition(), board);
             break;
         }
         case ActionType::Attack: {
@@ -40,7 +40,29 @@ void Action::execute(gf::Array2D<Character*, int> *board)
     (*board)(m_character.getPosition()) = oldP;
     switch(m_type){
         case ActionType::Capacity: {
-            m_character.useCapacity(m_target, *board);
+            switch(m_character.getType()){
+                case CharacterType::Scout: {
+                    oldP = (*board)(m_character.getPosition());
+                    (*board)(m_character.getPosition()) = nullptr;
+                    m_character.useCapacity(m_target, *board);
+                    (*board)(m_character.getPosition()) = oldP;
+                    break;
+                }
+                case CharacterType::Tank: {
+                    oldP = (*board)(m_target);
+                    m_character.useCapacity(m_target, *board);
+                    (*board)(m_target) = nullptr;
+                    (*board)(oldP->getPosition()) = oldP;
+                    break;
+                }
+                case CharacterType::Support: {
+                    oldP = (*board)(m_target);
+                    m_character.useCapacity(m_target, *board);
+                    (*board)(m_target) = nullptr;
+                    (*board)(oldP->getPosition()) = oldP;
+                    break;
+                }
+            }
             break;
         }
         case ActionType::Attack: {

@@ -123,10 +123,18 @@ void Game::processEvents()
                 break;
             }
             case PlayerTurnSelection::CapacitySelection: {
-                if (m_selectedCharacter && m_selectedCharacter->useCapacity(tile, m_board)) {
-                    m_selectedCharacter = nullptr;
-                    stateSelectionUpdate(PlayerTurnSelection::NoSelection);
-                    switchTurn();
+                if (m_selectedCharacter) {
+                    Action capacity{*m_selectedCharacter, ActionType::Capacity, tile};
+                    if (capacity.isValid(m_board)) {
+                        capacity.execute(&m_board);
+                        removeCharacterIfDead(tile);
+                        m_selectedCharacter = nullptr;
+                        stateSelectionUpdate(PlayerTurnSelection::NoSelection);
+                        switchTurn();
+                    } else if (!activePlayer->hasMoved()) {
+                        m_selectedCharacter = nullptr;
+                        stateSelectionUpdate(PlayerTurnSelection::NoSelection);
+                    }
                 } else if (!activePlayer->hasMoved()) {
                     m_selectedCharacter = nullptr;
                     stateSelectionUpdate(PlayerTurnSelection::NoSelection);
