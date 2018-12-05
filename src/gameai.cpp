@@ -5,8 +5,9 @@ void GameAI::simulateActions()
 }
 
 
-void GameAI::playTurn(gf::Array2D<Character*, int> *board){
-    if(board == nullptr) {
+void GameAI::playTurn(gf::Array2D<Character*, int>* board)
+{
+    if (board == nullptr) {
         return;
     }
     std::vector<Action> allActions;
@@ -17,6 +18,6 @@ void GameAI::playTurn(gf::Array2D<Character*, int> *board){
         }
     }
     size_t randAction = rand() % allActions.size();
-    allActions[randAction].execute(board);
+    allActions[randAction].execute(*board);
     std::cout << "Possible actions : " << allActions.size() << "\n";
 }

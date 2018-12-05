@@ -28,11 +28,11 @@
 #include <gf/Widgets.h>
 #include <gf/Window.h>
 
+#include <stdlib.h>
 #include <string>
+#include <time.h>
 #include <utility>
 #include <vector>
-#include <stdlib.h>
-#include <time.h>
 
 /**
  * The game core class
@@ -159,12 +159,12 @@ private:
      * Draw the user interface of the game
      */
     void drawUI();
-    
+
     /**
      * Switch turn
      */
     void switchTurn();
-    
+
     /**
      * Remove a character everywhere its informations are saved if it is dead
      * \param target the position of the character
@@ -215,8 +215,8 @@ private:
 
     HumanPlayer m_humanPlayer{PlayerTeam::Cthulhu};
     GameAI m_aiPlayer{PlayerTeam::Satan};
-    
-    std::vector<Goal *> m_goals{};
+
+    std::vector<Goal*> m_goals{};
 
     Character* m_selectedCharacter = NULL;
 
@@ -230,12 +230,12 @@ private:
     gf::Sprite m_selectedTile{m_resMgr->getTexture("placeholders/caseSelected.png")};
     gf::Sprite m_possibleTargetsTile{m_resMgr->getTexture("placeholders/casePossibleTargets.png")};
     gf::Sprite m_targetsInRangeTile{m_resMgr->getTexture("placeholders/caseTargetsInRange.png")};
-    
+
     gf::Sprite m_goalCthulhu{m_resMgr->getTexture("placeholders/caseGoalCthulhu.png")};
     gf::Sprite m_goalCthulhuActivated{m_resMgr->getTexture("placeholders/caseGoalCthulhuActivated.png")};
     gf::Sprite m_goalSatan{m_resMgr->getTexture("placeholders/caseGoalSatan.png")};
     gf::Sprite m_goalSatanActivated{m_resMgr->getTexture("placeholders/caseGoalSatanActivated.png")};
-    
+
     gf::SpriteWidget m_buttonAttack{m_resMgr->getTexture("placeholders/iconAttack.png"), m_resMgr->getTexture("placeholders/iconAttack.png"), m_resMgr->getTexture("placeholders/iconAttack.png")};
     gf::SpriteWidget m_buttonCapacity{m_resMgr->getTexture("placeholders/iconCapacity.png"), m_resMgr->getTexture("placeholders/iconCapacity.png"), m_resMgr->getTexture("placeholders/iconCapacity.png")};
     gf::SpriteWidget m_buttonPass{m_resMgr->getTexture("placeholders/iconPass.png"), m_resMgr->getTexture("placeholders/iconPass.png"), m_resMgr->getTexture("placeholders/iconPass.png")};

@@ -21,7 +21,7 @@ public:
     explicit HumanPlayer(PlayerTeam team) :
         Player{team, true}
     {
-        m_hasMoved = false;
+        // Nothing
     }
 
     /**
@@ -32,14 +32,14 @@ public:
     explicit HumanPlayer(PlayerTeam team, bool playFirst) :
         Player{team, playFirst}
     {
-        m_hasMoved = false;
+        // Nothing
     }
-    
+
     bool hasMoved() const
     {
         return m_hasMoved;
     }
-    
+
     void setMoved(bool newValue)
     {
         m_hasMoved = newValue;
@@ -47,7 +47,7 @@ public:
 
 
 private:
-    bool m_hasMoved;
+    bool m_hasMoved{false};
 };
 
 #endif // HUMANPLAYER_H

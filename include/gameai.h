@@ -28,8 +28,8 @@ public:
      * Simulate the actions
      */
     void simulateActions();
-    
-    void playTurn(gf::Array2D<Character*, int> *board);
+
+    void playTurn(gf::Array2D<Character*, int>* board);
 
 private:
 };

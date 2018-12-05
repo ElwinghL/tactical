@@ -5,11 +5,11 @@
 #ifndef ACTION_H
 #define ACTION_H
 
-#include "utility.h"
 #include "character.h"
+#include "utility.h"
 
-#include <gf/Vector.h>
 #include <gf/Array2D.h>
+#include <gf/Vector.h>
 
 class Character;
 
@@ -81,18 +81,18 @@ public:
     /*
      * Execute this action. The character moves then attacks or uses a capacity
      */
-    void execute(gf::Array2D<Character*, int> *board);
-    
+    void execute(gf::Array2D<Character*, int>& board);
+
     gf::Vector2i getMove() const
     {
         return m_move;
     }
-    
+
     gf::Vector2i getTarget() const
     {
         return m_target;
     }
-    
+
     ActionType getType() const
     {
         return m_type;

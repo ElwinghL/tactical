@@ -62,25 +62,29 @@ void Game::processEvents()
         Player* enemyPlayer = &m_aiPlayer;
         if (m_leftClickAction.isActive()) {
             gf::Vector2i tile{screenToGamePos(m_mouseCoords)};
-//             std::cout << "(" << tile.x << ", " << tile.y << ")" << std::endl;
+            //             std::cout << "(" << tile.x << ", " << tile.y << ")" << std::endl;
             bool targetIsEmpty = false;
             if (m_selectedCharacter) {
                 targetIsEmpty = (!getCharacter(tile));
             }
+
             if (m_selectedCharacter && m_buttonAttack.contains(m_mouseCoords)) {
                 stateSelectionUpdate(PlayerTurnSelection::AttackSelection);
                 break;
             }
+
             if (m_selectedCharacter && m_buttonCapacity.contains(m_mouseCoords)) {
                 stateSelectionUpdate(PlayerTurnSelection::CapacitySelection);
                 break;
             }
+
             if (m_selectedCharacter && m_buttonPass.contains(m_mouseCoords)) {
                 stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                 m_selectedCharacter = nullptr;
                 switchTurn();
                 break;
             }
+
             switch (m_playerTurnSelection) {
             case PlayerTurnSelection::NoSelection: {
                 if (!getCharacter(tile, activePlayer->getTeam())) {
@@ -90,8 +94,8 @@ void Game::processEvents()
                     m_selectedCharacter = getCharacter(tile, activePlayer->getTeam());
                     stateSelectionUpdate(PlayerTurnSelection::MoveSelection);
                 }
-                break;
-            }
+            } break;
+
             case PlayerTurnSelection::MoveSelection: {
                 if (getCharacter(tile, activePlayer->getTeam()) && getCharacter(tile, activePlayer->getTeam()) != m_selectedCharacter) {
                     m_selectedCharacter = getCharacter(tile, activePlayer->getTeam());
@@ -103,8 +107,8 @@ void Game::processEvents()
                     m_selectedCharacter = nullptr;
                     stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                 }
-                break;
-            }
+            } break;
+
             case PlayerTurnSelection::AttackSelection: {
                 if (!targetIsEmpty) {
                     Character* target = getCharacter(tile, enemyPlayer->getTeam());
@@ -121,13 +125,13 @@ void Game::processEvents()
                     m_selectedCharacter = nullptr;
                     stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                 }
-                break;
-            }
+            } break;
+
             case PlayerTurnSelection::CapacitySelection: {
                 if (m_selectedCharacter) {
                     Action capacity{*m_selectedCharacter, ActionType::Capacity, tile};
                     if (capacity.isValid(m_board)) {
-                        capacity.execute(&m_board);
+                        capacity.execute(m_board);
                         removeCharacterIfDead(tile);
                         m_selectedCharacter = nullptr;
                         stateSelectionUpdate(PlayerTurnSelection::NoSelection);
@@ -140,15 +144,14 @@ void Game::processEvents()
                     m_selectedCharacter = nullptr;
                     stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                 }
-                break;
-            }
+            } break;
             }
         }
     } break;
 
     case GameState::WaitingForAI: {
-//         std::cout << "L'IA joue\n";
-        sleep(1); //temporaire, pour vraiment voir le tour de l'adversaire
+        //         std::cout << "L'IA joue\n";
+        sleep(1); // TODO temporaire, pour vraiment voir le tour de l'adversaire
         m_aiPlayer.playTurn(&m_board);
         switchTurn();
     } break;
@@ -167,37 +170,39 @@ void Game::stateSelectionUpdate(PlayerTurnSelection nextState)
     m_targetsInRange.clear();
     switch (nextState) {
     case PlayerTurnSelection::MoveSelection: {
-    
         std::vector<Action> actions = m_selectedCharacter->getPossibleActions(m_board);
-        for(size_t i = 0; i < actions.size(); ++i){
+        for (size_t i = 0; i < actions.size(); ++i) {
             //std::cout << "Move : (" << m_selectedCharacter->getPosition().x+actions[i].getMove().x << ";" << m_selectedCharacter->getPosition().y+actions[i].getMove().y << ")\t";
             ActionType type = actions[i].getType();
-            switch(type){
-                case ActionType::Attack: {
-                    //std::cout << "Attack : (" << actions[i].getTarget().x << ";" << actions[i].getTarget().y << ")";
-                    break;
-                }
-                case ActionType::Capacity: {
-                    //std::cout << "Capacity : (" << actions[i].getTarget().x << ";" << actions[i].getTarget().y << ")";
-                    break;
-                }
+            switch (type) {
+            case ActionType::Attack: {
+                //std::cout << "Attack : (" << actions[i].getTarget().x << ";" << actions[i].getTarget().y << ")";
+            } break;
+
+            case ActionType::Capacity: {
+                //std::cout << "Capacity : (" << actions[i].getTarget().x << ";" << actions[i].getTarget().y << ")";
+            } break;
+
+            case ActionType::None:
+                break;
             }
-                        //std::cout << "\n";
+            //std::cout << "\n";
         }
         m_possibleTargets = m_selectedCharacter->getAllPossibleMoves(m_board);
         m_targetsInRange = m_selectedCharacter->getAllPossibleMoves(m_board, true);
-        break;
-    }
+    } break;
     case PlayerTurnSelection::AttackSelection: {
         m_possibleTargets = m_selectedCharacter->getAllPossibleAttacks(m_board);
         m_targetsInRange = m_selectedCharacter->getAllPossibleAttacks(m_board, true);
-        break;
-    }
+    } break;
     case PlayerTurnSelection::CapacitySelection: {
         m_possibleTargets = m_selectedCharacter->getAllPossibleCapacities(m_board);
         m_targetsInRange = m_selectedCharacter->getAllPossibleCapacities(m_board, true);
+    } break;
+        // TODO Refactor or add something
+
+    case PlayerTurnSelection::NoSelection:
         break;
-    }
     }
     m_playerTurnSelection = nextState;
 }
@@ -311,10 +316,10 @@ void Game::initWindow()
 
 void Game::initGoals()
 {
-    std::array<Goal, 2> &cthulhuGoal = m_humanPlayer.getGoals();
+    std::array<Goal, 2>& cthulhuGoal = m_humanPlayer.getGoals();
     m_goals.push_back(&(cthulhuGoal[0]));
     m_goals.push_back(&(cthulhuGoal[1]));
-    std::array<Goal, 2> &satanGoal = m_aiPlayer.getGoals();
+    std::array<Goal, 2>& satanGoal = m_aiPlayer.getGoals();
     m_goals.push_back(&(satanGoal[0]));
     m_goals.push_back(&(satanGoal[1]));
 }
@@ -388,7 +393,7 @@ void Game::initSprites()
     m_goalCthulhuActivated.setAnchor(gf::Anchor::TopLeft);
     m_goalSatan.setAnchor(gf::Anchor::TopLeft);
     m_goalSatanActivated.setAnchor(gf::Anchor::TopLeft);
-    
+
     m_buttonAttack.setAnchor(gf::Anchor::TopLeft);
     m_buttonCapacity.setAnchor(gf::Anchor::TopLeft);
     m_buttonPass.setAnchor(gf::Anchor::TopLeft);
@@ -483,14 +488,14 @@ void Game::drawBackground()
     for (int x{size.width - 1}; x >= 0; --x) {
         for (int y{0}; y < size.height; ++y) {
             bool selectedTile = (m_selectedCharacter && m_selectedCharacter->getPosition().x == x && m_selectedCharacter->getPosition().y == y);
-            bool showPossibleTargets = (m_selectedCharacter && m_possibleTargets.end() != m_possibleTargets.find(gf::Vector2i{x,y}));
-            bool showTargetsInRange = (m_selectedCharacter && m_targetsInRange.end() != m_targetsInRange.find(gf::Vector2i{x,y}));
+            bool showPossibleTargets = (m_selectedCharacter && m_possibleTargets.end() != m_possibleTargets.find(gf::Vector2i{x, y}));
+            bool showTargetsInRange = (m_selectedCharacter && m_targetsInRange.end() != m_targetsInRange.find(gf::Vector2i{x, y}));
             gf::Sprite tileSpr;
-            
+
             bool isGoal = false;
-            Goal *thisGoal = nullptr;
+            Goal* thisGoal = nullptr;
             for (auto it = m_goals.cbegin(); it != m_goals.cend(); ++it) {
-//                 std::cout << (*it)->getPosition().x << ":" << (*it)->getPosition().y << "\n";
+                //                 std::cout << (*it)->getPosition().x << ":" << (*it)->getPosition().y << "\n";
                 if ((*it)->getPosition().x == x && (*it)->getPosition().y == y) {
                     isGoal = true;
                     thisGoal = *it;
@@ -541,18 +546,18 @@ void Game::switchTurn()
 
 bool isDead(EntityCharacter entity)
 {
-    const Character *p = entity.getCharacterPtr();
+    const Character* p = entity.getCharacterPtr();
     return p->getHP() <= 0;
 }
 
 void Game::removeCharacterIfDead(gf::Vector2i target)
 {
     if (m_board(target) && m_board(target)->getHP() <= 0) {
-        Player *thisPlayer;
+        Player* thisPlayer;
         PlayerTeam thisTeam = m_board(target)->getTeam();
         if (thisTeam == PlayerTeam::Cthulhu) {
             thisPlayer = &m_humanPlayer;
-        }else{
+        } else {
             thisPlayer = &m_aiPlayer;
         }
         thisPlayer->removeDeadCharacters();

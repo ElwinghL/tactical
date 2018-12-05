@@ -90,7 +90,7 @@ public:
     {
         return m_team;
     }
-    
+
     /**
      * Goals getter
      * \return An array containing the goals
@@ -108,7 +108,7 @@ public:
     {
         return m_theirTurn;
     }
-    
+
     /**
      * Switch turn
      */
@@ -124,7 +124,7 @@ public:
      */
     bool hasWon() const
     {
-        return std::all_of(m_goals.cbegin(), m_goals.cend(), [] (const Goal& goal) {
+        return std::all_of(m_goals.cbegin(), m_goals.cend(), [](const Goal& goal) {
             return goal.isActivated();
         });
     }
@@ -141,7 +141,7 @@ public:
 
         return res.second ? &res.first->second : nullptr;
     }
-    
+
     void removeDeadCharacters();
 
     /**
