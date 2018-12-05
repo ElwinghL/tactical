@@ -22,7 +22,8 @@ bool Action::isValid(gf::Array2D<Character*, int> board) const
     case ActionType::Attack:
         return character.canAttack(*board(m_target), board);
 
-    case ActionType::None: break;
+    case ActionType::None:
+        break;
     }
 
     return true;
@@ -67,6 +68,7 @@ void Action::execute(gf::Array2D<Character*, int>& board)
         m_character.attack(*board(m_target), board);
     } break;
 
-    case ActionType::None: break;
+    case ActionType::None:
+        break;
     }
 }

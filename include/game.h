@@ -28,9 +28,7 @@
 #include <gf/Widgets.h>
 #include <gf/Window.h>
 
-#include <stdlib.h>
 #include <string>
-#include <time.h>
 #include <utility>
 #include <vector>
 

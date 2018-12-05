@@ -7,10 +7,13 @@
 
 #include <iostream>
 
+#include <cstdlib>
+#include <ctime>
+
 Game::Game(gf::ResourceManager* resMgr) :
     m_resMgr{resMgr}
 {
-    srand(time(NULL));
+    srand(time(NULL)); // TODO Replace with gf::Random
     initWindow();
     initViews();
     initActions();
