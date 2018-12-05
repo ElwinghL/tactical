@@ -171,6 +171,8 @@ private:
      */
     void removeCharacterIfDead(gf::Vector2i target);
 
+    void updateGoals();
+
     const gf::Vector2u m_screenSize{1024, 576};
     const gf::Vector2f m_viewSize{100.0f, 100.0f};
     const gf::Vector2f m_viewCenter{0.0f, 0.0f};

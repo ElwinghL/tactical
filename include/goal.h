@@ -47,9 +47,28 @@ public:
         return m_pos;
     }
 
+    /**
+     * Activate this goal
+     */
+    void activate()
+    {
+        m_activated = true;
+    }
+
+    /**
+     * Is this goal activated?
+     * \return true if this goal has been activated
+     *         by the correct team
+     */
+    bool isActivated() const
+    {
+        return m_activated;
+    }
+
 private:
     PlayerTeam m_team; ///< The team aiming to this goal
     gf::Vector2i m_pos; ///< This goal's position
+    bool m_activated{false};
 };
 
 #endif // GOAL_H

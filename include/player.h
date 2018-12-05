@@ -11,6 +11,7 @@
 
 #include <gf/Vector.h>
 
+#include <algorithm>
 #include <array>
 #include <functional>
 #include <map>
@@ -123,7 +124,9 @@ public:
      */
     bool hasWon() const
     {
-        return m_won;
+        return std::all_of(m_goals.cbegin(), m_goals.cend(), [] (const Goal& goal) {
+            return goal.isActivated();
+        });
     }
 
     /**
@@ -139,15 +142,7 @@ public:
         return res.second ? &res.first->second : nullptr;
     }
     
-    void removeDeadCharacters()
-    {
-        for (auto it = m_characters.begin(); it != m_characters.end(); ++it) {
-            if (it->second.getHP() <= 0) {
-                m_characters.erase(it);
-                return;
-            }
-        }
-    }
+    void removeDeadCharacters();
 
     /**
      * Change the positions of this player's goals
@@ -161,18 +156,14 @@ public:
     }
 
     /**
-     * Tell if a given character is on a goal
-     *
-     * \param c The character to test
-     * \return True if the character is on a goal
+     * Activate goals if a character of this player is on top
      */
-    bool isOnAGoal(const Character& c) const;
+    void activateGoals();
 
 protected:
     PlayerTeam m_team; ///< The team controlled by this player
 
     bool m_theirTurn{true}; ///< Can the player play?
-    bool m_won{false}; ///< Has the player won?
 
     std::map<int, Character> m_characters; ///< The characters controlled by this player, the key is y starting position
     std::array<Goal, nbOfGoalsPerPlayer> m_goals; ///< The goals this player has to reach

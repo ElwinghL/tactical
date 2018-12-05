@@ -62,7 +62,7 @@ void Game::processEvents()
         Player* enemyPlayer = &m_aiPlayer;
         if (m_leftClickAction.isActive()) {
             gf::Vector2i tile{screenToGamePos(m_mouseCoords)};
-            std::cout << "(" << tile.x << ", " << tile.y << ")" << std::endl;
+//             std::cout << "(" << tile.x << ", " << tile.y << ")" << std::endl;
             bool targetIsEmpty = false;
             if (m_selectedCharacter) {
                 targetIsEmpty = (!getCharacter(tile));
@@ -147,7 +147,7 @@ void Game::processEvents()
     } break;
 
     case GameState::WaitingForAI: {
-        std::cout << "L'IA joue\n";
+//         std::cout << "L'IA joue\n";
         sleep(1); //temporaire, pour vraiment voir le tour de l'adversaire
         m_aiPlayer.playTurn(&m_board);
         switchTurn();
@@ -245,9 +245,20 @@ void Game::update()
         for (auto& c : m_characterEntities) {
             c.update(time);
         }
+
+        updateGoals();
+
+        if (m_aiPlayer.hasWon() || m_humanPlayer.hasWon()) {
+            m_gameState = GameState::GameEnd;
+        }
     } break;
 
     case GameState::GameEnd: {
+        if (m_humanPlayer.hasWon()) {
+            std::cout << "Le joueur a gagné !" << std::endl;
+        } else {
+            std::cout << "L'IA a gagné !" << std::endl;
+        }
     } break;
     }
 }
@@ -385,8 +396,8 @@ void Game::initSprites()
 
 void Game::initEntities()
 {
-    m_humanPlayer.setGoalPositions({gf::Vector2i{1, 1}, gf::Vector2i{1, 4}});
-    m_aiPlayer.setGoalPositions({gf::Vector2i{10, 1}, gf::Vector2i{10, 4}});
+    m_aiPlayer.setGoalPositions({gf::Vector2i{1, 1}, gf::Vector2i{1, 4}});
+    m_humanPlayer.setGoalPositions({gf::Vector2i{10, 1}, gf::Vector2i{10, 4}});
 
     auto initPlayerCharacters{[this](int column, Player& player) {
         gf::Vector2i pos{column, 0};
@@ -479,7 +490,7 @@ void Game::drawBackground()
             bool isGoal = false;
             Goal *thisGoal = nullptr;
             for (auto it = m_goals.cbegin(); it != m_goals.cend(); ++it) {
-                std::cout << (*it)->getPosition().x << ":" << (*it)->getPosition().y << "\n";
+//                 std::cout << (*it)->getPosition().x << ":" << (*it)->getPosition().y << "\n";
                 if ((*it)->getPosition().x == x && (*it)->getPosition().y == y) {
                     isGoal = true;
                     thisGoal = *it;
@@ -548,4 +559,10 @@ void Game::removeCharacterIfDead(gf::Vector2i target)
         m_characterEntities.erase(std::remove_if(m_characterEntities.begin(), m_characterEntities.end(), isDead), m_characterEntities.end());
         m_board(target) = nullptr;
     }
+}
+
+void Game::updateGoals()
+{
+    m_humanPlayer.activateGoals();
+    m_aiPlayer.activateGoals();
 }
