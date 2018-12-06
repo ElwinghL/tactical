@@ -40,3 +40,7 @@ build
 *.log
 *.toc
 *.synctex.gz
+
+#IDE files
+cmake-build-debug
+.idea
