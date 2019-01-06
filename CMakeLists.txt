@@ -14,6 +14,7 @@ if(LATEX_FOUND)
 endif(LATEX_FOUND)
 
 find_package(gf REQUIRED)
+find_package(Boost REQUIRED)
 
 add_custom_target(check
     COMMAND clang-format -style=file -i src/* include/*
@@ -34,7 +35,10 @@ add_executable(game
     src/utility.cpp
 )
 
-target_include_directories(game PRIVATE include)
+target_include_directories(game PRIVATE
+	${Boost_INCLUDE_DIRS}
+	include
+)
 
 target_link_libraries(game
     gf::gf0
