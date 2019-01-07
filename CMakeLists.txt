@@ -13,6 +13,7 @@ if(LATEX_FOUND)
     add_subdirectory(docs EXCLUDE_FROM_ALL)
 endif(LATEX_FOUND)
 
+find_package(Threads REQUIRED)
 find_package(gf REQUIRED)
 find_package(Boost REQUIRED)
 
@@ -41,5 +42,6 @@ target_include_directories(game PRIVATE
 )
 
 target_link_libraries(game
+	Threads::Threads
     gf::gf0
 )
