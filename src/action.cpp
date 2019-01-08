@@ -1,6 +1,6 @@
 #include "action.h"
 
-bool Action::isValid(gf::Array2D<Character*, int> board) const
+bool Action::isValid(gf::Array2D<boost::optional<Character>, int> board) const
 {
     Character character{m_character};
     if (!character.canMove(m_move, board)) {
@@ -12,8 +12,8 @@ bool Action::isValid(gf::Array2D<Character*, int> board) const
     board(character.getPosition() + m_move);
     character.move(m_move, board);
 
-    board(previousPos) = nullptr;
-    board(character.getPosition()) = &character;
+    board(previousPos) = boost::none;
+    board(character.getPosition()) = character;
 
     switch (m_type) {
     case ActionType::Capacity:
@@ -29,39 +29,17 @@ bool Action::isValid(gf::Array2D<Character*, int> board) const
     return true;
 }
 
-void Action::execute(gf::Array2D<Character*, int>& board)
+void Action::execute(gf::Array2D<boost::optional<Character>, int>& board)
 {
-    Character* oldP = board(m_character.getPosition());
-
-    board(m_character.getPosition()) = nullptr;
+    boost::optional<Character> oldP = board(m_character.getPosition());
+    assert(oldP);
+    board(m_character.getPosition()) = boost::none;
+    oldP->move(m_move, board);
     m_character.move(m_move, board);
-
-    board(m_character.getPosition()) = oldP;
-
+    board(oldP->getPosition()) = oldP;
     switch (m_type) {
     case ActionType::Capacity: {
-        switch (m_character.getType()) {
-        case CharacterType::Scout: {
-            oldP = board(m_character.getPosition());
-            board(m_character.getPosition()) = nullptr;
-            m_character.useCapacity(m_target, board);
-            board(m_character.getPosition()) = oldP;
-        } break;
-
-        case CharacterType::Tank: {
-            oldP = board(m_target);
-            m_character.useCapacity(m_target, board);
-            board(m_target) = nullptr;
-            board(oldP->getPosition()) = oldP;
-        } break;
-
-        case CharacterType::Support: {
-            oldP = board(m_target);
-            m_character.useCapacity(m_target, board);
-            board(m_target) = nullptr;
-            board(oldP->getPosition()) = oldP;
-        } break;
-        } // TODO Refactor or add something
+        m_character.useCapacity(m_target, board);
     } break;
 
     case ActionType::Attack: {

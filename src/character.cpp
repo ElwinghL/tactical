@@ -4,7 +4,7 @@
 
 using std::abs;
 
-bool Character::canAttack(const Character& other, const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay) const
+bool Character::canAttack(const Character& other,  const gf::Array2D<boost::optional<Character>, int>& board, bool usedForNotPossibleDisplay) const
 {
     if (other.getTeam() == m_team) {
         return false;
@@ -56,7 +56,7 @@ bool Character::canAttack(const Character& other, const gf::Array2D<Character*, 
     return true; // Remove some compiler warnings
 }
 
-bool Character::useCapacity(gf::Vector2i& target, const gf::Array2D<Character*, int>& board)
+bool Character::useCapacity(gf::Vector2i& target, gf::Array2D<boost::optional<Character>, int>& board)
 {
     if (!canUseCapacity(gf::Vector2i{target - m_pos}, board)) {
         return false;
@@ -64,7 +64,10 @@ bool Character::useCapacity(gf::Vector2i& target, const gf::Array2D<Character*, 
 
     switch (m_type) {
     case CharacterType::Scout: {
+        Character &thisCharacter = *board(m_pos);
+        board(m_pos) = boost::none;
         m_pos = target;
+        board(target) = thisCharacter;
     } break;
 
     case CharacterType::Tank: {
@@ -72,29 +75,35 @@ bool Character::useCapacity(gf::Vector2i& target, const gf::Array2D<Character*, 
         int xvalue = relative.x == 0 ? 0 : relative.x / abs(relative.x);
         int yvalue = relative.y == 0 ? 0 : relative.y / abs(relative.y);
         gf::Vector2i newPos = m_pos + gf::Vector2i{xvalue, yvalue};
-        board(target)->m_pos = newPos;
+        
+        Character &targetCharacter = *board(target);
+        board(target) = boost::none;
+        targetCharacter.m_pos = newPos;
+        board(newPos) = targetCharacter;
     } break;
 
     case CharacterType::Support: {
         gf::Vector2i relative = gf::Vector2i{target - m_pos};
         int xvalue = relative.x == 0 ? 0 : relative.x / abs(relative.x);
         int yvalue = relative.y == 0 ? 0 : relative.y / abs(relative.y);
-        gf::Vector2i newPos = board(target)->m_pos + gf::Vector2i{xvalue, yvalue} * 2;
-        if (board.isValid(newPos) && !board(newPos)) {
-            board(target)->m_pos = newPos;
-        } else {
-            newPos = board(target)->m_pos + gf::Vector2i{xvalue, yvalue};
+        gf::Vector2i newPos = target + gf::Vector2i{xvalue, yvalue} * 2;
+        if (!board.isValid(newPos) || board(newPos)){
+            newPos = target + gf::Vector2i{xvalue, yvalue};
             board(target)->damage(4);
-            if (board.isValid(newPos) && !board(newPos)) {
-                board(target)->m_pos = newPos;
+            if (!board.isValid(newPos) || board(newPos)) {
+                return true;
             }
         }
-    }
+        Character &targetCharacter = *board(target);
+        board(target) = boost::none;
+        targetCharacter.m_pos = newPos;
+        board(newPos) = targetCharacter;
+    } break;
     }
     return true;
 }
 
-bool Character::attack(Character& other, const gf::Array2D<Character*, int>& board) const
+bool Character::attack(Character& other,  const gf::Array2D<boost::optional<Character>, int>& board) const
 {
     if (canAttack(other, board)) {
         other.damage(getDamageForType(m_type));
@@ -103,7 +112,7 @@ bool Character::attack(Character& other, const gf::Array2D<Character*, int>& boa
     return false;
 }
 
-bool Character::canUseCapacity(const gf::Vector2i& target, const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay) const
+bool Character::canUseCapacity(const gf::Vector2i& target,  const gf::Array2D<boost::optional<Character>, int>& board, bool usedForNotPossibleDisplay) const
 {
     switch (m_type) {
     case CharacterType::Scout: {
@@ -153,7 +162,7 @@ bool Character::canUseCapacity(const gf::Vector2i& target, const gf::Array2D<Cha
     return false;
 }
 
-bool Character::canMove(const gf::Vector2i& movement, const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay) const
+bool Character::canMove(const gf::Vector2i& movement,  const gf::Array2D<boost::optional<Character>, int>& board, bool usedForNotPossibleDisplay) const
 {
     if (movement.x == 0 && movement.y == 0) {
         //Le personnage a le droit de ne pas se déplacer
@@ -174,7 +183,8 @@ bool Character::canMove(const gf::Vector2i& movement, const gf::Array2D<Characte
             }
         }
     }
-    if (!usedForNotPossibleDisplay && board(absolute) && board(absolute) != this) {
+    //On ne peut pas se déplacer sur un autre personnage :
+    if (!usedForNotPossibleDisplay && board(absolute)) {
         return false;
     }
     switch (m_type) {
@@ -211,7 +221,7 @@ bool Character::canMove(const gf::Vector2i& movement, const gf::Array2D<Characte
     return true;
 }
 
-std::set<gf::Vector2i, PositionComp> Character::getAllPossibleMoves(const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay) const
+std::set<gf::Vector2i, PositionComp> Character::getAllPossibleMoves( const gf::Array2D<boost::optional<Character>, int>& board, bool usedForNotPossibleDisplay) const
 {
     std::set<gf::Vector2i, PositionComp> res;
     for (int i = 0; i < board.getSize().x; ++i) {
@@ -225,7 +235,7 @@ std::set<gf::Vector2i, PositionComp> Character::getAllPossibleMoves(const gf::Ar
     return res;
 }
 
-std::set<gf::Vector2i, PositionComp> Character::getAllPossibleCapacities(const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay) const
+std::set<gf::Vector2i, PositionComp> Character::getAllPossibleCapacities( const gf::Array2D<boost::optional<Character>, int>& board, bool usedForNotPossibleDisplay) const
 {
     std::set<gf::Vector2i, PositionComp> res;
     for (int i = 0; i < board.getSize().x; ++i) {
@@ -239,17 +249,17 @@ std::set<gf::Vector2i, PositionComp> Character::getAllPossibleCapacities(const g
     return res;
 }
 
-std::set<gf::Vector2i, PositionComp> Character::getAllPossibleAttacks(const gf::Array2D<Character*, int>& board, bool usedForNotPossibleDisplay) const
+std::set<gf::Vector2i, PositionComp> Character::getAllPossibleAttacks( const gf::Array2D<boost::optional<Character>, int>& board, bool usedForNotPossibleDisplay) const
 {
     std::set<gf::Vector2i, PositionComp> res;
     for (int i = 0; i < board.getSize().x; ++i) {
         for (int j = 0; j < board.getSize().y; ++j) {
             gf::Vector2i pos{i, j};
-            Character* target = board(pos);
+            boost::optional<Character> target = board(pos);
             if (usedForNotPossibleDisplay) {
                 //On simule une cible sur la case pour avoir toutes les possibilités lors de l'affichage
                 Character simulateCharacter{getEnemyTeam(m_team), CharacterType::Scout, gf::Vector2i{i, j}};
-                target = &simulateCharacter;
+                target = simulateCharacter;
             }
             if (target && canAttack(*target, board, usedForNotPossibleDisplay)) {
                 res.insert(pos);
@@ -259,17 +269,17 @@ std::set<gf::Vector2i, PositionComp> Character::getAllPossibleAttacks(const gf::
     return res;
 }
 
-std::vector<Action> Character::getPossibleActions(const gf::Array2D<Character*, int>& board)
+std::vector<Action> Character::getPossibleActions( const gf::Array2D<boost::optional<Character>, int>& board)
 {
     std::vector<Action> res = std::vector<Action>{};
     std::set<gf::Vector2i, PositionComp> possibleMovements = getAllPossibleMoves(board);
     for (auto it = possibleMovements.cbegin(); it != possibleMovements.cend(); ++it) {
         res.push_back(Action(*this, ActionType::None, *it - m_pos, gf::Vector2i{0, 0}));
 
-        gf::Array2D<Character*, int> thisBoard{board};
+        gf::Array2D<boost::optional<Character>, int> thisBoard{board};
         Character character = Character(getTeam(), getType(), getPosition());
-        thisBoard(character.getPosition()) = nullptr;
-        thisBoard(*it) = &character;
+        thisBoard(character.getPosition()) = boost::none;
+        thisBoard(*it) = character;
         character.move(*it - character.getPosition(), thisBoard);
 
         std::set<gf::Vector2i, PositionComp> possibleCapacities = character.getAllPossibleCapacities(thisBoard);

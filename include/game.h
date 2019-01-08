@@ -9,6 +9,7 @@
 #include "gameai.h"
 #include "humanplayer.h"
 #include "player.h"
+#include "boost/optional.hpp"
 
 #include <gf/Action.h>
 #include <gf/Array2D.h>
@@ -138,14 +139,6 @@ private:
      */
     Character* getCharacter(gf::Vector2i pos);
 
-    /**
-     * Moves the character to the position
-     * \param character a pointer to the character to move
-     * \param pos the position where to move the character
-     * \return true if the character was successly moved
-     */
-    bool moveCharacter(Character* character, gf::Vector2i pos);
-
     void stateSelectionUpdate(PlayerTurnSelection nextState);
 
     /**
@@ -157,6 +150,11 @@ private:
      * Draw the user interface of the game
      */
     void drawUI();
+    
+    /**
+     * Draw characters
+     */
+    void drawCharacters();
 
     /**
      * Switch turn
@@ -206,9 +204,6 @@ private:
     gf::TextButtonWidget m_playButton{"Play!", m_buttonFont};
     gf::TextButtonWidget m_quitButton{"Quit", m_buttonFont};
 
-    std::vector<EntityCharacter> m_characterEntities{};
-    //    gf::EntityContainer m_mainEntities{};
-
     gf::Clock m_clock{};
 
     HumanPlayer m_humanPlayer{PlayerTeam::Cthulhu};
@@ -216,9 +211,9 @@ private:
 
     std::vector<Goal*> m_goals{};
 
-    Character* m_selectedCharacter = NULL;
+    Character* m_selectedCharacter = nullptr;
 
-    gf::Array2D<Character*, int> m_board{{12, 6}, nullptr};
+    gf::Array2D<boost::optional<Character>, int> m_board{{12, 6}, boost::none};
 
     std::set<gf::Vector2i, PositionComp> m_possibleTargets;
     std::set<gf::Vector2i, PositionComp> m_targetsInRange;

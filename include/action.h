@@ -7,6 +7,7 @@
 
 #include "character.h"
 #include "utility.h"
+#include "boost/optional.hpp"
 
 #include <gf/Array2D.h>
 #include <gf/Vector.h>
@@ -76,12 +77,12 @@ public:
      * \param board The board of the game
      * \return True if this action is valid, false otherwise
      */
-    bool isValid(gf::Array2D<Character*, int> board) const;
+    bool isValid(gf::Array2D<boost::optional<Character>, int> board) const;
 
     /*
      * Execute this action. The character moves then attacks or uses a capacity
      */
-    void execute(gf::Array2D<Character*, int>& board);
+    void execute(gf::Array2D<boost::optional<Character>, int>& board);
 
     gf::Vector2i getMove() const
     {

@@ -65,7 +65,30 @@ void Game::processEvents()
         Player* enemyPlayer = &m_aiPlayer;
         if (m_leftClickAction.isActive()) {
             gf::Vector2i tile{screenToGamePos(m_mouseCoords)};
-            //             std::cout << "(" << tile.x << ", " << tile.y << ")" << std::endl;
+            //std::cout << "(" << tile.x << ", " << tile.y << ")" << std::endl;
+            /*for(int i = 0; i < 12; ++i){
+                for(int j = 0; j < 6; ++j){
+                    if(m_board(gf::Vector2i(i,j))){
+                        switch(m_board(gf::Vector2i(i,j))->getType()){
+                            case CharacterType::Tank: {
+                                std::cout << "T";
+                                break;
+                            }
+                            case CharacterType::Support: {
+                                std::cout << "s";
+                                break;
+                            }
+                            case CharacterType::Scout: {
+                                std::cout << "S";
+                                break;
+                            }
+                        }
+                    }
+                }
+                std::cout << "\n";
+            }*/
+            
+            
             bool targetIsEmpty = false;
             if (m_selectedCharacter) {
                 targetIsEmpty = (!getCharacter(tile));
@@ -95,6 +118,8 @@ void Game::processEvents()
                     stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                 } else {
                     m_selectedCharacter = getCharacter(tile, activePlayer->getTeam());
+                    std::cout << tile.x << ":" << tile.y << "\n";
+                    std::cout << m_selectedCharacter->getPosition().x << ":" << m_selectedCharacter->getPosition().y << "\n";
                     stateSelectionUpdate(PlayerTurnSelection::MoveSelection);
                 }
             } break;
@@ -103,7 +128,11 @@ void Game::processEvents()
                 if (getCharacter(tile, activePlayer->getTeam()) && getCharacter(tile, activePlayer->getTeam()) != m_selectedCharacter) {
                     m_selectedCharacter = getCharacter(tile, activePlayer->getTeam());
                     stateSelectionUpdate(PlayerTurnSelection::MoveSelection);
-                } else if (m_selectedCharacter && m_selectedCharacter->getPosition() != tile && moveCharacter(m_selectedCharacter, tile)) {
+                } else if (m_selectedCharacter && targetIsEmpty && m_selectedCharacter->canMove(tile - m_selectedCharacter->getPosition(), m_board)) {
+                    //std::cout << "(" << m_selectedCharacter->getPosition().x << ":" << m_selectedCharacter->getPosition().y << ")";
+                    Action thisMove{*m_selectedCharacter, ActionType::None, tile - m_selectedCharacter->getPosition(), m_selectedCharacter->getPosition()};
+                    thisMove.execute(m_board);
+                    //std::cout << "(" << m_selectedCharacter->getPosition().x << ":" << m_selectedCharacter->getPosition().y << ")\n";
                     activePlayer->setMoved(true);
                     stateSelectionUpdate(PlayerTurnSelection::AttackSelection);
                 } else {
@@ -135,7 +164,13 @@ void Game::processEvents()
                     Action capacity{*m_selectedCharacter, ActionType::Capacity, tile};
                     if (capacity.isValid(m_board)) {
                         capacity.execute(m_board);
+                        //Temporaire :
                         removeCharacterIfDead(tile);
+                        removeCharacterIfDead(tile+gf::Vector2i(0,1));
+                        removeCharacterIfDead(tile+gf::Vector2i(0,-1));
+                        removeCharacterIfDead(tile+gf::Vector2i(1,0));
+                        removeCharacterIfDead(tile+gf::Vector2i(-1,0));
+                        
                         m_selectedCharacter = nullptr;
                         stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                         switchTurn();
@@ -155,7 +190,15 @@ void Game::processEvents()
     case GameState::WaitingForAI: {
         //         std::cout << "L'IA joue\n";
         sleep(1); // TODO temporaire, pour vraiment voir le tour de l'adversaire
-        m_aiPlayer.playTurn(&m_board);
+        m_aiPlayer.playTurn(m_board);
+        //Temporaire :
+        for(int i = 0; i < 6; ++i){
+            for(int j = 0; j < 12; ++j){
+                gf::Vector2i thisPos(i,j);
+                removeCharacterIfDead(thisPos);
+            }
+        }
+            
         switchTurn();
     } break;
 
@@ -221,7 +264,7 @@ void Game::update()
     } break;
 
     case GameState::GameStart: {
-        for (int y = 0; y < m_board.getRows(); ++y) {
+        /*for (int y = 0; y < m_board.getRows(); ++y) {
             for (int x = 0; x < m_board.getCols(); ++x) {
                 if (m_board(gf::Vector2i{x, y})) {
                     switch (m_board(gf::Vector2i{x, y})->getType()) {
@@ -240,7 +283,7 @@ void Game::update()
             }
 
             std::cout << std::endl;
-        }
+        }*/
 
         m_clearColor = gf::Color::Black;
 
@@ -249,10 +292,6 @@ void Game::update()
 
     case GameState::PlayerTurn:
     case GameState::WaitingForAI: {
-        //        m_mainEntities.update(time);
-        for (auto& c : m_characterEntities) {
-            c.update(time);
-        }
 
         updateGoals();
 
@@ -284,10 +323,6 @@ void Game::render()
 
     case GameState::Pause: {
         m_renderer.setView(m_mainView);
-        //        m_mainEntities.render(m_renderer);
-        for (auto& c : m_characterEntities) {
-            c.render(m_renderer, gf::RenderStates());
-        }
     } break;
 
     case GameState::GameStart: {
@@ -297,10 +332,7 @@ void Game::render()
     case GameState::WaitingForAI: {
         m_renderer.setView(m_mainView);
         drawBackground();
-        //        m_mainEntities.render(m_renderer);
-        for (auto& c : m_characterEntities) {
-            c.render(m_renderer, gf::RenderStates());
-        }
+        drawCharacters();
         drawUI();
     } break;
 
@@ -429,43 +461,26 @@ void Game::initEntities()
 
 void Game::addCharacter(Player& player, Character&& character)
 {
-    Character*& tile{m_board(character.getPosition())};
-    if (!tile) {
-        tile = player.addCharacter(std::move(character));
-        m_characterEntities.emplace_back(m_resMgr, tile);
-        //        m_mainEntities.addEntity(m_characterEntities.back());
+    if (!m_board(character.getPosition())) {
+        Character *tile = player.addCharacter(std::move(character));
+        m_board(character.getPosition()) = *tile;
     }
 }
 
 Character* Game::getCharacter(gf::Vector2i pos, PlayerTeam team)
 {
     if (positionIsValid(pos) && m_board(pos) && m_board(pos)->getTeam() == team) {
-        return m_board(pos);
+        return &*m_board(pos);
     }
     return nullptr;
 }
 
 Character* Game::getCharacter(gf::Vector2i pos)
 {
-    if (positionIsValid(pos)) {
-        return m_board(pos);
+    if (positionIsValid(pos) && m_board(pos)) {
+        return &*m_board(pos);
     }
     return nullptr;
-}
-
-bool Game::moveCharacter(Character* character, gf::Vector2i pos)
-{
-    if (!character || !positionIsValid(pos)) {
-        return false;
-    }
-    gf::Vector2i previousPos{character->getPosition()};
-    gf::Vector2i relativeMove{pos - character->getPosition()};
-    if (character->move(relativeMove, m_board)) {
-        m_board(previousPos) = nullptr;
-        m_board(pos) = character;
-        return true;
-    }
-    return false;
 }
 
 void Game::drawUI()
@@ -547,12 +562,6 @@ void Game::switchTurn()
     }
 }
 
-bool isDead(EntityCharacter entity)
-{
-    const Character* p = entity.getCharacterPtr();
-    return p->getHP() <= 0;
-}
-
 void Game::removeCharacterIfDead(gf::Vector2i target)
 {
     if (m_board(target) && m_board(target)->getHP() <= 0) {
@@ -564,8 +573,7 @@ void Game::removeCharacterIfDead(gf::Vector2i target)
             thisPlayer = &m_aiPlayer;
         }
         thisPlayer->removeDeadCharacters();
-        m_characterEntities.erase(std::remove_if(m_characterEntities.begin(), m_characterEntities.end(), isDead), m_characterEntities.end());
-        m_board(target) = nullptr;
+        m_board(target) = boost::none;
     }
 }
 
@@ -573,4 +581,42 @@ void Game::updateGoals()
 {
     m_humanPlayer.activateGoals();
     m_aiPlayer.activateGoals();
+}
+
+void Game::drawCharacters()
+{
+    for(int i = 11; i >= 0; --i){
+        for(int j = 0; j < 6; ++j){
+            gf::Vector2i thisPos(i,j);
+            if(m_board(thisPos)){
+                const Character& thisChar = *m_board(thisPos);
+                std::string spriteName = "placeholders/character.png";
+                switch (thisChar.getType()) {
+                case CharacterType::Scout: {
+                    spriteName = "placeholders/scout.png";
+                    break;
+                }
+                case CharacterType::Tank: {
+                    spriteName = "placeholders/tank.png";
+                    break;
+                }
+                case CharacterType::Support: {
+                    spriteName = "placeholders/support.png";
+                    break;
+                }
+                }
+                gf::Sprite sprite = gf::Sprite{m_resMgr->getTexture(spriteName)};
+                if (thisChar.getTeam() == PlayerTeam::Cthulhu) {
+                    sprite.setScale({-1.0f, 1.0f}); // Mirrored
+                    sprite.setAnchor(gf::Anchor::CenterRight);
+                } else {
+                    sprite.setColor(gf::Color::Red); // Red variant
+                    sprite.setAnchor(gf::Anchor::CenterLeft);
+                }
+                sprite.setOrigin(sprite.getOrigin() + gf::Vector2f{0.0f, -4.0f});
+                sprite.setPosition(gameToScreenPos(thisPos));
+                m_renderer.draw(sprite, gf::RenderStates());
+            }
+        }
+    }
 }

@@ -29,7 +29,7 @@ public:
      */
     void simulateActions();
 
-    void playTurn(gf::Array2D<Character*, int>* board);
+    void playTurn(gf::Array2D<boost::optional<Character>, int>& board);
 
 private:
 };
