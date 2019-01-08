@@ -13,7 +13,9 @@ if(LATEX_FOUND)
     add_subdirectory(docs EXCLUDE_FROM_ALL)
 endif(LATEX_FOUND)
 
+find_package(Threads REQUIRED)
 find_package(gf REQUIRED)
+find_package(Boost REQUIRED)
 
 add_custom_target(check
     COMMAND clang-format -style=file -i src/* include/*
@@ -34,8 +36,12 @@ add_executable(game
     src/utility.cpp
 )
 
-target_include_directories(game PRIVATE include)
+target_include_directories(game PRIVATE
+	${Boost_INCLUDE_DIRS}
+	include
+)
 
 target_link_libraries(game
+	Threads::Threads
     gf::gf0
 )
