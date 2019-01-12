@@ -5,6 +5,7 @@
 #include <gf/SpriteBatch.h>
 #include <gf/VectorOps.h>
 
+#include <algorithm>
 #include <iostream>
 
 #include <cstdlib>
@@ -136,6 +137,7 @@ void Game::processEvents()
                     activePlayer->setMoved(true);
                     stateSelectionUpdate(PlayerTurnSelection::AttackSelection);
                 } else {
+
                     m_selectedCharacter = nullptr;
                     stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                 }
@@ -501,53 +503,51 @@ void Game::drawBackground()
 {
     const gf::Vector2i size{getBoardSize()};
 
-    gf::SpriteBatch batch{m_renderer};
-    batch.begin();
+    //gf::SpriteBatch batch{m_renderer};
+    //batch.begin();
     for (int x{size.width - 1}; x >= 0; --x) {
         for (int y{0}; y < size.height; ++y) {
             bool selectedTile = (m_selectedCharacter && m_selectedCharacter->getPosition().x == x && m_selectedCharacter->getPosition().y == y);
             bool showPossibleTargets = (m_selectedCharacter && m_possibleTargets.end() != m_possibleTargets.find(gf::Vector2i{x, y}));
             bool showTargetsInRange = (m_selectedCharacter && m_targetsInRange.end() != m_targetsInRange.find(gf::Vector2i{x, y}));
-            gf::Sprite tileSpr;
-
-            bool isGoal = false;
-            Goal* thisGoal = nullptr;
-            for (auto it = m_goals.cbegin(); it != m_goals.cend(); ++it) {
-                //                 std::cout << (*it)->getPosition().x << ":" << (*it)->getPosition().y << "\n";
-                if ((*it)->getPosition().x == x && (*it)->getPosition().y == y) {
-                    isGoal = true;
-                    thisGoal = *it;
-                    break;
-                }
-            }
-            if (isGoal && thisGoal) {
-                if (thisGoal->getTeam() == PlayerTeam::Cthulhu) {
-                    tileSpr = gf::Sprite(m_goalSatan);
-                } else {
-                    tileSpr = gf::Sprite(m_goalCthulhu);
-                }
-            } else if ((x + y) % 2 == 0) {
-                tileSpr = gf::Sprite(m_darkTile);
-            } else {
-                tileSpr = gf::Sprite(m_brightTile);
-            }
+            auto tileSpr = [this, &x, &y] () -> gf::Sprite& {
+				auto foundGoal = std::find_if(m_goals.cbegin(), m_goals.cend(), [&x, &y] (const Goal* goal) { return goal->getPosition() == gf::Vector2i{x, y}; });
+				if (foundGoal != m_goals.cend()) {
+					if ((*foundGoal)->getTeam() == PlayerTeam::Cthulhu) {
+						return m_goalSatan;
+					} else {
+						return m_goalCthulhu;
+					}
+				} else if ((x + y) % 2 == 0) {
+					return m_darkTile;
+				} else {
+					return m_brightTile;
+				}
+			} ();
             tileSpr.setPosition(gameToScreenPos({x, y}));
-            batch.draw(tileSpr);
-            if (selectedTile || showPossibleTargets || showTargetsInRange) {
-                gf::Sprite overTileSpr;
-                if (selectedTile) {
-                    overTileSpr = gf::Sprite(m_selectedTile);
-                } else if (showPossibleTargets) {
-                    overTileSpr = gf::Sprite(m_possibleTargetsTile);
-                } else if (showTargetsInRange) {
-                    overTileSpr = gf::Sprite(m_targetsInRangeTile);
-                }
-                overTileSpr.setPosition(gameToScreenPos({x, y}));
-                batch.draw(overTileSpr);
-            }
+			m_renderer.draw(tileSpr);
+
+            //batch.draw(tileSpr);
+			auto overTileSpr = [this, &selectedTile, &showPossibleTargets, &showTargetsInRange] {
+				if (selectedTile) {
+					return boost::optional<gf::Sprite&>{m_selectedTile};
+				} else if (showPossibleTargets) {
+					return boost::optional<gf::Sprite&>{m_possibleTargetsTile};
+				} else if (showTargetsInRange) {
+					return boost::optional<gf::Sprite&>{m_targetsInRangeTile};
+				}
+
+				return boost::optional<gf::Sprite&>{};
+			} ();
+
+			if (overTileSpr) {
+				overTileSpr->setPosition(gameToScreenPos({x, y}));
+				m_renderer.draw(*overTileSpr);
+			}
+			//batch.draw(overTileSpr);
         }
     }
-    batch.end();
+    //batch.end();
 }
 
 void Game::switchTurn()
@@ -562,19 +562,21 @@ void Game::switchTurn()
     }
 }
 
-void Game::removeCharacterIfDead(gf::Vector2i target)
+void Game::removeCharacterIfDead(const gf::Vector2i& target)
 {
-    if (m_board(target) && m_board(target)->getHP() <= 0) {
-        Player* thisPlayer;
-        PlayerTeam thisTeam = m_board(target)->getTeam();
-        if (thisTeam == PlayerTeam::Cthulhu) {
-            thisPlayer = &m_humanPlayer;
-        } else {
-            thisPlayer = &m_aiPlayer;
-        }
-        thisPlayer->removeDeadCharacters();
-        m_board(target) = boost::none;
-    }
+	if (positionIsValid(target)) {
+		if (m_board(target) && m_board(target)->getHP() <= 0) {
+			Player* thisPlayer = nullptr;
+			PlayerTeam thisTeam = m_board(target)->getTeam();
+			if (thisTeam == PlayerTeam::Cthulhu) {
+				thisPlayer = &m_humanPlayer;
+			} else {
+				thisPlayer = &m_aiPlayer;
+			}
+			thisPlayer->removeDeadCharacters();
+			m_board(target) = boost::none;
+		}
+	}
 }
 
 void Game::updateGoals()

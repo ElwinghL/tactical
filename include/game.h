@@ -165,7 +165,7 @@ private:
      * Remove a character everywhere its informations are saved if it is dead
      * \param target the position of the character
      */
-    void removeCharacterIfDead(gf::Vector2i target);
+    void removeCharacterIfDead(const gf::Vector2i& target);
 
     void updateGoals();
 
