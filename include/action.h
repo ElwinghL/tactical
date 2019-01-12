@@ -7,12 +7,11 @@
 
 #include "character.h"
 #include "utility.h"
-#include "boost/optional.hpp"
 
 #include <gf/Array2D.h>
 #include <gf/Vector.h>
 
-class Character;
+#include <boost/optional.hpp>
 
 /**
  * Represent an action done by a character
@@ -32,7 +31,7 @@ public:
      * \param target The position which is the attack/capacity destination
      */
     Action(Character& character, ActionType type, const gf::Vector2i& move, const gf::Vector2i& target) :
-        m_character{character},
+        m_characterPos{character.getPosition()},
         m_type{type},
         m_move{move},
         m_target{target}
@@ -100,7 +99,7 @@ public:
     }
 
 private:
-    Character& m_character; ///< The character who is doing this action
+    gf::Vector2i m_characterPos; ///< The position of the character who is doing this action
     ActionType m_type; ///< The type of this action
     gf::Vector2i m_move; ///< The movement vector
     gf::Vector2i m_target; ///< The attack/capacity targeted position

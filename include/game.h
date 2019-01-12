@@ -5,11 +5,9 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include "entitycharacter.h"
 #include "gameai.h"
 #include "humanplayer.h"
 #include "player.h"
-#include "boost/optional.hpp"
 
 #include <gf/Action.h>
 #include <gf/Array2D.h>
@@ -29,6 +27,7 @@
 #include <gf/Widgets.h>
 #include <gf/Window.h>
 
+#include <boost/optional.hpp>
 #include <string>
 #include <utility>
 #include <vector>
@@ -150,7 +149,7 @@ private:
      * Draw the user interface of the game
      */
     void drawUI();
-    
+
     /**
      * Draw characters
      */

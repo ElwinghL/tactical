@@ -5,19 +5,16 @@
 #ifndef CHARACTER_H
 #define CHARACTER_H
 
-#include "action.h"
 #include "utility.h"
-#include "boost/optional.hpp"
 
 #include <gf/Array2D.h>
 #include <gf/Vector.h>
 #include <gf/VectorOps.h>
 
+#include <boost/optional.hpp>
 #include <iostream>
 #include <set>
 #include <vector>
-
-#include <cassert>
 
 class Action;
 

@@ -1,8 +1,10 @@
 #include "action.h"
 
+#include <utility>
+
 bool Action::isValid(gf::Array2D<boost::optional<Character>, int> board) const
 {
-    Character character{m_character};
+    Character character{*board(m_characterPos)};
     if (!character.canMove(m_move, board)) {
         return false;
     }
@@ -17,7 +19,7 @@ bool Action::isValid(gf::Array2D<boost::optional<Character>, int> board) const
 
     switch (m_type) {
     case ActionType::Capacity:
-        return character.canUseCapacity(m_target - m_character.getPosition(), board);
+        return character.canUseCapacity(m_target - m_characterPos, board);
 
     case ActionType::Attack:
         return character.canAttack(*board(m_target), board);
@@ -31,22 +33,22 @@ bool Action::isValid(gf::Array2D<boost::optional<Character>, int> board) const
 
 void Action::execute(gf::Array2D<boost::optional<Character>, int>& board)
 {
-    boost::optional<Character> oldP = board(m_character.getPosition());
-    assert(oldP);
-    board(m_character.getPosition()) = boost::none;
-    oldP->move(m_move, board);
-    m_character.move(m_move, board);
-    board(oldP->getPosition()) = oldP;
+    gf::Vector2i oldPos = m_characterPos;
+    boost::optional<Character>& character = board(m_characterPos);
+    assert(character);
+    character->move(m_move, board);
     switch (m_type) {
     case ActionType::Capacity: {
-        m_character.useCapacity(m_target, board);
+        character->useCapacity(m_target, board);
     } break;
 
     case ActionType::Attack: {
-        m_character.attack(*board(m_target), board);
+        character->attack(*board(m_target), board);
     } break;
 
     case ActionType::None:
         break;
     }
+    m_characterPos = character->getPosition();
+    std::swap(board(oldPos), board(m_characterPos));
 }
