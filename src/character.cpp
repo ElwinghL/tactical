@@ -2,6 +2,8 @@
 
 #include "action.h"
 
+#include <utility>
+
 #include <cmath>
 
 using std::abs;
@@ -66,10 +68,10 @@ bool Character::useCapacity(gf::Vector2i& target, gf::Array2D<boost::optional<Ch
 
     switch (m_type) {
     case CharacterType::Scout: {
-        Character& thisCharacter = *board(m_pos);
-        board(m_pos) = boost::none;
-        m_pos = target;
-        board(target) = thisCharacter;
+        std::swap(board(m_pos), board(target));
+        board(target)->m_pos = target;
+        // m_pos = target not useful because this != board(target)->get_ptr()
+        // so this character isn't useful anymore
     } break;
 
     case CharacterType::Tank: {
@@ -78,10 +80,8 @@ bool Character::useCapacity(gf::Vector2i& target, gf::Array2D<boost::optional<Ch
         int yvalue = relative.y == 0 ? 0 : relative.y / abs(relative.y);
         gf::Vector2i newPos = m_pos + gf::Vector2i{xvalue, yvalue};
 
-        Character& targetCharacter = *board(target);
-        board(target) = boost::none;
-        targetCharacter.m_pos = newPos;
-        board(newPos) = targetCharacter;
+        std::swap(board(target), board(newPos));
+        board(newPos)->m_pos = newPos;
     } break;
 
     case CharacterType::Support: {
@@ -96,10 +96,8 @@ bool Character::useCapacity(gf::Vector2i& target, gf::Array2D<boost::optional<Ch
                 return true;
             }
         }
-        Character& targetCharacter = *board(target);
-        board(target) = boost::none;
-        targetCharacter.m_pos = newPos;
-        board(newPos) = targetCharacter;
+        std::swap(board(target), board(newPos));
+        board(newPos)->m_pos = newPos;
     } break;
     }
     return true;
@@ -279,7 +277,7 @@ std::vector<Action> Character::getPossibleActions(const gf::Array2D<boost::optio
         res.push_back(Action(*this, ActionType::None, *it - m_pos, gf::Vector2i{0, 0}));
 
         gf::Array2D<boost::optional<Character>, int> thisBoard{board};
-        Character character = Character(getTeam(), getType(), getPosition());
+        Character character(getTeam(), getType(), getPosition());
         thisBoard(character.getPosition()) = boost::none;
         thisBoard(*it) = character;
         character.move(*it - character.getPosition(), thisBoard);

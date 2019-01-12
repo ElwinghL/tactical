@@ -4,22 +4,20 @@
 
 bool Action::isValid(gf::Array2D<boost::optional<Character>, int> board) const
 {
-    Character character{*board(m_characterPos)};
+    assert(board(m_characterPos));
+    Character& character = *board(m_characterPos);
     if (!character.canMove(m_move, board)) {
         return false;
     }
 
-    gf::Vector2i previousPos{character.getPosition()};
-
-    board(character.getPosition() + m_move);
     character.move(m_move, board);
+    gf::Vector2i newPos{m_characterPos + m_move};
 
-    board(previousPos) = boost::none;
-    board(character.getPosition()) = character;
+    std::swap(board(newPos), board(m_characterPos));
 
     switch (m_type) {
     case ActionType::Capacity:
-        return character.canUseCapacity(m_target - m_characterPos, board);
+        return character.canUseCapacity(m_target - newPos, board);
 
     case ActionType::Attack:
         return character.canAttack(*board(m_target), board);
@@ -34,9 +32,15 @@ bool Action::isValid(gf::Array2D<boost::optional<Character>, int> board) const
 void Action::execute(gf::Array2D<boost::optional<Character>, int>& board)
 {
     gf::Vector2i oldPos = m_characterPos;
+    boost::optional<Character>& characterBeforeMove = board(m_characterPos);
+    assert(characterBeforeMove);
+
+    characterBeforeMove->move(m_move, board);
+    m_characterPos = characterBeforeMove->getPosition();
+    std::swap(board(oldPos), board(m_characterPos));
+
     boost::optional<Character>& character = board(m_characterPos);
     assert(character);
-    character->move(m_move, board);
     switch (m_type) {
     case ActionType::Capacity: {
         character->useCapacity(m_target, board);
@@ -49,6 +53,4 @@ void Action::execute(gf::Array2D<boost::optional<Character>, int>& board)
     case ActionType::None:
         break;
     }
-    m_characterPos = character->getPosition();
-    std::swap(board(oldPos), board(m_characterPos));
 }
