@@ -434,12 +434,25 @@ void Game::initSprites()
     m_buttonCapacity.setAnchor(gf::Anchor::TopLeft);
     m_buttonPass.setAnchor(gf::Anchor::TopLeft);
     
+    gf::Vector2f infoboxScale{0.3f,0.3f};
     m_infoboxScout.setAnchor(gf::Anchor::TopLeft);
-    m_infoboxScout.setScale({0.3f,0.3f});
+    m_infoboxScout.setScale(infoboxScale);
     m_infoboxTank.setAnchor(gf::Anchor::TopLeft);
-    m_infoboxTank.setScale({0.3f,0.3f});
+    m_infoboxTank.setScale(infoboxScale);
     m_infoboxSupport.setAnchor(gf::Anchor::TopLeft);
-    m_infoboxSupport.setScale({0.3f,0.3f});
+    m_infoboxSupport.setScale(infoboxScale);
+    m_infoboxScoutAttack.setAnchor(gf::Anchor::TopLeft);
+    m_infoboxScoutAttack.setScale(infoboxScale);
+    m_infoboxTankAttack.setAnchor(gf::Anchor::TopLeft);
+    m_infoboxTankAttack.setScale(infoboxScale);
+    m_infoboxSupportAttack.setAnchor(gf::Anchor::TopLeft);
+    m_infoboxSupportAttack.setScale(infoboxScale);
+    m_infoboxScoutCapacity.setAnchor(gf::Anchor::TopLeft);
+    m_infoboxScoutCapacity.setScale(infoboxScale);
+    m_infoboxTankCapacity.setAnchor(gf::Anchor::TopLeft);
+    m_infoboxTankCapacity.setScale(infoboxScale);
+    m_infoboxSupportCapacity.setAnchor(gf::Anchor::TopLeft);
+    m_infoboxSupportCapacity.setScale(infoboxScale);
 }
 
 void Game::initEntities()
@@ -506,9 +519,9 @@ void Game::drawUI()
     
     //Affichage des infobox :
     gf::Vector2i tile{screenToGamePos(m_mouseCoords)};
+    gf::SpriteBatch batch{m_renderer};
+    batch.begin();
     if(m_board.isValid(tile) && m_board(tile)){
-        gf::SpriteBatch batch{m_renderer};
-        batch.begin();
         CharacterType mouseOverType = m_board(tile)->getType();
         switch(mouseOverType){
             case CharacterType::Scout:{
@@ -527,8 +540,46 @@ void Game::drawUI()
                 break;
             }
         }
-        batch.end();
     }
+    if(m_buttonAttack.contains(m_mouseCoords) && m_selectedCharacter){
+        switch(m_selectedCharacter->getType()){
+            case CharacterType::Scout:{
+                m_infoboxScoutAttack.setPosition(m_mouseCoords);
+                batch.draw(m_infoboxScoutAttack);
+                break;
+            }
+            case CharacterType::Tank:{
+                m_infoboxTankAttack.setPosition(m_mouseCoords);
+                batch.draw(m_infoboxTankAttack);
+                break;
+            }
+            case CharacterType::Support:{
+                m_infoboxSupportAttack.setPosition(m_mouseCoords);
+                batch.draw(m_infoboxSupportAttack);
+                break;
+            }
+        }
+    }
+    if(m_buttonCapacity.contains(m_mouseCoords) && m_selectedCharacter){
+        switch(m_selectedCharacter->getType()){
+            case CharacterType::Scout:{
+                m_infoboxScoutCapacity.setPosition(m_mouseCoords);
+                batch.draw(m_infoboxScoutCapacity);
+                break;
+            }
+            case CharacterType::Tank:{
+                m_infoboxTankCapacity.setPosition(m_mouseCoords);
+                batch.draw(m_infoboxTankCapacity);
+                break;
+            }
+            case CharacterType::Support:{
+                m_infoboxSupportCapacity.setPosition(m_mouseCoords);
+                batch.draw(m_infoboxSupportCapacity);
+                break;
+            }
+        }
+    }
+    batch.end();
 }
 
 void Game::drawBackground()
