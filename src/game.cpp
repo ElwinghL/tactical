@@ -433,6 +433,13 @@ void Game::initSprites()
     m_buttonAttack.setAnchor(gf::Anchor::TopLeft);
     m_buttonCapacity.setAnchor(gf::Anchor::TopLeft);
     m_buttonPass.setAnchor(gf::Anchor::TopLeft);
+    
+    m_infoboxScout.setAnchor(gf::Anchor::TopLeft);
+    m_infoboxScout.setScale({0.3f,0.3f});
+    m_infoboxTank.setAnchor(gf::Anchor::TopLeft);
+    m_infoboxTank.setScale({0.3f,0.3f});
+    m_infoboxSupport.setAnchor(gf::Anchor::TopLeft);
+    m_infoboxSupport.setScale({0.3f,0.3f});
 }
 
 void Game::initEntities()
@@ -495,6 +502,32 @@ void Game::drawUI()
         gf::Vector2i posButtonPass{70, 80};
         m_buttonPass.setPosition(posButtonPass);
         m_uiWidgets.render(m_renderer);
+    }
+    
+    //Affichage des infobox :
+    gf::Vector2i tile{screenToGamePos(m_mouseCoords)};
+    if(m_board.isValid(tile) && m_board(tile)){
+        gf::SpriteBatch batch{m_renderer};
+        batch.begin();
+        CharacterType mouseOverType = m_board(tile)->getType();
+        switch(mouseOverType){
+            case CharacterType::Scout:{
+                m_infoboxScout.setPosition(m_mouseCoords);
+                batch.draw(m_infoboxScout);
+                break;
+            }
+            case CharacterType::Tank:{
+                m_infoboxTank.setPosition(m_mouseCoords);
+                batch.draw(m_infoboxTank);
+                break;
+            }
+            case CharacterType::Support:{
+                m_infoboxSupport.setPosition(m_mouseCoords);
+                batch.draw(m_infoboxSupport);
+                break;
+            }
+        }
+        batch.end();
     }
 }
 

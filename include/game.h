@@ -227,6 +227,9 @@ private:
     gf::Sprite m_goalCthulhuActivated{m_resMgr->getTexture("placeholders/caseGoalCthulhuActivated.png")};
     gf::Sprite m_goalSatan{m_resMgr->getTexture("placeholders/caseGoalSatan.png")};
     gf::Sprite m_goalSatanActivated{m_resMgr->getTexture("placeholders/caseGoalSatanActivated.png")};
+    gf::Sprite m_infoboxScout{m_resMgr->getTexture("placeholders/infoboxScout.png")};
+    gf::Sprite m_infoboxTank{m_resMgr->getTexture("placeholders/infoboxTank.png")};
+    gf::Sprite m_infoboxSupport{m_resMgr->getTexture("placeholders/infoboxSupport.png")};
 
     gf::SpriteWidget m_buttonAttack{m_resMgr->getTexture("placeholders/iconAttack.png"), m_resMgr->getTexture("placeholders/iconAttack.png"), m_resMgr->getTexture("placeholders/iconAttack.png")};
     gf::SpriteWidget m_buttonCapacity{m_resMgr->getTexture("placeholders/iconCapacity.png"), m_resMgr->getTexture("placeholders/iconCapacity.png"), m_resMgr->getTexture("placeholders/iconCapacity.png")};
