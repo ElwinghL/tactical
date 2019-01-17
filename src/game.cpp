@@ -453,6 +453,11 @@ void Game::initSprites()
     m_infoboxTankCapacity.setScale(infoboxScale);
     m_infoboxSupportCapacity.setAnchor(gf::Anchor::TopLeft);
     m_infoboxSupportCapacity.setScale(infoboxScale);
+    
+    for(size_t i = 0; i < 8; ++i){
+        m_lifeSprite.push_back(gf::Sprite{m_resMgr->getTexture(std::string("placeholders/life")+std::to_string(8-i)+std::string(".png"))});
+        m_lifeSprite[i].setAnchor(gf::Anchor::Center);
+    }
 }
 
 void Game::initEntities()
@@ -699,6 +704,9 @@ void Game::drawCharacters()
                 sprite.setOrigin(sprite.getOrigin() + gf::Vector2f{0.0f, -4.0f});
                 sprite.setPosition(gameToScreenPos(thisPos));
                 m_renderer.draw(sprite, gf::RenderStates());
+                int imageIndexLife = thisChar.getHP()-1;
+                m_lifeSprite[imageIndexLife].setPosition(gameToScreenPos(thisPos)+gf::Vector2i{30,-28});
+                m_renderer.draw(m_lifeSprite[imageIndexLife],gf::RenderStates());
             }
         }
     }
