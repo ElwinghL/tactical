@@ -23,6 +23,8 @@ Game::Game(gf::ResourceManager* resMgr) :
     initSprites();
     initEntities();
     initGoals();
+
+    m_aiPlayer.setInitialGameboard(m_board);
 }
 
 void Game::processEvents()

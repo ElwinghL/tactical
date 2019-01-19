@@ -6,14 +6,13 @@
 
 void GameAI::simulateActions()
 {
-    Gameboard_t currentBoard{};
-
-    while (m_threadInput.pop(currentBoard)) {
+    Gameboard_t board{};
+    while (m_threadInput.pop(board)) {
         std::vector<Action> allActions;
-        for (auto& square : currentBoard) {
+        for (auto& square : board) {
             if (square && square->getTeam() == m_team) {
                 Character& thisCharacter = *square;
-                std::vector<Action> thisCharacterActions = thisCharacter.getPossibleActions(currentBoard);
+                std::vector<Action> thisCharacterActions = thisCharacter.getPossibleActions(board);
                 for (auto& action : thisCharacterActions) {
                     allActions.push_back(action);
                 }
@@ -26,6 +25,13 @@ void GameAI::simulateActions()
 
         m_threadOutput.push(allActions[randAction]);
         std::cout << "Possible actions : " << allActions.size() << "\n";
+    }
+}
+
+void GameAI::setInitialGameboard(const Gameboard_t& board)
+{
+    if (!m_initialBoardSet) {
+        m_threadInput.push(board);
     }
 }
 

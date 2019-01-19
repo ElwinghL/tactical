@@ -27,7 +27,7 @@ public:
     explicit GameAI(PlayerTeam team) :
         Player{team, false}
     {
-        // TODO Initial gameboard
+        // Nothing
     }
 
     virtual ~GameAI() noexcept
@@ -39,6 +39,7 @@ public:
         std::cout << 3 << std::endl;
     }
 
+    void setInitialGameboard(const Gameboard_t& board);
     bool playTurn(Gameboard_t& board);
 
 private:
@@ -48,6 +49,7 @@ private:
     void simulateActions();
 
     bool m_waitingForThread{false};
+    bool m_initialBoardSet{false};
 
     std::thread m_computingThread{&GameAI::simulateActions, this};
     BlockingQueue<Gameboard_t> m_threadInput{};
