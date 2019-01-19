@@ -76,12 +76,12 @@ public:
      * \param board The board of the game
      * \return True if this action is valid, false otherwise
      */
-    bool isValid(gf::Array2D<boost::optional<Character>, int> board) const;
+    bool isValid(Gameboard_t board) const;
 
     /*
      * Execute this action. The character moves then attacks or uses a capacity
      */
-    void execute(gf::Array2D<boost::optional<Character>, int>& board);
+    void execute(Gameboard_t& board);
 
     gf::Vector2i getMove() const
     {

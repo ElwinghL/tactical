@@ -190,18 +190,17 @@ void Game::processEvents()
     } break;
 
     case GameState::WaitingForAI: {
-        //         std::cout << "L'IA joue\n";
-        sleep(1); // TODO temporaire, pour vraiment voir le tour de l'adversaire
-        m_aiPlayer.playTurn(m_board);
-        //Temporaire :
-        for (int i = 0; i < 6; ++i) {
-            for (int j = 0; j < 12; ++j) {
-                gf::Vector2i thisPos(i, j);
-                removeCharacterIfDead(thisPos);
+        if (m_aiPlayer.playTurn(m_board)) {
+            //Temporaire :
+            for (int i = 0; i < 6; ++i) {
+                for (int j = 0; j < 12; ++j) {
+                    gf::Vector2i thisPos(i, j);
+                    removeCharacterIfDead(thisPos);
+                }
             }
-        }
 
-        switchTurn();
+            switchTurn();
+        }
     } break;
 
     case GameState::GameEnd: {

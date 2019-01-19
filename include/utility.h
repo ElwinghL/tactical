@@ -5,8 +5,11 @@
 #ifndef UTILITY_H
 #define UTILITY_H
 
+#include <gf/Array2D.h>
 #include <gf/Vector.h>
 #include <gf/View.h>
+
+#include <boost/optional.hpp>
 
 #include <tuple>
 
@@ -17,6 +20,9 @@ enum class PlayerTeam {
     Cthulhu, ///< The Cthulhu team
     Satan ///< The Satan team
 };
+
+class Character;
+using Gameboard_t = gf::Array2D<boost::optional<Character>, int>; 
 
 /**
  * The type of the action done by a character

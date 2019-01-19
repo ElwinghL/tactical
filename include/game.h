@@ -212,7 +212,7 @@ private:
 
     Character* m_selectedCharacter = nullptr;
 
-    gf::Array2D<boost::optional<Character>, int> m_board{{12, 6}, boost::none};
+    Gameboard_t m_board{{12, 6}, boost::none};
 
     std::set<gf::Vector2i, PositionComp> m_possibleTargets;
     std::set<gf::Vector2i, PositionComp> m_targetsInRange;

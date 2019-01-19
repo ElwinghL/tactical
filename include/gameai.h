@@ -5,7 +5,13 @@
 #ifndef GAMEAI_H
 #define GAMEAI_H
 
+#include "action.h"
 #include "player.h"
+#include "queues.h"
+#include "utility.h"
+
+#include <iostream>
+#include <thread>
 
 /**
  * The artificial intelligence class
@@ -21,17 +27,31 @@ public:
     explicit GameAI(PlayerTeam team) :
         Player{team, false}
     {
-        // Nothing
+        // TODO Initial gameboard
     }
 
+    virtual ~GameAI() noexcept
+    {
+        std::cout << 1 << std::endl;
+        m_threadInput.fail();
+        std::cout << 2 << std::endl;
+        m_computingThread.join();
+        std::cout << 3 << std::endl;
+    }
+
+    bool playTurn(Gameboard_t& board);
+
+private:
     /**
      * Simulate the actions
      */
     void simulateActions();
 
-    void playTurn(gf::Array2D<boost::optional<Character>, int>& board);
+    bool m_waitingForThread{false};
 
-private:
+    std::thread m_computingThread{&GameAI::simulateActions, this};
+    BlockingQueue<Gameboard_t> m_threadInput{};
+    PollingQueue<Action> m_threadOutput{};
 };
 
 #endif // GAMEAI_H

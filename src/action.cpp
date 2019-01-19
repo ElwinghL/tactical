@@ -2,7 +2,7 @@
 
 #include <utility>
 
-bool Action::isValid(gf::Array2D<boost::optional<Character>, int> board) const
+bool Action::isValid(Gameboard_t board) const
 {
     assert(board(m_characterPos));
     Character& character = *board(m_characterPos);
@@ -29,7 +29,7 @@ bool Action::isValid(gf::Array2D<boost::optional<Character>, int> board) const
     return true;
 }
 
-void Action::execute(gf::Array2D<boost::optional<Character>, int>& board)
+void Action::execute(Gameboard_t& board)
 {
     gf::Vector2i oldPos = m_characterPos;
     boost::optional<Character>& characterBeforeMove = board(m_characterPos);
