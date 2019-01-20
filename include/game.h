@@ -120,8 +120,6 @@ private:
     void initEntities();
     void initGoals();
 
-    void addCharacter(Player& player, Character&& character);
-
     /**
      * Get a pointer to the character at this position, nullptr if the player
      * has no character at this position

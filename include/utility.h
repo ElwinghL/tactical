@@ -10,7 +10,6 @@
 #include <gf/View.h>
 
 #include <boost/optional.hpp>
-
 #include <tuple>
 
 /**
@@ -22,7 +21,7 @@ enum class PlayerTeam {
 };
 
 class Character;
-using Gameboard_t = gf::Array2D<boost::optional<Character>, int>; 
+using Gameboard_t = gf::Array2D<boost::optional<Character>, int>;
 
 /**
  * The type of the action done by a character

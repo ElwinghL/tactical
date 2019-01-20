@@ -1,21 +1,11 @@
 #include "game.h"
 
-#include "action.h"
-#include "utility.h"
-
 #include <gf/SpriteBatch.h>
-#include <gf/VectorOps.h>
-
-#include <algorithm>
-#include <iostream>
-
-#include <cstdlib>
-#include <ctime>
 
 Game::Game(gf::ResourceManager* resMgr) :
     m_resMgr{resMgr}
 {
-    srand(time(NULL)); // TODO Replace with gf::Random
+    //    srand(time(NULL)); // TODO Replace with gf::Random
     initWindow();
     initViews();
     initActions();
@@ -219,24 +209,6 @@ void Game::stateSelectionUpdate(PlayerTurnSelection nextState)
     m_targetsInRange.clear();
     switch (nextState) {
     case PlayerTurnSelection::MoveSelection: {
-        std::vector<Action> actions = m_selectedCharacter->getPossibleActions(m_board);
-        for (size_t i = 0; i < actions.size(); ++i) {
-            //std::cout << "Move : (" << m_selectedCharacter->getPosition().x+actions[i].getMove().x << ";" << m_selectedCharacter->getPosition().y+actions[i].getMove().y << ")\t";
-            ActionType type = actions[i].getType();
-            switch (type) {
-            case ActionType::Attack: {
-                //std::cout << "Attack : (" << actions[i].getTarget().x << ";" << actions[i].getTarget().y << ")";
-            } break;
-
-            case ActionType::Capacity: {
-                //std::cout << "Capacity : (" << actions[i].getTarget().x << ";" << actions[i].getTarget().y << ")";
-            } break;
-
-            case ActionType::None:
-                break;
-            }
-            //std::cout << "\n";
-        }
         m_possibleTargets = m_selectedCharacter->getAllPossibleMoves(m_board);
         m_targetsInRange = m_selectedCharacter->getAllPossibleMoves(m_board, true);
     } break;
@@ -267,27 +239,6 @@ void Game::update()
     } break;
 
     case GameState::GameStart: {
-        /*for (int y = 0; y < m_board.getRows(); ++y) {
-            for (int x = 0; x < m_board.getCols(); ++x) {
-                if (m_board(gf::Vector2i{x, y})) {
-                    switch (m_board(gf::Vector2i{x, y})->getType()) {
-                    case CharacterType::Tank:
-                        std::cout << "T ";
-                        break;
-                    case CharacterType::Scout:
-                        std::cout << "s ";
-                        break;
-                    case CharacterType::Support:
-                        std::cout << "S ";
-                    }
-                } else {
-                    std::cout << "  ";
-                }
-            }
-
-            std::cout << std::endl;
-        }*/
-
         m_clearColor = gf::Color::Black;
 
         m_gameState = GameState::PlayerTurn;
@@ -434,8 +385,8 @@ void Game::initSprites()
     m_buttonAttack.setAnchor(gf::Anchor::TopLeft);
     m_buttonCapacity.setAnchor(gf::Anchor::TopLeft);
     m_buttonPass.setAnchor(gf::Anchor::TopLeft);
-    
-    gf::Vector2f infoboxScale{0.3f,0.3f};
+
+    gf::Vector2f infoboxScale{0.3f, 0.3f};
     m_infoboxScout.setAnchor(gf::Anchor::TopLeft);
     m_infoboxScout.setScale(infoboxScale);
     m_infoboxTank.setAnchor(gf::Anchor::TopLeft);
@@ -454,9 +405,10 @@ void Game::initSprites()
     m_infoboxTankCapacity.setScale(infoboxScale);
     m_infoboxSupportCapacity.setAnchor(gf::Anchor::TopLeft);
     m_infoboxSupportCapacity.setScale(infoboxScale);
-    
-    for(size_t i = 0; i < 8; ++i){
-        m_lifeSprite.push_back(gf::Sprite{m_resMgr->getTexture(std::string("placeholders/life")+std::to_string(8-i)+std::string(".png"))});
+
+    for (size_t i = 0; i < 8; ++i) {
+        m_lifeSprite.emplace_back(
+                m_resMgr->getTexture(std::string("placeholders/life") + std::to_string(8 - i) + std::string(".png")));
         m_lifeSprite[i].setAnchor(gf::Anchor::Center);
     }
 }
@@ -470,7 +422,7 @@ void Game::initEntities()
         gf::Vector2i pos{column, 0};
 
         auto addCharacterInColumn{[this, &pos, &player](CharacterType type) {
-            addCharacter(player, Character{player.getTeam(), type, pos});
+            m_board(pos) = Character{player.getTeam(), type, pos};
             ++pos.y;
         }};
 
@@ -484,14 +436,6 @@ void Game::initEntities()
 
     initPlayerCharacters(2, m_humanPlayer);
     initPlayerCharacters(9, m_aiPlayer);
-}
-
-void Game::addCharacter(Player& player, Character&& character)
-{
-    if (!m_board(character.getPosition())) {
-        Character* tile = player.addCharacter(std::move(character));
-        m_board(character.getPosition()) = *tile;
-    }
 }
 
 Character* Game::getCharacter(gf::Vector2i pos, PlayerTeam team)
@@ -522,67 +466,67 @@ void Game::drawUI()
         m_buttonPass.setPosition(posButtonPass);
         m_uiWidgets.render(m_renderer);
     }
-    
+
     //Affichage des infobox :
     gf::Vector2i tile{screenToGamePos(m_mouseCoords)};
     gf::SpriteBatch batch{m_renderer};
     batch.begin();
-    if(m_board.isValid(tile) && m_board(tile)){
+    if (m_board.isValid(tile) && m_board(tile)) {
         CharacterType mouseOverType = m_board(tile)->getType();
-        switch(mouseOverType){
-            case CharacterType::Scout:{
-                m_infoboxScout.setPosition(m_mouseCoords);
-                batch.draw(m_infoboxScout);
-                break;
-            }
-            case CharacterType::Tank:{
-                m_infoboxTank.setPosition(m_mouseCoords);
-                batch.draw(m_infoboxTank);
-                break;
-            }
-            case CharacterType::Support:{
-                m_infoboxSupport.setPosition(m_mouseCoords);
-                batch.draw(m_infoboxSupport);
-                break;
-            }
+        switch (mouseOverType) {
+        case CharacterType::Scout: {
+            m_infoboxScout.setPosition(m_mouseCoords);
+            batch.draw(m_infoboxScout);
+            break;
+        }
+        case CharacterType::Tank: {
+            m_infoboxTank.setPosition(m_mouseCoords);
+            batch.draw(m_infoboxTank);
+            break;
+        }
+        case CharacterType::Support: {
+            m_infoboxSupport.setPosition(m_mouseCoords);
+            batch.draw(m_infoboxSupport);
+            break;
+        }
         }
     }
-    if(m_buttonAttack.contains(m_mouseCoords) && m_selectedCharacter){
-        switch(m_selectedCharacter->getType()){
-            case CharacterType::Scout:{
-                m_infoboxScoutAttack.setPosition(m_mouseCoords);
-                batch.draw(m_infoboxScoutAttack);
-                break;
-            }
-            case CharacterType::Tank:{
-                m_infoboxTankAttack.setPosition(m_mouseCoords);
-                batch.draw(m_infoboxTankAttack);
-                break;
-            }
-            case CharacterType::Support:{
-                m_infoboxSupportAttack.setPosition(m_mouseCoords);
-                batch.draw(m_infoboxSupportAttack);
-                break;
-            }
+    if (m_buttonAttack.contains(m_mouseCoords) && m_selectedCharacter) {
+        switch (m_selectedCharacter->getType()) {
+        case CharacterType::Scout: {
+            m_infoboxScoutAttack.setPosition(m_mouseCoords);
+            batch.draw(m_infoboxScoutAttack);
+            break;
+        }
+        case CharacterType::Tank: {
+            m_infoboxTankAttack.setPosition(m_mouseCoords);
+            batch.draw(m_infoboxTankAttack);
+            break;
+        }
+        case CharacterType::Support: {
+            m_infoboxSupportAttack.setPosition(m_mouseCoords);
+            batch.draw(m_infoboxSupportAttack);
+            break;
+        }
         }
     }
-    if(m_buttonCapacity.contains(m_mouseCoords) && m_selectedCharacter){
-        switch(m_selectedCharacter->getType()){
-            case CharacterType::Scout:{
-                m_infoboxScoutCapacity.setPosition(m_mouseCoords);
-                batch.draw(m_infoboxScoutCapacity);
-                break;
-            }
-            case CharacterType::Tank:{
-                m_infoboxTankCapacity.setPosition(m_mouseCoords);
-                batch.draw(m_infoboxTankCapacity);
-                break;
-            }
-            case CharacterType::Support:{
-                m_infoboxSupportCapacity.setPosition(m_mouseCoords);
-                batch.draw(m_infoboxSupportCapacity);
-                break;
-            }
+    if (m_buttonCapacity.contains(m_mouseCoords) && m_selectedCharacter) {
+        switch (m_selectedCharacter->getType()) {
+        case CharacterType::Scout: {
+            m_infoboxScoutCapacity.setPosition(m_mouseCoords);
+            batch.draw(m_infoboxScoutCapacity);
+            break;
+        }
+        case CharacterType::Tank: {
+            m_infoboxTankCapacity.setPosition(m_mouseCoords);
+            batch.draw(m_infoboxTankCapacity);
+            break;
+        }
+        case CharacterType::Support: {
+            m_infoboxSupportCapacity.setPosition(m_mouseCoords);
+            batch.draw(m_infoboxSupportCapacity);
+            break;
+        }
         }
     }
     batch.end();
@@ -651,18 +595,8 @@ void Game::switchTurn()
 
 void Game::removeCharacterIfDead(const gf::Vector2i& target)
 {
-    if (positionIsValid(target)) {
-        if (m_board(target) && m_board(target)->getHP() <= 0) {
-            Player* thisPlayer = nullptr;
-            PlayerTeam thisTeam = m_board(target)->getTeam();
-            if (thisTeam == PlayerTeam::Cthulhu) {
-                thisPlayer = &m_humanPlayer;
-            } else {
-                thisPlayer = &m_aiPlayer;
-            }
-            thisPlayer->removeDeadCharacters();
-            m_board(target) = boost::none;
-        }
+    if (positionIsValid(target) && m_board(target) && m_board(target)->getHP() <= 0) {
+        m_board(target) = boost::none;
     }
 }
 
@@ -705,9 +639,9 @@ void Game::drawCharacters()
                 sprite.setOrigin(sprite.getOrigin() + gf::Vector2f{0.0f, -4.0f});
                 sprite.setPosition(gameToScreenPos(thisPos));
                 m_renderer.draw(sprite, gf::RenderStates());
-                int imageIndexLife = thisChar.getHP()-1;
-                m_lifeSprite[imageIndexLife].setPosition(gameToScreenPos(thisPos)+gf::Vector2i{30,-28});
-                m_renderer.draw(m_lifeSprite[imageIndexLife],gf::RenderStates());
+                int imageIndexLife = thisChar.getHP() - 1;
+                m_lifeSprite[imageIndexLife].setPosition(gameToScreenPos(thisPos) + gf::Vector2i{30, -28});
+                m_renderer.draw(m_lifeSprite[imageIndexLife], gf::RenderStates());
             }
         }
     }

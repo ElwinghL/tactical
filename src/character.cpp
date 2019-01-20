@@ -2,10 +2,6 @@
 
 #include "action.h"
 
-#include <utility>
-
-#include <cmath>
-
 using std::abs;
 
 bool Character::canAttack(const Character& other, const Gameboard_t& board, bool usedForNotPossibleDisplay) const
@@ -119,8 +115,7 @@ bool Character::canUseCapacity(const gf::Vector2i& target, const Gameboard_t& bo
         if ((abs(target.x) == 1 && abs(target.y) == 0) || (abs(target.x) == 0 && abs(target.y) == 1)) {
             return usedForNotPossibleDisplay || !board(gf::Vector2i{target + m_pos});
         }
-        return false;
-    }
+    } break;
 
     case CharacterType::Support: {
         if ((abs(target.x) == 2 && abs(target.y) == 0) || (abs(target.x) == 0 && abs(target.y) == 2)) {
@@ -134,9 +129,7 @@ bool Character::canUseCapacity(const gf::Vector2i& target, const Gameboard_t& bo
 
             return usedForNotPossibleDisplay;
         }
-
-        return false;
-    }
+    } break;
 
     case CharacterType::Tank: {
         if ((abs(target.x) == 2 && abs(target.y) == 0) || (abs(target.x) == 3 && abs(target.y) == 0) || (abs(target.x) == 0 && abs(target.y) == 2) || (abs(target.x) == 0 && abs(target.y) == 3)) {
@@ -156,8 +149,7 @@ bool Character::canUseCapacity(const gf::Vector2i& target, const Gameboard_t& bo
             }
             return usedForNotPossibleDisplay || board(gf::Vector2i{target + m_pos});
         }
-        return false;
-    }
+    } break;
     }
     return false;
 }
@@ -273,23 +265,23 @@ std::vector<Action> Character::getPossibleActions(const Gameboard_t& board)
 {
     std::vector<Action> res = std::vector<Action>{};
     std::set<gf::Vector2i, PositionComp> possibleMovements = getAllPossibleMoves(board);
-    for (auto it = possibleMovements.cbegin(); it != possibleMovements.cend(); ++it) {
-        res.push_back(Action(*this, ActionType::None, *it - m_pos, gf::Vector2i{0, 0}));
+    for (auto possibleMovement : possibleMovements) {
+        res.push_back(Action(*this, ActionType::None, possibleMovement - m_pos, gf::Vector2i{0, 0}));
 
         Gameboard_t thisBoard{board};
-        Character character(getTeam(), getType(), getPosition());
+        Character character{*this};
         thisBoard(character.getPosition()) = boost::none;
-        thisBoard(*it) = character;
-        character.move(*it - character.getPosition(), thisBoard);
+        thisBoard(possibleMovement) = character;
+        character.move(possibleMovement - character.getPosition(), thisBoard);
 
         std::set<gf::Vector2i, PositionComp> possibleCapacities = character.getAllPossibleCapacities(thisBoard);
-        for (auto it_a = possibleCapacities.cbegin(); it_a != possibleCapacities.cend(); ++it_a) {
-            res.push_back(Action(*this, ActionType::Capacity, *it - m_pos, *it_a));
+        for (auto possibleCapacitie : possibleCapacities) {
+            res.emplace_back(*this, ActionType::Capacity, possibleMovement - m_pos, possibleCapacitie);
         }
 
         std::set<gf::Vector2i, PositionComp> possibleAttacks = character.getAllPossibleAttacks(thisBoard);
-        for (auto it_a = possibleAttacks.cbegin(); it_a != possibleAttacks.cend(); ++it_a) {
-            res.push_back(Action(*this, ActionType::Attack, *it - m_pos, *it_a));
+        for (auto possibleAttack : possibleAttacks) {
+            res.emplace_back(*this, ActionType::Attack, possibleMovement - m_pos, possibleAttack);
         }
     }
 

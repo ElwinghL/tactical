@@ -17,7 +17,6 @@
 #include <map>
 
 constexpr std::size_t nbOfGoalsPerPlayer{2}; ///< The number of goal to reach for each player
-constexpr std::size_t nbOfCharactersPerPlayer{6}; ///< The number of characters each player has at the beginning of the game
 
 /**
  * A player, who is controlled by the computer of by a human
@@ -71,7 +70,6 @@ public:
     Player(PlayerTeam team, bool playFirst) :
         m_team{team},
         m_theirTurn{playFirst},
-        m_characters{},
         m_goals{Goal{m_team, {0, 0}}, Goal{m_team, {0, 0}}}
     {
         // Nothing
@@ -130,21 +128,6 @@ public:
     }
 
     /**
-     * Add a character to this player
-     *
-     * \param character The character to add to this player
-     * \return A pointer to this new character
-     */
-    Character* addCharacter(Character&& character)
-    {
-        auto res{m_characters.emplace(character.getPosition().y, character)};
-
-        return res.second ? &res.first->second : nullptr;
-    }
-
-    void removeDeadCharacters();
-
-    /**
      * Change the positions of this player's goals
      * \param positions An array containing the positions for all goals
      */
@@ -165,7 +148,6 @@ protected:
 
     bool m_theirTurn{true}; ///< Can the player play?
 
-    std::map<int, Character> m_characters; ///< The characters controlled by this player, the key is y starting position
     std::array<Goal, nbOfGoalsPerPlayer> m_goals; ///< The goals this player has to reach
 };
 
