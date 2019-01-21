@@ -35,7 +35,7 @@ public:
         std::cout << 1 << std::endl;
         m_threadInput.fail();
         std::cout << 2 << std::endl;
-        m_computingThread.join();
+        m_computingThread.detach();
         std::cout << 3 << std::endl;
     }
 

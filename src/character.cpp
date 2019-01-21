@@ -107,13 +107,15 @@ Ability Character::canAttack(const Gameboard_t& board, const gf::Vector2i& origi
     } break;
 
     case CharacterType::Support: {
-        gf::Vector2i xUnit = gf::displacement(gf::Orientation::East);
-        if (gf::cross(xUnit, relative) == 0 || gf::dot(xUnit, relative) == 0) { // If vector is orthogonal
+        constexpr int range = 3;
+
+        gf::Vector2i absRel{gf::abs(relative)};
+        if ((absRel.x == 0 && absRel.y <= range) || (absRel.x <= range && absRel.y == 0)) { // If vector is orthogonal
             result = Ability::Unavailable;
 
             // Check if there is a character in this direction
             gf::Vector2i direction = gf::sign(relative);
-            for (gf::Vector2i sq2Check = origin + direction, maxRange = origin + 3 * direction;
+            for (gf::Vector2i sq2Check = origin + direction, maxRange = origin + range * direction;
                  sq2Check != maxRange;
                  sq2Check += direction) {
                 if (sq2Check == dest) {
@@ -126,7 +128,7 @@ Ability Character::canAttack(const Gameboard_t& board, const gf::Vector2i& origi
                 }
             }
         }
-    }
+    } break;
 
     case CharacterType::Tank:
         if (gf::chebyshevDistance(origin, dest) == 1) {
