@@ -6,13 +6,11 @@ bool Action::isValid(Gameboard_t board) const
 {
     assert(board(m_origin));
     Character& character = *board(m_origin);
-    if (!character.canMove(m_dest - m_origin, board)) {
+    if (!character.canMove(board, m_origin, m_dest)) {
         return false;
     }
 
-    character.move(m_dest - m_origin, board);
-
-    std::swap(board(m_dest), board(m_origin));
+    character.move(board, m_origin, m_dest);
 
     switch (m_type) {
     case ActionType::Capacity:
@@ -33,8 +31,7 @@ void Action::execute(Gameboard_t& board)
     boost::optional<Character>& characterBeforeMove = board(m_origin);
     assert(characterBeforeMove);
 
-    characterBeforeMove->move(m_dest - m_origin, board);
-    std::swap(board(m_dest), board(m_origin));
+    characterBeforeMove->move(board, m_origin, m_dest);
 
     boost::optional<Character>& character = board(m_dest);
     assert(character);

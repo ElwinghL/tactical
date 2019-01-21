@@ -8,6 +8,7 @@
 #include "utility.h"
 
 #include <gf/Array2D.h>
+#include <gf/Orientation.h>
 #include <gf/Vector.h>
 #include <gf/VectorOps.h>
 
@@ -30,9 +31,9 @@ public:
     static constexpr auto Unavailable = Value::Unavailable;
     static constexpr auto Able = Value::Able;
 
-    constexpr Ability(Value value) : m_value{value}
+    constexpr Ability(Value value) :
+        m_value{value}
     {
-
     }
 
     constexpr operator bool() const
@@ -198,23 +199,23 @@ public:
     /**
      * Move this character
      *
-     * \param movement The movement vector, which is difference between
+     * \param dest The movement vector, which is difference between
      *                 the start and the end of the movement
      * \param board The board with the characters
      * \return True if the character is able to move by this vector
      */
-    bool move(const gf::Vector2i& movement, const Gameboard_t& board);
+    bool move(Gameboard_t& board, const gf::Vector2i& origin, const gf::Vector2i& dest);
 
     /**
      * Tell if this character can move along a given vector
      *
-     * \param movement The movement vector, which is difference between
+     * \param dest The movement vector, which is difference between
      *                 the start and the end of the movement
      * \param board An array with all the characters
      * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
      * \return True if the character is able to move by this vector
      */
-    bool canMove(const gf::Vector2i& movement, const Gameboard_t& board, bool usedForNotPossibleDisplay = false) const;
+    Ability canMove(const Gameboard_t& board, const gf::Vector2i& origin, const gf::Vector2i& dest) const;
 
     /**
      * Use the character's capacity
@@ -275,6 +276,24 @@ private:
         }
 
         return -1; // to suppress the "no-return" warning
+    }
+
+    static bool isTargetReachable(const Gameboard_t& board, const gf::Vector2i& origin, const gf::Vector2i& relative, int range)
+    {
+        gf::Vector2i direction = gf::sign(relative);
+        for (gf::Vector2i sq2Check = direction, maxRange = range * direction;
+             sq2Check != maxRange + direction;
+             sq2Check += direction) {
+            if (sq2Check == relative) {
+                return true;
+            }
+
+            if (!board.isValid(origin + sq2Check) || board(origin + sq2Check)) {
+                return false;
+            }
+        }
+
+        return false;
     }
 
     PlayerTeam m_team; ///< The team this character belongs to

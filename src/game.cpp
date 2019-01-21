@@ -93,9 +93,7 @@ void Game::processEvents()
                 if (m_selectedPos != tile && isFromTeam(tile, m_humanPlayer.getTeam())) {
                     m_selectedPos = tile;
                     stateSelectionUpdate(PlayerTurnSelection::MoveSelection);
-                } else if (isEmpty(tile) && selectedCharacter->canMove(tile - *m_selectedPos, m_board)) {
-                    Action thisMove{*m_selectedPos, tile};
-                    thisMove.execute(m_board);
+                } else if (selectedCharacter->move(m_board, *m_selectedPos, tile)) {
                     m_humanPlayer.setMoved(true);
                     m_selectedPos = tile;
                     stateSelectionUpdate(PlayerTurnSelection::AttackSelection);

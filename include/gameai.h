@@ -35,7 +35,7 @@ public:
         std::cout << 1 << std::endl;
         m_threadInput.fail();
         std::cout << 2 << std::endl;
-        m_computingThread.detach();
+        m_computingThread.detach(); // FIXME change to join without making the app slow to exit
         std::cout << 3 << std::endl;
     }
 
