@@ -18,6 +18,42 @@
 
 class Action;
 
+class Ability {
+public:
+    enum class Value {
+        Unable,
+        Unavailable,
+        Able
+    };
+
+    static constexpr auto Unable = Value::Unable;
+    static constexpr auto Unavailable = Value::Unavailable;
+    static constexpr auto Able = Value::Able;
+
+    constexpr Ability(Value value) : m_value{value}
+    {
+
+    }
+
+    constexpr operator bool() const
+    {
+        return m_value == Able;
+    }
+
+    constexpr bool operator!() const
+    {
+        return m_value != Able;
+    }
+
+    constexpr operator Value() const
+    {
+        return m_value;
+    }
+
+private:
+    Value m_value;
+};
+
 /**
  * Represent a playable character
  */
@@ -107,29 +143,7 @@ public:
     }
 
     /**
-     * Tell if the character can attack another one
-     *
-     * \param other The other character this character is trying to attack
-     * \param board The board of the game
-     * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
-     * \return True if the other character may be attacked by this character
-     */
-    bool canAttack(const Character& other, const Gameboard_t& board, bool usedForNotPossibleDisplay = false) const;
-
-    /**
-     * Attack another character
-     *
-     * The amount of damage dealt to the other character
-     * depends of the type of this one
-     *
-     * \param other The character to attack
-     * \param board The board of the game
-     * \return True if the attack succeeds
-     */
-    bool attack(Character& other, const Gameboard_t& board) const;
-
-    /**
-     * Get a set of every possible movement for the character
+    * Get a set of every possible movement for the character
      * \param board The board containing pointers to characters
      * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
      * \return The set of possible relative vector movements
@@ -153,6 +167,35 @@ public:
     std::set<gf::Vector2i, PositionComp> getAllPossibleCapacities(const Gameboard_t& board, bool usedForNotPossibleDisplay = false) const;
 
     /**
+     * Give all the actions the character can do
+     * \param board The board
+     * \return A vector with all the possible actions
+     */
+    std::vector<Action> getPossibleActions(const Gameboard_t& board);
+
+    /**
+     * Attack another character
+     *
+     * The amount of damage dealt to the other character
+     * depends of the type of this one
+     *
+     * \param other The character to attack
+     * \param board The board of the game
+     * \return True if the attack succeeds
+     */
+    bool attack(Gameboard_t& board, const gf::Vector2i& origin, const gf::Vector2i& dest) const;
+
+    /**
+     * Tell if the character can attack another one
+     *
+     * \param other The other character this character is trying to attack
+     * \param board The board of the game
+     * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
+     * \return True if the other character may be attacked by this character
+     */
+    Ability canAttack(const Gameboard_t& board, const gf::Vector2i& origin, const gf::Vector2i& dest) const;
+
+    /**
      * Move this character
      *
      * \param movement The movement vector, which is difference between
@@ -160,25 +203,7 @@ public:
      * \param board The board with the characters
      * \return True if the character is able to move by this vector
      */
-    bool move(const gf::Vector2i& movement, const Gameboard_t& board)
-    {
-        bool success{canMove(movement, board)};
-
-        if (success) {
-            m_pos += movement;
-        }
-
-        return success;
-    }
-
-    /**
-     * Use the character's capacity
-     *
-     * \param target The target vector, which is difference between
-     *                 the start and the end
-     * \return True if the character is able to use its capacity by this vector
-     */
-    bool useCapacity(gf::Vector2i& target, Gameboard_t& board);
+    bool move(const gf::Vector2i& movement, const Gameboard_t& board);
 
     /**
      * Tell if this character can move along a given vector
@@ -192,6 +217,15 @@ public:
     bool canMove(const gf::Vector2i& movement, const Gameboard_t& board, bool usedForNotPossibleDisplay = false) const;
 
     /**
+     * Use the character's capacity
+     *
+     * \param target The target vector, which is difference between
+     *                 the start and the end
+     * \return True if the character is able to use its capacity by this vector
+     */
+    bool useCapacity(gf::Vector2i& target, Gameboard_t& board);
+
+    /**
      * Tell if this character can use its capacity along a given vector
      *
      * \param target The target vector, which is difference between
@@ -201,13 +235,6 @@ public:
      * \return True if the character is able to use its capacity by this vector
      */
     bool canUseCapacity(const gf::Vector2i& target, const Gameboard_t& board, bool usedForNotPossibleDisplay = false) const;
-
-    /**
-     * Give all the actions the character can do
-     * \param board The board
-     * \return A vector with all the possible actions
-     */
-    std::vector<Action> getPossibleActions(const Gameboard_t& board);
 
 private:
     /**

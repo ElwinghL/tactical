@@ -4,23 +4,22 @@
 
 bool Action::isValid(Gameboard_t board) const
 {
-    assert(board(m_characterPos));
-    Character& character = *board(m_characterPos);
-    if (!character.canMove(m_move, board)) {
+    assert(board(m_origin));
+    Character& character = *board(m_origin);
+    if (!character.canMove(m_dest - m_origin, board)) {
         return false;
     }
 
-    character.move(m_move, board);
-    gf::Vector2i newPos{m_characterPos + m_move};
+    character.move(m_dest - m_origin, board);
 
-    std::swap(board(newPos), board(m_characterPos));
+    std::swap(board(m_dest), board(m_origin));
 
     switch (m_type) {
     case ActionType::Capacity:
-        return character.canUseCapacity(m_target - newPos, board);
+        return character.canUseCapacity(m_target - m_dest, board);
 
     case ActionType::Attack:
-        return character.canAttack(*board(m_target), board);
+        return character.canAttack(board, m_dest, m_target);
 
     case ActionType::None:
         break;
@@ -31,15 +30,13 @@ bool Action::isValid(Gameboard_t board) const
 
 void Action::execute(Gameboard_t& board)
 {
-    gf::Vector2i oldPos = m_characterPos;
-    boost::optional<Character>& characterBeforeMove = board(m_characterPos);
+    boost::optional<Character>& characterBeforeMove = board(m_origin);
     assert(characterBeforeMove);
 
-    characterBeforeMove->move(m_move, board);
-    m_characterPos = characterBeforeMove->getPosition();
-    std::swap(board(oldPos), board(m_characterPos));
+    characterBeforeMove->move(m_dest - m_origin, board);
+    std::swap(board(m_dest), board(m_origin));
 
-    boost::optional<Character>& character = board(m_characterPos);
+    boost::optional<Character>& character = board(m_dest);
     assert(character);
     switch (m_type) {
     case ActionType::Capacity: {
@@ -47,7 +44,7 @@ void Action::execute(Gameboard_t& board)
     } break;
 
     case ActionType::Attack: {
-        character->attack(*board(m_target), board);
+        character->attack(board, m_origin, m_target);
     } break;
 
     case ActionType::None:

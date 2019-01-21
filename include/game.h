@@ -120,21 +120,15 @@ private:
     void initEntities();
     void initGoals();
 
-    /**
-     * Get a pointer to the character at this position, nullptr if the player
-     * has no character at this position
-     * \param pos The specified position
-     * \param team The team of the player
-     * \return The pointer to the character, or nullptr
-     */
-    Character* getCharacter(gf::Vector2i pos, PlayerTeam team);
+    bool isEmpty(const gf::Vector2i& tile) const
+    {
+        return !positionIsValid(tile) || m_board(tile) == boost::none;
+    }
 
-    /**
-     * Get a pointer to the character at this position, nullptr if there is no character
-     * \param pos The specified position
-     * \return The pointer to the character, or nullptr
-     */
-    Character* getCharacter(gf::Vector2i pos);
+    bool isFromTeam(const gf::Vector2i& tile, PlayerTeam team) const
+    {
+        return positionIsValid(tile) && m_board(tile) && m_board(tile)->getTeam() == team;
+    }
 
     void stateSelectionUpdate(PlayerTurnSelection nextState);
 
@@ -208,7 +202,8 @@ private:
 
     std::vector<Goal*> m_goals{};
 
-    Character* m_selectedCharacter = nullptr;
+    boost::optional<gf::Vector2i> m_selectedPos;
+    //Character* m_selectedCharacter = nullptr;
 
     Gameboard_t m_board{{12, 6}, boost::none};
 

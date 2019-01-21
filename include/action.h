@@ -27,13 +27,13 @@ public:
      *
      * \param character The character who is doing this action
      * \param type The type of this action
-     * \param move A vector which is the difference between the start and the end of the movement
+     * \param dest A vector which is the difference between the start and the end of the movement
      * \param target The position which is the attack/capacity destination
      */
-    Action(Character& character, ActionType type, const gf::Vector2i& move, const gf::Vector2i& target) :
-        m_characterPos{character.getPosition()},
+    Action(ActionType type, const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& target) :
         m_type{type},
-        m_move{move},
+        m_origin{origin},
+        m_dest{dest},
         m_target{target}
     {
         // Nothing
@@ -44,11 +44,11 @@ public:
      *
      * Make an action with only a movement and without attack/capacity
      *
-     * \param character The character who is doing this action
-     * \param move A vector which is the difference between the start and the end of the movement
+     * \param origin The character who is doing this action
+     * \param dest A vector which is the difference between the start and the end of the movement
      */
-    Action(Character& character, const gf::Vector2i& move) :
-        Action{character, ActionType::None, move, gf::Vector2i{0, 0}}
+    Action(const gf::Vector2i& origin, const gf::Vector2i& dest) :
+        Action{ActionType::None, origin, dest, origin}
     {
         // Nothing
     }
@@ -58,12 +58,12 @@ public:
      *
      * Make an action without movement
      *
-     * \param character The character who is doing this action
+     * \param origin The character who is doing this action
      * \param type The type of this action
      * \param target The position which is the attack/capacity destination
      */
-    Action(Character& character, ActionType type, const gf::Vector2i& target) :
-        Action{character, type, gf::Vector2i{0, 0}, target}
+    Action(ActionType type, const gf::Vector2i& origin, const gf::Vector2i& target) :
+        Action{type, origin, origin, target}
     {
         // Nothing
     }
@@ -83,9 +83,9 @@ public:
      */
     void execute(Gameboard_t& board);
 
-    gf::Vector2i getMove() const
+    gf::Vector2i getDest() const
     {
-        return m_move;
+        return m_dest;
     }
 
     gf::Vector2i getTarget() const
@@ -98,10 +98,20 @@ public:
         return m_type;
     }
 
+    gf::Vector2i getOrigin() const
+    {
+        return m_origin;
+    }
+
+    gf::Vector2i getMove() const
+    {
+        return m_dest - m_origin;
+    }
+
 private:
-    gf::Vector2i m_characterPos; ///< The position of the character who is doing this action
     ActionType m_type; ///< The type of this action
-    gf::Vector2i m_move; ///< The movement vector
+    gf::Vector2i m_origin; ///< The position of the character who is doing this action
+    gf::Vector2i m_dest; ///< The movement vector
     gf::Vector2i m_target; ///< The attack/capacity targeted position
 };
 
