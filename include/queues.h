@@ -21,8 +21,8 @@ public:
     void push(U&& value)
     {
         std::lock_guard<std::mutex> lock{m_mutex};
-        m_cv.notify_all();
         m_queue.push(std::forward<U>(value));
+        m_cv.notify_all();
     }
 
     /**
@@ -55,7 +55,9 @@ public:
      */
     void fail()
     {
+        std::lock_guard<std::mutex> lock{m_mutex};
         m_fail = true;
+        m_cv.notify_all();
     }
 
 private:
@@ -63,7 +65,7 @@ private:
     std::mutex m_mutex{};
     std::condition_variable m_cv{};
 
-    std::atomic_bool m_fail{false};
+    bool m_fail{false};
 };
 
 /**
