@@ -33,6 +33,7 @@ add_executable(game
     src/player.cpp
     src/humanplayer.cpp
     src/utility.cpp
+        src/gameboard.cpp
 )
 
 target_include_directories(game PRIVATE

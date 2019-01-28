@@ -1,21 +1,18 @@
 #include "gameai.h"
 
-#include <gameai.h>
-#include <iostream>
-#include <utility.h>
-#include <vector>
-
 
 void GameAI::simulateActions()
 {
-    Gameboard_t board{};
+    Gameboard board{};
     while (m_threadInput.pop(board)) {
         std::vector<Action> allActions;
-        for (boost::optional<Character>& m_character : board) {
-            if (m_character && m_character->getTeam() == m_team) {
-                std::vector<Action> thisCharacterActions = m_character->getPossibleActions(board);
-                for (auto& thisCharacterAction : thisCharacterActions) {
-                    allActions.push_back(thisCharacterAction);
+        for (gf::Vector2i pos{0, 0}, size = board.getSize(); pos.x < size.width; ++pos.x) {
+            for (pos.y = 0; pos.y < size.height; ++pos.y) {
+                if (board.isOccupied(pos)) {
+                    std::vector<Action> thisCharacterActions = board.getPossibleActions(pos);
+                    for (auto& thisCharacterAction : thisCharacterActions) {
+                        allActions.push_back(thisCharacterAction);
+                    }
                 }
             }
         }
@@ -49,14 +46,14 @@ void GameAI::simulateActions()
     }
 }
 
-void GameAI::setInitialGameboard(const Gameboard_t& board)
+void GameAI::setInitialGameboard(const Gameboard& board)
 {
     if (!m_initialBoardSet) {
         m_threadInput.push(board);
     }
 }
 
-bool GameAI::playTurn(Gameboard_t& board)
+bool GameAI::playTurn(Gameboard& board)
 {
     if (!m_waitingForThread) {
         m_threadInput.push(board);
@@ -72,125 +69,124 @@ bool GameAI::playTurn(Gameboard_t& board)
     return static_cast<bool>(result);
 }
 
-long GameAI::functionEval(const Gameboard_t& board)
+long GameAI::functionEval(const Gameboard& board)
 {
     long score = 0;
-    int nbOfCharactersOnGoals = 0;
-    int nbOfEnemyCharactersOnGoals = 0;
-    long nbOfDeadCharacters = 0;
-    long nbOfEnemyDeadCharacters = 0;
-    int maxHPSum = 0;
+    int enemyDamage = 0;
 
-    std::vector<Character*> myCharacters, otherCharacters;
+    std::vector<gf::Vector2i> myCharacterPositions, otherCharacterPositions;
     //find the differents characters positions
     for (int i = 0; i < board.getSize().x; ++i) {
         for (int j = 0; j < board.getSize().y; ++j) {
             gf::Vector2i pos = {i, j};
-            if (board.isValid(pos)) {
-                if (board(pos)) {
-                    if (board(pos)->getTeam() == m_team) {
-                        Character character(m_team, board(pos)->getType(), pos);
-                        myCharacters.push_back(&character);
-                    } else {
-                        Character character(getEnemyTeam(m_team), board(pos)->getType(), pos);
-                        otherCharacters.push_back(&character);
-                        maxHPSum += character.getHPMax();
-                    }
+            if (board.isOccupied(pos)) {
+                Character character = board.getCharacter(pos);
+                if (character.getTeam() == getEnemyTeam(m_team)) {
+                    enemyDamage += character.getHPMax() - character.getHP();
                 }
+                myCharacterPositions.push_back(pos);
             }
         }
     }
+
+    score += enemyDamage;
+
     //Check if you can attack
-    for (auto mCharacters : myCharacters) {
-        for (auto oCharacters : otherCharacters) {
-            if (mCharacters->canAttack(board, mCharacters->getPosition(), oCharacters->getPosition())) {
+    for (auto myPos : myCharacterPositions) {
+        for (auto otherPos : otherCharacterPositions) {
+            if (board.canAttack(myPos, otherPos)) {
                 score += 10;
             }
-        }
-    }
-    for (auto oCharacters : otherCharacters) {
-        for (auto mCharacters : myCharacters) {
-            if (oCharacters->canAttack(board, oCharacters->getPosition(), mCharacters->getPosition())) {
+
+            if (board.canAttack(myPos, otherPos)) {
                 score -= 10;
             }
         }
     }
+
+    int nbOfCharactersOnGoals = 0;
+
     //check if one player is on goal
     for (auto myGoal : m_goals) {
         if (myGoal.getTeam() == m_team) {
             if (myGoal.isActivated()) {
                 score += 50;
-                nbOfCharactersOnGoals++;
+                ++nbOfCharactersOnGoals;
             }
         }
     }
+
+    int nbOfEnemyCharactersOnGoals = 0;
+
     for (auto enemyGoal : m_goals) {
         if (enemyGoal.getTeam() == getEnemyTeam(m_team)) {
             if (enemyGoal.isActivated()) {
                 score -= 50;
-                nbOfEnemyCharactersOnGoals++;
+                ++nbOfEnemyCharactersOnGoals;
             }
         }
     }
+
     if (nbOfCharactersOnGoals == nbOfGoalsPerPlayer) {
         return 9999;
     }
+
     if (nbOfEnemyCharactersOnGoals == nbOfGoalsPerPlayer) {
         return -9999;
     }
+
     //check if one player has lost some characters
-    nbOfDeadCharacters = 6 - myCharacters.size();
-    nbOfEnemyDeadCharacters = 6 - otherCharacters.size();
+    int nbOfDeadCharacters = 6 - static_cast<int>(myCharacterPositions.size());
+    int nbOfEnemyDeadCharacters = 6 - static_cast<int>(otherCharacterPositions.size());
+
     if (nbOfDeadCharacters == 6 - 1) {
         return -9999;
     }
+
     if (nbOfEnemyDeadCharacters == 6 - 1) {
         return 9999;
     }
+
     if (nbOfDeadCharacters > 0) {
         score -= nbOfDeadCharacters * 10;
     }
+
     if (nbOfEnemyDeadCharacters > 0) {
         score += nbOfEnemyDeadCharacters * 10;
     }
     //Check if you can attack someone
 
-    int currHPSum = 0;
-    for (auto oCharacters : otherCharacters) {
-        currHPSum += oCharacters->getHP();
-    }
-    //Si l'ennemy est blessé.
-    score += maxHPSum - currHPSum;
-
     return score;
 }
 
-GameAI::depthActionsExploration GameAI::bestActionInFuture(Gameboard_t& board, unsigned int Depth)
+GameAI::depthActionsExploration GameAI::bestActionInFuture(Gameboard& board, unsigned int depth)
 {
     std::vector<Action> allActions;
-    for (boost::optional<Character>& m_character : board) {
-        if (m_character && m_character->getTeam() == m_team) {
-            std::vector<Action> thisCharacterActions = m_character->getPossibleActions(board);
-            for (auto& thisCharacterAction : thisCharacterActions) {
-                allActions.push_back(thisCharacterAction);
+    for (gf::Vector2i pos{0, 0}, size = board.getSize(); pos.x < size.width; ++pos.x) {
+        for (pos.y = 0; pos.y < size.height; ++pos.y) {
+            if (board.isOccupied(pos) && board.getTeamFor(pos) == m_team) {
+                std::vector<Action> thisCharacterActions = board.getPossibleActions(pos);
+                for (auto& thisCharacterAction : thisCharacterActions) {
+                    allActions.push_back(thisCharacterAction);
+                }
             }
         }
     }
-    std::vector<Gameboard_t> boardsToAnalyse;
+    std::vector<Gameboard> boardsToAnalyse;
 
     for (auto actionAvailable : allActions) {
-        Gameboard_t anOtherBoard{board};
+        Gameboard anOtherBoard{board};
         actionAvailable.execute(anOtherBoard);
         boardsToAnalyse.push_back(anOtherBoard);
     }
 
     long bestScore = -9998;
     Action bestAction = allActions.front();
-    if (Depth == 0) {
+    if (depth == 0) {
         long score = 0;
         for (auto actionAvailable : allActions) {
             if (actionAvailable.getType() != ActionType::None) {
-                Gameboard_t anOtherBoard{board};
+                Gameboard anOtherBoard{board};
                 actionAvailable.execute(anOtherBoard);
                 score = functionEval(anOtherBoard);
 
@@ -217,7 +213,7 @@ GameAI::depthActionsExploration GameAI::bestActionInFuture(Gameboard_t& board, u
         std::vector<GameAI::depthActionsExploration> allPossibilities;
         long score = 0;
         for (auto actionAvailable : allActions) {
-            Gameboard_t anOtherBoard{board};
+            Gameboard anOtherBoard{board};
             actionAvailable.execute(anOtherBoard);
             score = functionEval(anOtherBoard);
             boardsToAnalyse.push_back(anOtherBoard);
@@ -230,7 +226,7 @@ GameAI::depthActionsExploration GameAI::bestActionInFuture(Gameboard_t& board, u
             return std::make_pair(bestAction, std::make_pair(bestScore, bestScore));
         } else {
             for (auto currentBoard : boardsToAnalyse) {
-                allPossibilities.push_back(bestActionInFuture(currentBoard, Depth - 1));
+                allPossibilities.push_back(bestActionInFuture(currentBoard, depth - 1));
             }
             long bestScoreRow = -10000; // So if the "best action" is to loose with a -9999 score it will be possible
             bestScore = -10000;

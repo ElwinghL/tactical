@@ -6,6 +6,7 @@
 #define GAMEAI_H
 
 #include "action.h"
+#include "gameboard.h"
 #include "player.h"
 #include "queues.h"
 #include "utility.h"
@@ -42,9 +43,9 @@ public:
         std::cout << 3 << std::endl;
     }
 
-    void setInitialGameboard(const Gameboard_t& board);
+    void setInitialGameboard(const Gameboard& board);
 
-    bool playTurn(Gameboard_t& board);
+    bool playTurn(Gameboard& board);
     /**
      * \name: functionEval
      * \function: Give a score to a state (9999 means win and -9999 means defeat
@@ -52,7 +53,7 @@ public:
      * \param: Board game
      * \return : Score the actual configuration
      */
-    long functionEval(const Gameboard_t& board);
+    long functionEval(const Gameboard& board);
 
     /**
      * The first int correspond to the depth of the configuration.
@@ -62,7 +63,7 @@ public:
      * @param depth
      * @return
      */
-    depthActionsExploration bestActionInFuture(Gameboard_t& board, unsigned int Depth);
+    depthActionsExploration bestActionInFuture(Gameboard& board, unsigned int depth);
 
 private:
     /**
@@ -75,7 +76,7 @@ private:
 
 
     std::thread m_computingThread{&GameAI::simulateActions, this};
-    BlockingQueue<Gameboard_t> m_threadInput{};
+    BlockingQueue<Gameboard> m_threadInput{};
     PollingQueue<Action> m_threadOutput{};
 };
 

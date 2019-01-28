@@ -13,6 +13,8 @@
 
 #include <boost/optional.hpp>
 
+class Gameboard;
+
 /**
  * Represent an action done by a character
  *
@@ -76,12 +78,12 @@ public:
      * \param board The board of the game
      * \return True if this action is valid, false otherwise
      */
-    bool isValid(Gameboard_t board) const;
+    bool isValid(Gameboard board) const;
 
     /*
      * Execute this action. The character moves then attacks or uses a capacity
      */
-    void execute(Gameboard_t& board);
+    void execute(Gameboard& board);
 
     gf::Vector2i getDest() const
     {

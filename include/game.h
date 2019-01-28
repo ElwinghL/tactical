@@ -6,6 +6,7 @@
 #define GAME_H
 
 #include "gameai.h"
+#include "gameboard.h"
 #include "humanplayer.h"
 #include "player.h"
 
@@ -76,25 +77,6 @@ public:
         return "Cthulhu vs Satan";
     }
 
-    /**
-     * Give the size of the game board
-     * \return The width and the height of the game board
-     */
-    gf::Vector2i getBoardSize() const
-    {
-        return m_board.getSize();
-    }
-
-    /**
-     * Tell if a position is valid
-     * \param pos The position to test
-     * \return True if the position is inside the game board
-     */
-    bool positionIsValid(const gf::Vector2i& pos) const
-    {
-        return m_board.isValid(pos);
-    }
-
 private:
     enum class GameState {
         MainMenu,
@@ -117,17 +99,11 @@ private:
     void initActions();
     void initWidgets();
     void initSprites();
-    void initEntities();
     void initGoals();
-
-    bool isEmpty(const gf::Vector2i& tile) const
-    {
-        return !positionIsValid(tile) || m_board(tile) == boost::none;
-    }
 
     bool isFromTeam(const gf::Vector2i& tile, PlayerTeam team) const
     {
-        return positionIsValid(tile) && m_board(tile) && m_board(tile)->getTeam() == team;
+        return m_board.isOccupied(tile) && m_board.getCharacter(tile).getTeam() == team;
     }
 
     void stateSelectionUpdate(PlayerTurnSelection nextState);
@@ -151,12 +127,6 @@ private:
      * Switch turn
      */
     void switchTurn();
-
-    /**
-     * Remove a character everywhere its informations are saved if it is dead
-     * \param target the position of the character
-     */
-    void removeCharacterIfDead(const gf::Vector2i& target);
 
     void updateGoals();
 
@@ -203,9 +173,8 @@ private:
     std::vector<Goal*> m_goals{};
 
     boost::optional<gf::Vector2i> m_selectedPos;
-    //Character* m_selectedCharacter = nullptr;
 
-    Gameboard_t m_board{{12, 6}, boost::none};
+    Gameboard m_board{};
 
     std::set<gf::Vector2i, PositionComp> m_possibleTargets;
     std::set<gf::Vector2i, PositionComp> m_targetsInRange;

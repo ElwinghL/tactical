@@ -21,9 +21,6 @@ enum class PlayerTeam {
     Satan ///< The Satan team
 };
 
-class Character;
-using Gameboard_t = gf::Array2D<boost::optional<Character>, int>;
-
 /**
  * The type of the action done by a character
  *
