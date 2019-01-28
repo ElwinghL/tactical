@@ -1,7 +1,5 @@
 #include "action.h"
 
-#include <utility>
-
 bool Action::isValid(Gameboard_t board) const
 {
     assert(board(m_origin));
@@ -13,8 +11,7 @@ bool Action::isValid(Gameboard_t board) const
     character.move(board, m_origin, m_dest);
 
     switch (m_type) {
-    case ActionType::Capacity:
-        return character.canUseCapacity(m_target - m_dest, board);
+    case ActionType::Capacity:return character.canUseCapacity(board, m_dest, m_target);
 
     case ActionType::Attack:
         return character.canAttack(board, m_dest, m_target);
@@ -37,7 +34,7 @@ void Action::execute(Gameboard_t& board)
     assert(character);
     switch (m_type) {
     case ActionType::Capacity: {
-        character->useCapacity(m_target, board);
+        character->useCapacity(board, m_origin, m_target);
     } break;
 
     case ActionType::Attack: {

@@ -7,6 +7,7 @@
 
 #include <gf/Array2D.h>
 #include <gf/Vector.h>
+#include <gf/VectorOps.h>
 #include <gf/View.h>
 
 #include <boost/optional.hpp>
@@ -76,6 +77,26 @@ struct PositionComp {
         return std::tie(lhs.x, lhs.y) < std::tie(rhs.x, rhs.y);
     }
 };
+
+constexpr bool isOrthogonal(const gf::Vector2i& v)
+{
+    return v.x == 0 || v.y == 0;
+}
+
+constexpr bool isOrthogonal(const gf::Vector2i& origin, const gf::Vector2i& dest)
+{
+    return isOrthogonal(dest - origin);
+}
+
+constexpr bool isDiagonal(const gf::Vector2i& v)
+{
+    return v.x == v.y || v.x == -v.y;
+}
+
+constexpr bool isDiagonal(const gf::Vector2i& origin, const gf::Vector2i& dest)
+{
+    return isDiagonal(dest - origin);
+}
 
 void resizeView(gf::View& view, const gf::Vector2i& gameSize);
 gf::Vector2f gameToScreenPos(const gf::Vector2i& gamePos);

@@ -2,60 +2,6 @@
 
 #include "action.h"
 
-std::set<gf::Vector2i, PositionComp> Character::getAllPossibleMoves(const Gameboard_t& board, bool usedForNotPossibleDisplay) const
-{
-    std::set<gf::Vector2i, PositionComp> res;
-    for (int i = 0; i < board.getSize().x; ++i) {
-        for (int j = 0; j < board.getSize().y; ++j) {
-            gf::Vector2i pos{i, j};
-
-            Ability possibleMove = canMove(board, m_pos, pos);
-            if (usedForNotPossibleDisplay) {
-                if (possibleMove != Ability::Unable) {
-                    res.insert(pos);
-                }
-            } else if (possibleMove == Ability::Able) {
-                res.insert(pos);
-            }
-        }
-    }
-    return res;
-}
-
-std::set<gf::Vector2i, PositionComp> Character::getAllPossibleCapacities(const Gameboard_t& board, bool usedForNotPossibleDisplay) const
-{
-    std::set<gf::Vector2i, PositionComp> res;
-    for (int i = 0; i < board.getSize().x; ++i) {
-        for (int j = 0; j < board.getSize().y; ++j) {
-            gf::Vector2i pos{i, j};
-            if (canUseCapacity(pos - m_pos, board, usedForNotPossibleDisplay)) {
-                res.insert(pos);
-            }
-        }
-    }
-    return res;
-}
-
-std::set<gf::Vector2i, PositionComp> Character::getAllPossibleAttacks(const Gameboard_t& board, bool usedForNotPossibleDisplay) const
-{
-    std::set<gf::Vector2i, PositionComp> res;
-    for (int i = 0; i < board.getSize().x; ++i) {
-        for (int j = 0; j < board.getSize().y; ++j) {
-            gf::Vector2i pos{i, j};
-
-            Ability possibleAttack = canAttack(board, m_pos, pos);
-            if (usedForNotPossibleDisplay) {
-                if (possibleAttack != Ability::Unable) {
-                    res.insert(pos);
-                }
-            } else if (possibleAttack == Ability::Able) {
-                res.insert(pos);
-            }
-        }
-    }
-    return res;
-}
-
 std::vector<Action> Character::getPossibleActions(const Gameboard_t& board)
 {
     std::vector<Action> res = std::vector<Action>{};
@@ -94,6 +40,7 @@ bool Character::attack(Gameboard_t& board, const gf::Vector2i& origin, const gf:
 
 Ability Character::canAttack(const Gameboard_t& board, const gf::Vector2i& origin, const gf::Vector2i& dest) const
 {
+    assert(board(origin));
     if (!board.isValid(dest)) {
         return Ability::Unable;
     }
@@ -111,9 +58,8 @@ Ability Character::canAttack(const Gameboard_t& board, const gf::Vector2i& origi
     case CharacterType::Support: {
         constexpr int range = 3;
 
-        gf::Vector2i absRel{gf::abs(relative)};
-        if ((absRel.x == 0 || absRel.y == 0) && gf::chebyshevLength(absRel) <= range) { // If vector is orthogonal
-            result = isTargetReachable(board, origin, relative, range) ? Ability::Able : Ability::Unavailable;
+        if (isOrthogonal(origin, dest) && gf::chebyshevLength(relative) <= range) {
+            result = isTargetReachable(board, origin, dest) ? Ability::Able : Ability::Unavailable;
         }
     } break;
 
@@ -138,9 +84,11 @@ bool Character::move(Gameboard_t& board, const gf::Vector2i& origin, const gf::V
     if (success) {
         assert(board.isValid(origin));
         assert(board.isValid(dest));
+        assert(dest == origin || !board(dest));
 
         boost::swap(board(origin), board(dest));
         board(dest)->m_pos = dest; // TODO Understand this sh*t
+        m_pos = dest;
     }
 
     return success;
@@ -148,6 +96,7 @@ bool Character::move(Gameboard_t& board, const gf::Vector2i& origin, const gf::V
 
 Ability Character::canMove(const Gameboard_t& board, const gf::Vector2i& origin, const gf::Vector2i& dest) const
 {
+    assert(board(origin));
     if (!board.isValid(dest)) {
         return Ability::Unable;
     }
@@ -162,19 +111,17 @@ Ability Character::canMove(const Gameboard_t& board, const gf::Vector2i& origin,
     switch (m_type) {
     case CharacterType::Scout: {
         constexpr int range = 4;
-        gf::Vector2i absRel{gf::abs(relative)};
 
-        if ((absRel.x == absRel.y || absRel.y == 0 || absRel.x == 0) && gf::chebyshevLength(absRel) <= range) {
-            result = isTargetReachable(board, origin, relative, range) ? Ability::Able : Ability::Unavailable;
+        if ((isOrthogonal(origin, dest) || isDiagonal(origin, dest)) && gf::chebyshevLength(relative) <= range) {
+            result = isTargetReachable(board, origin, dest) ? Ability::Able : Ability::Unavailable;
         }
     } break;
 
     case CharacterType::Tank: {
         constexpr int sideRange = 2;
-        gf::Vector2i absRel{gf::abs(relative)};
 
-        if (gf::chebyshevDistance(origin, dest) == 1 || (absRel.x == 0 && absRel.y == sideRange)) {
-            result = isTargetReachable(board, origin, relative, sideRange) ? Ability::Able : Ability::Unavailable;
+        if (gf::chebyshevDistance(origin, dest) == 1 || (relative.x == 0 && std::abs(relative.y) == sideRange)) {
+            result = isTargetReachable(board, origin, dest) ? Ability::Able : Ability::Unavailable;
         }
     } break;
 
@@ -207,91 +154,136 @@ Ability Character::canMove(const Gameboard_t& board, const gf::Vector2i& origin,
     return result;
 }
 
-bool Character::useCapacity(gf::Vector2i& target, Gameboard_t& board)
+bool Character::useCapacity(Gameboard_t& board, const gf::Vector2i& origin, const gf::Vector2i& dest)
 {
-    if (!canUseCapacity(gf::Vector2i{target - m_pos}, board)) {
+    if (!canUseCapacity(board, origin, dest)) {
         return false;
     }
 
+    assert(board.isValid(origin));
+    assert(board.isValid(dest));
+
     switch (m_type) {
     case CharacterType::Scout: {
-        std::swap(board(m_pos), board(target));
-        board(target)->m_pos = target;
-        // m_pos = target not useful because this != board(target)->get_ptr()
-        // so this character isn't useful anymore
+        assert(!board(dest));
+
+        boost::swap(board(origin), board(dest));
+        board(dest)->m_pos = dest;
+        m_pos = dest;
     } break;
 
     case CharacterType::Tank: {
-        gf::Vector2i relative = gf::Vector2i{target - m_pos};
-        int xvalue = relative.x == 0 ? 0 : relative.x / abs(relative.x);
-        int yvalue = relative.y == 0 ? 0 : relative.y / abs(relative.y);
-        gf::Vector2i newPos = m_pos + gf::Vector2i{xvalue, yvalue};
+        assert(board(dest));
+        gf::Vector2i newPos = gf::sign(dest - origin);
 
-        std::swap(board(target), board(newPos));
+        assert(!board(newPos));
+
+        boost::swap(board(dest), board(newPos));
         board(newPos)->m_pos = newPos;
     } break;
 
     case CharacterType::Support: {
-        gf::Vector2i relative = gf::Vector2i{target - m_pos};
-        int xvalue = relative.x == 0 ? 0 : relative.x / abs(relative.x);
-        int yvalue = relative.y == 0 ? 0 : relative.y / abs(relative.y);
-        gf::Vector2i newPos = target + gf::Vector2i{xvalue, yvalue} * 2;
-        if (!board.isValid(newPos) || board(newPos)) {
-            newPos = target + gf::Vector2i{xvalue, yvalue};
-            board(target)->damage(4);
-            if (!board.isValid(newPos) || board(newPos)) {
-                return true;
-            }
+        constexpr int ejectionDistance = 2;
+        constexpr int ejectionDamage = 3;
+
+        assert(board(dest));
+
+        gf::Vector2i ejectedPos = origin + ejectionDistance * gf::sign(dest - origin);
+        gf::Vector2i lastReachablePos = getLastReachablePos(board, dest, ejectedPos);
+
+        if (ejectedPos != lastReachablePos) {
+            board(dest)->damage(ejectionDamage);
+            ejectedPos = lastReachablePos;
         }
-        std::swap(board(target), board(newPos));
-        board(newPos)->m_pos = newPos;
+
+        assert(board.isValid(ejectedPos));
+        assert(dest == ejectedPos || !board(ejectedPos));
+
+        boost::swap(board(dest), board(ejectedPos));
+        board(ejectedPos)->m_pos = ejectedPos;
     } break;
     }
     return true;
 }
 
-bool Character::canUseCapacity(const gf::Vector2i& target, const Gameboard_t& board, bool usedForNotPossibleDisplay) const
+Ability Character::canUseCapacity(const Gameboard_t& board, const gf::Vector2i& origin, const gf::Vector2i& dest) const
 {
+    int i = 0;
+    for (auto perso : board) {
+        std::cout << (perso ? "X" : " ") << ((++i % 12 == 0) ? "\n" : " ");
+    }
+    std::cout << std::flush;
+
+    assert(board(origin));
+    if (!board.isValid(dest)) {
+        return Ability::Unable;
+    }
+
+    int manhattanDist = gf::manhattanDistance(origin, dest);
     switch (m_type) {
     case CharacterType::Scout: {
-        if ((abs(target.x) == 1 && abs(target.y) == 0) || (abs(target.x) == 0 && abs(target.y) == 1)) {
-            return usedForNotPossibleDisplay || !board(gf::Vector2i{target + m_pos});
+        if (manhattanDist == 1) {
+            return board(dest) ? Ability::Unavailable : Ability::Able;
         }
     } break;
 
     case CharacterType::Support: {
-        if ((abs(target.x) == 2 && abs(target.y) == 0) || (abs(target.x) == 0 && abs(target.y) == 2)) {
-            int absoluteX = target.x + m_pos.x;
-            int absoluteY = target.y + m_pos.y;
-
-            gf::Vector2i absolute{absoluteX, absoluteY};
-            if (board.isValid(absolute) && board(absolute)) {
-                return true;
-            }
-
-            return usedForNotPossibleDisplay;
+        if (isOrthogonal(origin, dest) && manhattanDist == 2) {
+            return board(dest) ? Ability::Able : Ability::Unavailable;
         }
     } break;
 
     case CharacterType::Tank: {
-        if ((abs(target.x) == 2 && abs(target.y) == 0) || (abs(target.x) == 3 && abs(target.y) == 0) || (abs(target.x) == 0 && abs(target.y) == 2) || (abs(target.x) == 0 && abs(target.y) == 3)) {
-            int xvalue = target.x == 0 ? 0 : target.x / abs(target.x);
-            int yvalue = target.y == 0 ? 0 : target.y / abs(target.y);
-            gf::Vector2i direction{xvalue, yvalue};
-            int factor = 1;
-            while (direction * factor != target && factor < 3) {
-                int absoluteX = (direction * factor).x + m_pos.x;
-                int absoluteY = (direction * factor).y + m_pos.y;
-                if (board(gf::Vector2i{absoluteX, absoluteY})) {
-                    if (!usedForNotPossibleDisplay) {
-                        return false;
-                    }
-                }
-                factor++;
-            }
-            return usedForNotPossibleDisplay || board(gf::Vector2i{target + m_pos});
+        if (isOrthogonal(origin, dest) && (manhattanDist == 2 || manhattanDist == 3)) {
+            return (board(dest) && isTargetReachable(board, origin, dest)) ? Ability::Able : Ability::Unavailable;
         }
     } break;
     }
-    return false;
+
+    return Ability::Unable;
+}
+
+gf::Vector2i Character::getLastReachablePos(const Gameboard_t& board, const gf::Vector2i& origin,
+                                            const gf::Vector2i& dest)
+{
+    if ((!isOrthogonal(origin, dest) && !isDiagonal(origin, dest)) || origin == dest) {
+        return origin;
+    }
+
+    const gf::Vector2i direction = gf::sign(dest - origin);
+
+    gf::Vector2i result = origin;
+    gf::Vector2i sq2Check = result + direction;
+
+    while (board.isValid(sq2Check) && !board(sq2Check)) {
+        result = sq2Check;
+        sq2Check += direction;
+    }
+
+    return result;
+}
+
+std::set<gf::Vector2i, PositionComp> Character::getAllPossibleActionsOfAType(const Gameboard_t& board,
+                                                                             Ability (Character::* canDoSomething)(
+                                                                                 const Gameboard_t&,
+                                                                                 const gf::Vector2i&,
+                                                                                 const gf::Vector2i&) const,
+                                                                             bool usedForNotPossibleDisplay) const
+{
+    std::set<gf::Vector2i, PositionComp> res;
+    for (int i = 0; i < board.getSize().x; ++i) {
+        for (int j = 0; j < board.getSize().y; ++j) {
+            gf::Vector2i pos{i, j};
+
+            Ability possibleAction = (this->*canDoSomething)(board, m_pos, pos);
+            if (usedForNotPossibleDisplay) {
+                if (possibleAction != Ability::Unable) {
+                    res.insert(pos);
+                }
+            } else if (possibleAction == Ability::Able) {
+                res.insert(pos);
+            }
+        }
+    }
+    return res;
 }

@@ -123,9 +123,7 @@ void Game::processEvents()
                 auto selectedCharacter = m_board(*m_selectedPos);
                 assert(selectedCharacter);
 
-                Action capacity{ActionType::Capacity, *m_selectedPos, tile};
-                if (capacity.isValid(m_board)) {
-                    capacity.execute(m_board);
+                if (selectedCharacter->useCapacity(m_board, *m_selectedPos, tile)) {
                     m_selectedPos = tile;
 
                     // FIXME Temporaire :

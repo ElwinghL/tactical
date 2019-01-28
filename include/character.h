@@ -149,7 +149,11 @@ public:
      * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
      * \return The set of possible relative vector movements
      */
-    std::set<gf::Vector2i, PositionComp> getAllPossibleMoves(const Gameboard_t& board, bool usedForNotPossibleDisplay = false) const;
+    std::set<gf::Vector2i, PositionComp> getAllPossibleMoves(const Gameboard_t& board,
+                                                             bool usedForNotPossibleDisplay = false) const
+    {
+        return getAllPossibleActionsOfAType(board, &Character::canMove, usedForNotPossibleDisplay);
+    }
 
     /**
      * Get a set of every possible attack for the character
@@ -157,7 +161,11 @@ public:
      * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
      * \return The set of possible relative vector attack
      */
-    std::set<gf::Vector2i, PositionComp> getAllPossibleAttacks(const Gameboard_t& board, bool usedForNotPossibleDisplay = false) const;
+    std::set<gf::Vector2i, PositionComp> getAllPossibleAttacks(const Gameboard_t& board,
+                                                               bool usedForNotPossibleDisplay = false) const
+    {
+        return getAllPossibleActionsOfAType(board, &Character::canAttack, usedForNotPossibleDisplay);
+    }
 
     /**
      * Get a set of every possible capacity for the character
@@ -165,7 +173,11 @@ public:
      * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
      * \return The set of possible relative vector capacity
      */
-    std::set<gf::Vector2i, PositionComp> getAllPossibleCapacities(const Gameboard_t& board, bool usedForNotPossibleDisplay = false) const;
+    std::set<gf::Vector2i, PositionComp> getAllPossibleCapacities(const Gameboard_t& board,
+                                                                  bool usedForNotPossibleDisplay = false) const
+    {
+        return getAllPossibleActionsOfAType(board, &Character::canUseCapacity, usedForNotPossibleDisplay);
+    }
 
     /**
      * Give all the actions the character can do
@@ -220,24 +232,30 @@ public:
     /**
      * Use the character's capacity
      *
-     * \param target The target vector, which is difference between
+     * \param dest The target vector, which is difference between
      *                 the start and the end
      * \return True if the character is able to use its capacity by this vector
      */
-    bool useCapacity(gf::Vector2i& target, Gameboard_t& board);
+    bool useCapacity(Gameboard_t& board, const gf::Vector2i& origin, const gf::Vector2i& dest);
 
     /**
      * Tell if this character can use its capacity along a given vector
      *
-     * \param target The target vector, which is difference between
+     * \param dest The target vector, which is difference between
      *                 the start and the end
      * \param board An array with all the characters
      * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
      * \return True if the character is able to use its capacity by this vector
      */
-    bool canUseCapacity(const gf::Vector2i& target, const Gameboard_t& board, bool usedForNotPossibleDisplay = false) const;
+    Ability canUseCapacity(const Gameboard_t& board, const gf::Vector2i& origin, const gf::Vector2i& dest) const;
 
 private:
+    std::set<gf::Vector2i, PositionComp> getAllPossibleActionsOfAType(const Gameboard_t& board,
+                                                                      Ability (Character::* canDoSomething)(
+                                                                          const Gameboard_t&, const gf::Vector2i&,
+                                                                          const gf::Vector2i&) const,
+                                                                      bool usedForNotPossibleDisplay) const;
+
     /**
      * Give the maximum amount of HP according to the type of character
      *
@@ -278,22 +296,14 @@ private:
         return -1; // to suppress the "no-return" warning
     }
 
-    static bool isTargetReachable(const Gameboard_t& board, const gf::Vector2i& origin, const gf::Vector2i& relative, int range)
+    static gf::Vector2i getLastReachablePos(const Gameboard_t& board, const gf::Vector2i& origin,
+                                            const gf::Vector2i& dest);
+
+    static bool isTargetReachable(const Gameboard_t& board, const gf::Vector2i& origin, const gf::Vector2i& dest)
     {
-        gf::Vector2i direction = gf::sign(relative);
-        for (gf::Vector2i sq2Check = direction, maxRange = range * direction;
-             sq2Check != maxRange + direction;
-             sq2Check += direction) {
-            if (sq2Check == relative) {
-                return true;
-            }
-
-            if (!board.isValid(origin + sq2Check) || board(origin + sq2Check)) {
-                return false;
-            }
-        }
-
-        return false;
+        gf::Vector2i lastReachablePos = getLastReachablePos(board, origin, dest);
+        assert(gf::cross(dest - origin, lastReachablePos - origin) == 0);
+        return gf::dot(dest - origin, lastReachablePos - dest) > 0;
     }
 
     PlayerTeam m_team; ///< The team this character belongs to

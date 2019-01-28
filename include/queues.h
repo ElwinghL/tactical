@@ -1,7 +1,6 @@
 #ifndef QUEUES_H
 #define QUEUES_H
 
-#include <atomic>
 #include <condition_variable>
 #include <mutex>
 #include <queue>
