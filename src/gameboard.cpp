@@ -224,7 +224,7 @@ bool Gameboard::useCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest
 
         assert(m_array(dest));
 
-        gf::Vector2i ejectedPos = origin + ejectionDistance * gf::sign(dest - origin);
+        gf::Vector2i ejectedPos = dest + ejectionDistance * gf::sign(dest - origin);
         gf::Vector2i lastReachablePos = getLastReachablePos(dest, ejectedPos);
 
         if (ejectedPos != lastReachablePos) {

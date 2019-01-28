@@ -82,7 +82,7 @@ public:
      */
     bool isDead() const
     {
-        return m_hp > 0;
+        return m_hp <= 0;
     }
 
     /**
