@@ -202,13 +202,15 @@ private:
                                                                       const gf::Vector2i& origin,
                                                                       bool usedForNotPossibleDisplay) const;
 
-    gf::Vector2i getLastReachablePos(const gf::Vector2i& origin, const gf::Vector2i& dest) const;
+    gf::Vector2i getLastReachablePos(const gf::Vector2i& origin, const gf::Vector2i& dest,
+                                     bool excludeDest = false) const;
 
-    bool isTargetReachable(const gf::Vector2i& origin, const gf::Vector2i& dest) const
+    bool isTargetReachable(const gf::Vector2i& origin, const gf::Vector2i& dest, bool excludeDest = false) const
     {
-        gf::Vector2i lastReachablePos = getLastReachablePos(origin, dest);
+        gf::Vector2i lastReachablePos = getLastReachablePos(origin, dest, excludeDest);
+
         assert(gf::cross(dest - origin, lastReachablePos - origin) == 0);
-        return gf::dot(dest - origin, lastReachablePos - dest) > 0;
+        return gf::dot(dest - origin, lastReachablePos - dest) >= 0;
     }
 
     /**

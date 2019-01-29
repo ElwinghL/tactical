@@ -90,7 +90,7 @@ Ability Gameboard::canAttack(const gf::Vector2i& origin, const gf::Vector2i& des
         constexpr int range = 3;
 
         if (isOrthogonal(origin, dest) && gf::chebyshevLength(relative) <= range) {
-            result = isTargetReachable(origin, dest) ? Ability::Able : Ability::Unavailable;
+            result = isTargetReachable(origin, dest, true) ? Ability::Able : Ability::Unavailable;
         }
     }
         break;
@@ -210,8 +210,9 @@ bool Gameboard::useCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest
 
     case CharacterType::Tank: {
         assert(m_array(dest));
-        gf::Vector2i newPos = gf::sign(dest - origin);
+        gf::Vector2i newPos = origin + gf::sign(dest - origin);
 
+        assert(isEmpty(newPos));
         assert(!m_array(newPos));
 
         boost::swap(m_array(dest), m_array(newPos));
@@ -273,7 +274,7 @@ Ability Gameboard::canUseCapacity(const gf::Vector2i& origin, const gf::Vector2i
 
     case CharacterType::Tank: {
         if (isOrthogonal(origin, dest) && (manhattanDist == 2 || manhattanDist == 3)) {
-            return (m_array(dest) && isTargetReachable(origin, dest)) ? Ability::Able : Ability::Unavailable;
+            return (m_array(dest) && isTargetReachable(origin, dest, true)) ? Ability::Able : Ability::Unavailable;
         }
     }
         break;
@@ -283,7 +284,7 @@ Ability Gameboard::canUseCapacity(const gf::Vector2i& origin, const gf::Vector2i
 }
 
 gf::Vector2i Gameboard::getLastReachablePos(const gf::Vector2i& origin,
-                                            const gf::Vector2i& dest) const
+                                            const gf::Vector2i& dest, bool excludeDest) const
 {
     if ((!isOrthogonal(origin, dest) && !isDiagonal(origin, dest)) || origin == dest) {
         return origin;
@@ -297,6 +298,10 @@ gf::Vector2i Gameboard::getLastReachablePos(const gf::Vector2i& origin,
     while (isEmpty(sq2Check)) {
         result = sq2Check;
         sq2Check += direction;
+    }
+
+    if (excludeDest && isOccupied(sq2Check)) {
+        return sq2Check;
     }
 
     return result;
