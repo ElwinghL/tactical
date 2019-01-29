@@ -87,13 +87,18 @@ void Game::processEvents()
             case PlayerTurnSelection::MoveSelection: {
                 assert(m_selectedPos);
 
-                if (m_selectedPos != tile && isFromTeam(tile, m_humanPlayer.getTeam())) {
-                    m_selectedPos = tile;
-                    stateSelectionUpdate(PlayerTurnSelection::MoveSelection);
-                } else if (m_board.move(*m_selectedPos, tile)) {
-                    m_humanPlayer.setMoved(true);
-                    m_selectedPos = tile;
-                    stateSelectionUpdate(PlayerTurnSelection::AttackSelection);
+                if (m_selectedPos != tile) {
+                    if (isFromTeam(tile, m_humanPlayer.getTeam())) {
+                        m_selectedPos = tile;
+                        stateSelectionUpdate(PlayerTurnSelection::MoveSelection);
+                    } else if (m_board.move(*m_selectedPos, tile)) {
+                        m_humanPlayer.setMoved(true);
+                        m_selectedPos = tile;
+                        stateSelectionUpdate(PlayerTurnSelection::AttackSelection);
+                    } else {
+                        m_selectedPos = boost::none;
+                        stateSelectionUpdate(PlayerTurnSelection::NoSelection);
+                    }
                 } else {
                     m_selectedPos = boost::none;
                     stateSelectionUpdate(PlayerTurnSelection::NoSelection);

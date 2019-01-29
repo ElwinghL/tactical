@@ -2,7 +2,7 @@
 
 #include "gameboard.h"
 
-bool Action::isValid(Gameboard board) const
+bool Action::isValid(const Gameboard& board) const
 {
     assert(board.isOccupied(m_origin));
     if (!board.canMove(m_origin, m_dest)) {
@@ -10,9 +10,9 @@ bool Action::isValid(Gameboard board) const
     }
 
     switch (m_type) {
-    case ActionType::Capacity:return board.canUseCapacity(m_dest, m_target);
+    case ActionType::Capacity:return board.canUseCapacity(m_dest, m_target, m_origin);
 
-    case ActionType::Attack:return board.canAttack(m_dest, m_target);
+    case ActionType::Attack:return board.canAttack(m_dest, m_target, m_origin);
 
     case ActionType::None:
         break;

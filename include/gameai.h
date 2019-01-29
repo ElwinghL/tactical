@@ -23,7 +23,7 @@
  */
 class GameAI : public Player {
 public:
-    using depthActionsExploration = std::pair<Action, std::pair<long, long>>;
+    using depthActionsExploration = std::pair<Action, std::pair<long, long>>; // FIXME Maybe tuple or struct?
     /**
      * Constructor
      * \param team The team the AI controls
@@ -36,11 +36,8 @@ public:
 
     virtual ~GameAI() noexcept
     {
-        std::cout << 1 << std::endl;
         m_threadInput.fail();
-        std::cout << 2 << std::endl;
         m_computingThread.join();
-        std::cout << 3 << std::endl;
     }
 
     void setInitialGameboard(const Gameboard& board);

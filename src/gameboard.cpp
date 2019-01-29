@@ -36,12 +36,12 @@ std::vector<Action> Gameboard::getPossibleActions(const gf::Vector2i& origin) co
     for (auto possibleMovement : possibleMovements) {
         res.emplace_back(origin, possibleMovement);
 
-        std::set<gf::Vector2i, PositionComp> possibleCapacities = getAllPossibleCapacities(possibleMovement);
+        std::set<gf::Vector2i, PositionComp> possibleCapacities = getAllPossibleCapacities(possibleMovement, origin);
         for (auto possibleCapacity : possibleCapacities) {
             res.emplace_back(ActionType::Capacity, origin, possibleMovement, possibleCapacity);
         }
 
-        std::set<gf::Vector2i, PositionComp> possibleAttacks = getAllPossibleAttacks(possibleMovement);
+        std::set<gf::Vector2i, PositionComp> possibleAttacks = getAllPossibleAttacks(possibleMovement, origin);
         for (auto possibleAttack : possibleAttacks) {
             res.emplace_back(ActionType::Attack, origin, possibleMovement, possibleAttack);
         }
@@ -64,11 +64,9 @@ bool Gameboard::attack(const gf::Vector2i& origin, const gf::Vector2i& dest)
     return success;
 }
 
-Ability Gameboard::canAttack(const gf::Vector2i& origin, const gf::Vector2i& dest) const
+Ability Gameboard::canAttack(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& executor) const
 {
-    if (!isOccupied(origin)) {
-        return Ability::Unable;
-    }
+    assert(isOccupied(executor));
 
     if (!m_array.isValid(dest)) {
         return Ability::Unable;
@@ -76,7 +74,7 @@ Ability Gameboard::canAttack(const gf::Vector2i& origin, const gf::Vector2i& des
 
     Ability result = Ability::Unable;
     gf::Vector2i relative = dest - origin;
-    switch (getTypeFor(origin)) {
+    switch (getTypeFor(executor)) {
     case CharacterType::Scout: {
         if (gf::manhattanDistance(origin, dest) <= 2) {
             gf::Vector2i direction = gf::sign(relative);
@@ -103,7 +101,7 @@ Ability Gameboard::canAttack(const gf::Vector2i& origin, const gf::Vector2i& des
 
     if (result) {
         auto target = m_array(dest);
-        return (target && target->getTeam() != getTeamFor(origin)) ? Ability::Able : Ability::Unavailable;
+        return (target && target->getTeam() != getTeamFor(executor)) ? Ability::Able : Ability::Unavailable;
     }
 
     return result;
@@ -124,11 +122,9 @@ bool Gameboard::move(const gf::Vector2i& origin, const gf::Vector2i& dest)
     return success;
 }
 
-Ability Gameboard::canMove(const gf::Vector2i& origin, const gf::Vector2i& dest) const
+Ability Gameboard::canMove(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& /*executor*/) const
 {
-    if (!isOccupied(origin)) {
-        return Ability::Unable;
-    }
+    assert(isOccupied(origin));
 
     if (!m_array.isValid(dest)) {
         return Ability::Unable;
@@ -246,18 +242,17 @@ bool Gameboard::useCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest
     return true;
 }
 
-Ability Gameboard::canUseCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest) const
+Ability Gameboard::canUseCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest,
+                                  const gf::Vector2i& executor) const
 {
-    if (!isOccupied(origin)) {
-        return Ability::Unable;
-    }
+    assert(isOccupied(executor));
 
     if (!m_array.isValid(dest)) {
         return Ability::Unable;
     }
 
     int manhattanDist = gf::manhattanDistance(origin, dest);
-    switch (getTypeFor(origin)) {
+    switch (getTypeFor(executor)) {
     case CharacterType::Scout: {
         if (manhattanDist == 1) {
             return m_array(dest) ? Ability::Unavailable : Ability::Able;
@@ -307,16 +302,15 @@ gf::Vector2i Gameboard::getLastReachablePos(const gf::Vector2i& origin,
     return result;
 }
 
-std::set<gf::Vector2i, PositionComp> Gameboard::getAllPossibleActionsOfAType(Ability (Gameboard::* canDoSomething)(
-    const gf::Vector2i&,
-    const gf::Vector2i&) const,
-                                                                             const gf::Vector2i& origin,
-                                                                             bool usedForNotPossibleDisplay) const
+std::set<gf::Vector2i, PositionComp> Gameboard::getAllPossibleActionsOfAType(
+    Ability (Gameboard::* canDoSomething)(const gf::Vector2i&, const gf::Vector2i&, const gf::Vector2i&) const,
+    const gf::Vector2i& origin,
+    const gf::Vector2i& executor, bool usedForNotPossibleDisplay) const
 {
     std::set<gf::Vector2i, PositionComp> res;
     for (gf::Vector2i pos{0, 0}, size = m_array.getSize(); pos.x < size.width; ++pos.x) {
         for (pos.y = 0; pos.y < size.height; ++pos.y) {
-            Ability possibleAction = (this->*canDoSomething)(origin, pos);
+            Ability possibleAction = (this->*canDoSomething)(origin, pos, executor);
             if (usedForNotPossibleDisplay) {
                 if (possibleAction != Ability::Unable) {
                     res.insert(pos);

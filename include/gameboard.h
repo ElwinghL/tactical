@@ -65,7 +65,7 @@ public:
     std::set<gf::Vector2i, PositionComp> getAllPossibleMoves(const gf::Vector2i& origin,
                                                              bool usedForNotPossibleDisplay = false) const
     {
-        return getAllPossibleActionsOfAType(&Gameboard::canMove, origin, usedForNotPossibleDisplay);
+        return getAllPossibleActionsOfAType(&Gameboard::canMove, origin, origin, usedForNotPossibleDisplay);
     }
 
     /**
@@ -77,7 +77,7 @@ public:
     std::set<gf::Vector2i, PositionComp> getAllPossibleAttacks(const gf::Vector2i& origin,
                                                                bool usedForNotPossibleDisplay = false) const
     {
-        return getAllPossibleActionsOfAType(&Gameboard::canAttack, origin, usedForNotPossibleDisplay);
+        return getAllPossibleActionsOfAType(&Gameboard::canAttack, origin, origin, usedForNotPossibleDisplay);
     }
 
     /**
@@ -89,7 +89,8 @@ public:
     std::set<gf::Vector2i, PositionComp> getAllPossibleCapacities(const gf::Vector2i& origin,
                                                                   bool usedForNotPossibleDisplay = false) const
     {
-        return getAllPossibleActionsOfAType(&Gameboard::canUseCapacity, origin, usedForNotPossibleDisplay);
+        return getAllPossibleActionsOfAType(&Gameboard::canUseCapacity, origin, origin,
+                                            usedForNotPossibleDisplay);
     }
 
     /**
@@ -119,7 +120,12 @@ public:
      * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
      * \return True if the other character may be attacked by this character
      */
-    Ability canAttack(const gf::Vector2i& origin, const gf::Vector2i& dest) const;
+    Ability canAttack(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& executor) const;
+
+    Ability canAttack(const gf::Vector2i& origin, const gf::Vector2i& dest) const
+    {
+        return canAttack(origin, dest, origin);
+    }
 
     /**
      * Move this character
@@ -140,7 +146,10 @@ public:
      * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
      * \return True if the character is able to move by this vector
      */
-    Ability canMove(const gf::Vector2i& origin, const gf::Vector2i& dest) const;
+    Ability canMove(const gf::Vector2i& origin, const gf::Vector2i& dest) const
+    {
+        return canMove(origin, dest, origin);
+    }
 
     /**
      * Use the character's capacity
@@ -160,7 +169,12 @@ public:
      * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
      * \return True if the character is able to use its capacity by this vector
      */
-    Ability canUseCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest) const;
+    Ability canUseCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& executor) const;
+
+    Ability canUseCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest) const
+    {
+        return canUseCapacity(origin, dest, origin);
+    }
 
     bool isEmpty(const gf::Vector2i& tile) const
     {
@@ -195,12 +209,50 @@ public:
         return m_array(tile)->getType();
     }
 
+    void display() const
+    {
+        for (gf::Vector2i pos{0, 0}, size = m_array.getSize(); pos.y < size.height; ++pos.y) {
+            for (pos.x = 0; pos.x < size.width; ++pos.x) {
+                if (m_array(pos)) {
+                    switch (getTypeFor(pos)) {
+                    case CharacterType::Tank:std::cout << ((getTeamFor(pos) == PlayerTeam::Cthulhu) ? "T" : "t");
+                        break;
+
+                    case CharacterType::Scout:std::cout << ((getTeamFor(pos) == PlayerTeam::Cthulhu) ? "E" : "e");
+                        break;
+
+                    case CharacterType::Support:std::cout << ((getTeamFor(pos) == PlayerTeam::Cthulhu) ? "S" : "s");
+                        break;
+                    }
+                } else {
+                    std::cout << " ";
+                }
+                std::cout << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+
 private:
-    std::set<gf::Vector2i, PositionComp> getAllPossibleActionsOfAType(Ability (Gameboard::* canDoSomething)(
-        const gf::Vector2i&,
-        const gf::Vector2i&) const,
-                                                                      const gf::Vector2i& origin,
-                                                                      bool usedForNotPossibleDisplay) const;
+    Ability canMove(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& /*executor*/) const;
+
+    std::set<gf::Vector2i, PositionComp> getAllPossibleAttacks(const gf::Vector2i& origin,
+                                                               const gf::Vector2i& executor) const
+    {
+        return getAllPossibleActionsOfAType(&Gameboard::canAttack, origin, executor, false);
+    }
+
+
+    std::set<gf::Vector2i, PositionComp> getAllPossibleCapacities(const gf::Vector2i& origin,
+                                                                  const gf::Vector2i& executor) const
+    {
+        return getAllPossibleActionsOfAType(&Gameboard::canUseCapacity, origin, executor, false);
+    }
+
+    std::set<gf::Vector2i, PositionComp> getAllPossibleActionsOfAType(
+        Ability (Gameboard::* canDoSomething)(const gf::Vector2i&, const gf::Vector2i&, const gf::Vector2i&) const,
+        const gf::Vector2i& origin,
+        const gf::Vector2i& executor, bool usedForNotPossibleDisplay) const;
 
     gf::Vector2i getLastReachablePos(const gf::Vector2i& origin, const gf::Vector2i& dest,
                                      bool excludeDest = false) const;

@@ -78,7 +78,7 @@ public:
      * \param board The board of the game
      * \return True if this action is valid, false otherwise
      */
-    bool isValid(Gameboard board) const;
+    bool isValid(const Gameboard& board) const;
 
     /*
      * Execute this action. The character moves then attacks or uses a capacity
@@ -108,6 +108,28 @@ public:
     gf::Vector2i getMove() const
     {
         return m_dest - m_origin;
+    }
+
+    void display() const
+    {
+        if (m_origin != m_dest) {
+            std::cout << "Move from (" << m_origin.x << ", " << m_origin.y << ") to (" <<
+                      m_dest.x << ", " << m_dest.y << ") then ";
+        } else {
+            std::cout << "From (" << m_origin.x << ", " << m_origin.y << "), ";
+        }
+
+        switch (m_type) {
+        case ActionType::Attack:std::cout << "attack (" << m_target.x << ", " << m_target.y << ")" << std::endl;
+            break;
+
+        case ActionType::Capacity:
+            std::cout << "use capacity on (" << m_target.x << ", " << m_target.y << ")" << std::endl;
+            break;
+
+        case ActionType::None:std::cout << "do nothing" << std::endl;
+            break;
+        }
     }
 
 private:
