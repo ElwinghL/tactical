@@ -28,7 +28,7 @@ void GameAI::simulateActions()
         /* TODO chnage the int value to get a more powerfull AI
          * 0 means best immediate action
          */
-        GameAI::depthActionsExploration actionToDo = bestActionInFuture(board, 1);
+        GameAI::depthActionsExploration actionToDo = bestActionInFuture(board, 0);
 
 //        if (actionToDo.first.getType() == ActionType::Attack) {
 //            std::cout << "Attaque\n";
@@ -52,7 +52,7 @@ void GameAI::simulateActions()
 void GameAI::setInitialGameboard(const Gameboard& board)
 {
     if (!m_initialBoardSet) {
-        m_threadInput.push(board);
+        //m_threadInput.push(board);
     }
 }
 
@@ -185,12 +185,12 @@ GameAI::depthActionsExploration GameAI::bestActionInFuture(Gameboard& board, uns
         boardsToAnalyse.push_back(anOtherBoard);
     }
 
-    long bestScore = -9998;
+    long bestScore = -10000;
     Action bestAction = allActions.front();
     if (depth == 0) {
         long score = 0;
         for (auto actionAvailable : allActions) {
-            if (actionAvailable.getType() != ActionType::None) {
+            if (actionAvailable.getType() != ActionType::None && actionAvailable.isValid(board)) {
                 assert(actionAvailable.isValid(board));
 
                 Gameboard anOtherBoard{board};
@@ -217,40 +217,38 @@ GameAI::depthActionsExploration GameAI::bestActionInFuture(Gameboard& board, uns
 
         assert(actionToDo.first.isValid(board));
         return actionToDo;
-    }
-
-    std::vector<GameAI::depthActionsExploration> allPossibilities;
-    long score = 0;
-    for (auto actionAvailable : allActions) {
-        Gameboard anOtherBoard{board};
-        actionAvailable.execute(anOtherBoard);
-        score = functionEval(anOtherBoard);
-        boardsToAnalyse.push_back(anOtherBoard);
-        if (score > bestScore) {
-            bestAction = actionAvailable;
-            bestScore = score;
+    } else {
+        std::vector<GameAI::depthActionsExploration> allPossibilities;
+        long score = 0;
+        for (auto actionAvailable : allActions) {
+            Gameboard anOtherBoard{board};
+            actionAvailable.execute(anOtherBoard);
+            score = functionEval(anOtherBoard);
+            boardsToAnalyse.push_back(anOtherBoard);
+            if (score > bestScore) {
+                bestAction = actionAvailable;
+                bestScore = score;
+            }
         }
-    }
 
-    if (bestScore == 9999) {
-        assert(bestAction.isValid(board));
-        return std::make_pair(bestAction, std::make_pair(bestScore, bestScore));
-    }
-
-    for (auto currentBoard : boardsToAnalyse) {
-        allPossibilities.push_back(bestActionInFuture(currentBoard, depth - 1));
-    }
-    long bestScoreRow = -10000; // So if the "best action" is to loose with a -9999 score it will be possible
-    bestScore = -10000;
-    for (auto tab : allPossibilities) {
-        if (tab.second.second > bestScoreRow) {
-            bestScoreRow = tab.second.second;
-            bestScore = tab.second.first;
-            bestAction = tab.first;
+        if (bestScore == 9999) {
+            assert(bestAction.isValid(board));
+            return std::make_pair(bestAction, std::make_pair(bestScore, bestScore));
         }
-    }
-    GameAI::depthActionsExploration actionToDo = std::make_pair(bestAction, std::make_pair(bestScore, bestScoreRow));
-    std::cout << "Best score  =" << bestScore << " Best Score reached = " << bestScoreRow << "\n";
+
+        for (auto currentBoard : boardsToAnalyse) {
+            allPossibilities.push_back(bestActionInFuture(currentBoard, depth - 1));
+        }
+        long bestScoreRow = -10000; // So if the "best action" is to loose with a -9999 score it will be possible
+        for (auto tab : allPossibilities) {
+            if (tab.second.second > bestScoreRow && tab.first.isValid(board)) {
+                bestScoreRow = tab.second.second;
+                bestScore = tab.second.first;
+                bestAction = tab.first;
+            }
+        }
+        GameAI::depthActionsExploration actionToDo = std::make_pair(bestAction, std::make_pair(bestScore, bestScoreRow));
+        std::cout << "Best score  = " << bestScore << " Best Score reached = " << bestScoreRow << "\n";
 //            if (actionToDo.first.getType() == ActionType::Attack) {
 //                std::cout << "Attaque\n";
 //            }
@@ -261,6 +259,9 @@ GameAI::depthActionsExploration GameAI::bestActionInFuture(Gameboard& board, uns
 //                std::cout << "None\n";
 //            }
 
-    assert(actionToDo.first.isValid(board));
-    return actionToDo;
+
+        assert(actionToDo.first.isValid(board));
+        //board.display();
+        return actionToDo;
+    }
 }
