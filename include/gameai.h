@@ -29,7 +29,7 @@ public:
      * \param team The team the AI controls
      */
     explicit GameAI(PlayerTeam team) :
-        Player{team, false}
+        Player{team}
     {
         // Nothing
     }

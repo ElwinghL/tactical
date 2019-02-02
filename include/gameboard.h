@@ -233,6 +233,23 @@ public:
         }
     }
 
+    /**
+ * Tell if this player can play
+ * \return True if this is this player's turn
+ */
+    bool isTheirTurn() const
+    {
+        return m_theirTurn;
+    }
+
+    /**
+     * Switch turn
+     */
+    void switchTurn()
+    {
+        m_theirTurn = !m_theirTurn;
+    }
+
 private:
     Ability canMove(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& /*executor*/) const;
 
@@ -277,6 +294,7 @@ private:
     }
 
     gf::Array2D<boost::optional<Character>> m_array;
+    bool m_theirTurn{true}; ///< Can the player play?
 };
 
 

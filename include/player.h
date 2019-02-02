@@ -48,28 +48,14 @@ public:
      */
     Player& operator=(Player&&) = default;
 
-    /**
-     * Constructor
-     *
-     * This player will act first
-     *
-     * \param team The team controlled by this player
-     */
-    explicit Player(PlayerTeam team) :
-        Player{team, true}
-    {
-        // Nothing
-    }
 
     /**
      * Constructor
      *
      * \param team The team controlled by this player
-     * \param playFirst Set it to true to make this player the first one
      */
-    Player(PlayerTeam team, bool playFirst) :
+    Player(PlayerTeam team) :
         m_team{team},
-        m_theirTurn{playFirst},
         m_goals{Goal{m_team, {0, 0}}, Goal{m_team, {0, 0}}}
     {
         // Nothing
@@ -96,23 +82,6 @@ public:
     std::array<Goal, 2>& getGoals()
     {
         return m_goals;
-    }
-
-    /**
-     * Tell if this player can play
-     * \return True if this is this player's turn
-     */
-    bool isTheirTurn() const
-    {
-        return m_theirTurn;
-    }
-
-    /**
-     * Switch turn
-     */
-    void switchTurn()
-    {
-        m_theirTurn = !m_theirTurn;
     }
 
     /**
@@ -146,7 +115,6 @@ public:
 protected:
     PlayerTeam m_team; ///< The team controlled by this player
 
-    bool m_theirTurn{true}; ///< Can the player play?
 
     std::array<Goal, nbOfGoalsPerPlayer> m_goals; ///< The goals this player has to reach
 };

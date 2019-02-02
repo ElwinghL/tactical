@@ -501,8 +501,7 @@ void Game::drawBackground()
 
 void Game::switchTurn()
 {
-    m_aiPlayer.switchTurn();
-    m_humanPlayer.switchTurn();
+    m_board.switchTurn();
     if (m_gameState == GameState::PlayerTurn) {
         m_selectedPos = boost::none;
         stateSelectionUpdate(PlayerTurnSelection::NoSelection);
