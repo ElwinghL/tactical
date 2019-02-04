@@ -84,7 +84,7 @@ long GameAI::functionEval(const Gameboard& board)
             gf::Vector2i pos = {i, j};
             if (board.isOccupied(pos)) {
                 Character character = board.getCharacter(pos);
-                if (character.getTeam() == getEnemyTeam(m_team)) {
+                if (character.getTeam() == getEnemyTeam(getTeam())) {
                     enemyDamage += character.getHPMax() - character.getHP();
                 }
                 myCharacterPositions.push_back(pos);
@@ -107,36 +107,29 @@ long GameAI::functionEval(const Gameboard& board)
         }
     }
 
-    int nbOfCharactersOnGoals = 0;
+    int nbOfCharactersOnGoals = getNbOfActivatedGoals();
 
     //check if one player is on goal
-    for (auto myGoal : m_goals) {
-        if (myGoal.getTeam() == m_team) {
-            if (myGoal.isActivated()) {
-                score += 50;
-                ++nbOfCharactersOnGoals;
-            }
-        }
-    }
+    score += 50 * nbOfCharactersOnGoals;
 
-    int nbOfEnemyCharactersOnGoals = 0;
+//    int nbOfEnemyCharactersOnGoals = 0;
 
-    for (auto enemyGoal : m_goals) {
-        if (enemyGoal.getTeam() == getEnemyTeam(m_team)) {
-            if (enemyGoal.isActivated()) {
-                score -= 50;
-                ++nbOfEnemyCharactersOnGoals;
-            }
-        }
-    }
+//    for (auto enemyGoal : m_goals) {
+//        if (enemyGoal.getTeam() == getEnemyTeam(m_team)) {
+//            if (enemyGoal.isActivated()) {
+//                score -= 50;
+//                ++nbOfEnemyCharactersOnGoals;
+//            }
+//        }
+//    }
 
     if (nbOfCharactersOnGoals == nbOfGoalsPerPlayer) {
         return 9999;
     }
 
-    if (nbOfEnemyCharactersOnGoals == nbOfGoalsPerPlayer) {
-        return -9999;
-    }
+//    if (nbOfEnemyCharactersOnGoals == nbOfGoalsPerPlayer) {
+//        return -9999;
+//    }
 
     //check if one player has lost some characters
     int nbOfDeadCharacters = 6 - static_cast<int>(myCharacterPositions.size());
@@ -167,7 +160,7 @@ GameAI::depthActionsExploration GameAI::bestActionInFuture(Gameboard& board, uns
     std::vector<Action> allActions;
     for (gf::Vector2i pos{0, 0}, size = board.getSize(); pos.x < size.width; ++pos.x) {
         for (pos.y = 0; pos.y < size.height; ++pos.y) {
-            if (board.isOccupied(pos) && board.getTeamFor(pos) == m_team) {
+            if (board.isOccupied(pos) && board.getTeamFor(pos) == getTeam()) {
                 std::vector<Action> thisCharacterActions = board.getPossibleActions(pos);
                 for (auto& thisCharacterAction : thisCharacterActions) {
                     assert(thisCharacterAction.isValid(board));

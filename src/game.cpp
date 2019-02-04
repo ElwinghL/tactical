@@ -51,89 +51,91 @@ void Game::processEvents()
     case GameState::GameStart: {
     } break;
 
-    case GameState::PlayerTurn: {
-        if (m_leftClickAction.isActive()) {
-            gf::Vector2i tile{screenToGamePos(m_mouseCoords)};
+    case GameState::Playing: {
+        if (m_board.getPlayingTeam() == m_humanPlayer.getTeam()) {
+            if (m_leftClickAction.isActive()) {
+                gf::Vector2i tile{screenToGamePos(m_mouseCoords)};
 
 
-            if (m_selectedPos) {
-                if (m_buttonAttack.contains(m_mouseCoords)) {
-                    stateSelectionUpdate(PlayerTurnSelection::AttackSelection);
-                    break;
+                if (m_selectedPos) {
+                    if (m_buttonAttack.contains(m_mouseCoords)) {
+                        stateSelectionUpdate(PlayerTurnSelection::AttackSelection);
+                        break;
+                    }
+
+                    if (m_buttonCapacity.contains(m_mouseCoords)) {
+                        stateSelectionUpdate(PlayerTurnSelection::CapacitySelection);
+                        break;
+                    }
+
+                    if (m_buttonPass.contains(m_mouseCoords)) {
+                        switchTurn();
+                        break;
+                    }
                 }
 
-                if (m_buttonCapacity.contains(m_mouseCoords)) {
-                    stateSelectionUpdate(PlayerTurnSelection::CapacitySelection);
-                    break;
-                }
-
-                if (m_buttonPass.contains(m_mouseCoords)) {
-                    switchTurn();
-                    break;
-                }
-            }
-
-            switch (m_playerTurnSelection) {
-            case PlayerTurnSelection::NoSelection: {
-                if (isFromTeam(tile, m_humanPlayer.getTeam())) {
-                    m_selectedPos = tile;
-                    stateSelectionUpdate(PlayerTurnSelection::MoveSelection);
-                } else {
-                    m_selectedPos = boost::none;
-                    stateSelectionUpdate(PlayerTurnSelection::NoSelection);
-                }
-            } break;
-
-            case PlayerTurnSelection::MoveSelection: {
-                assert(m_selectedPos);
-
-                if (m_selectedPos != tile) {
+                switch (m_playerTurnSelection) {
+                case PlayerTurnSelection::NoSelection: {
                     if (isFromTeam(tile, m_humanPlayer.getTeam())) {
                         m_selectedPos = tile;
                         stateSelectionUpdate(PlayerTurnSelection::MoveSelection);
-                    } else if (m_board.move(*m_selectedPos, tile)) {
-                        m_humanPlayer.setMoved(true);
-                        m_selectedPos = tile;
-                        stateSelectionUpdate(PlayerTurnSelection::AttackSelection);
                     } else {
                         m_selectedPos = boost::none;
                         stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                     }
-                } else {
-                    m_selectedPos = boost::none;
-                    stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                 }
-            } break;
+                    break;
 
-            case PlayerTurnSelection::AttackSelection: {
-                assert(m_selectedPos);
+                case PlayerTurnSelection::MoveSelection: {
+                    assert(m_selectedPos);
 
-                if (m_board.attack(*m_selectedPos, tile)) {
-                    m_selectedPos = tile;
-                    switchTurn();
-                } else if (!m_humanPlayer.hasMoved()) {
-                    m_selectedPos = boost::none;
-                    stateSelectionUpdate(PlayerTurnSelection::NoSelection);
+                    if (m_selectedPos != tile) {
+                        if (isFromTeam(tile, m_humanPlayer.getTeam())) {
+                            m_selectedPos = tile;
+                            stateSelectionUpdate(PlayerTurnSelection::MoveSelection);
+                        } else if (m_board.move(*m_selectedPos, tile)) {
+                            m_humanPlayer.setMoved(true);
+                            m_selectedPos = tile;
+                            stateSelectionUpdate(PlayerTurnSelection::AttackSelection);
+                        } else {
+                            m_selectedPos = boost::none;
+                            stateSelectionUpdate(PlayerTurnSelection::NoSelection);
+                        }
+                    } else {
+                        m_selectedPos = boost::none;
+                        stateSelectionUpdate(PlayerTurnSelection::NoSelection);
+                    }
                 }
-            } break;
+                    break;
 
-            case PlayerTurnSelection::CapacitySelection: {
-                assert(m_selectedPos);
+                case PlayerTurnSelection::AttackSelection: {
+                    assert(m_selectedPos);
 
-                if (m_board.useCapacity(*m_selectedPos, tile)) {
-                    m_selectedPos = tile;
-                    switchTurn();
-                } else if (!m_humanPlayer.hasMoved()) {
-                    m_selectedPos = boost::none;
-                    stateSelectionUpdate(PlayerTurnSelection::NoSelection);
+                    if (m_board.attack(*m_selectedPos, tile)) {
+                        m_selectedPos = tile;
+                        switchTurn();
+                    } else if (!m_humanPlayer.hasMoved()) {
+                        m_selectedPos = boost::none;
+                        stateSelectionUpdate(PlayerTurnSelection::NoSelection);
+                    }
                 }
-            } break;
+                    break;
+
+                case PlayerTurnSelection::CapacitySelection: {
+                    assert(m_selectedPos);
+
+                    if (m_board.useCapacity(*m_selectedPos, tile)) {
+                        m_selectedPos = tile;
+                        switchTurn();
+                    } else if (!m_humanPlayer.hasMoved()) {
+                        m_selectedPos = boost::none;
+                        stateSelectionUpdate(PlayerTurnSelection::NoSelection);
+                    }
+                }
+                    break;
+                }
             }
-        }
-    } break;
-
-    case GameState::WaitingForAI: {
-        if (m_aiPlayer.playTurn(m_board)) {
+        } else if (m_aiPlayer.playTurn(m_board)) {
             switchTurn();
         }
     } break;
@@ -193,11 +195,10 @@ void Game::update()
     case GameState::GameStart: {
         m_clearColor = gf::Color::Black;
 
-        m_gameState = GameState::PlayerTurn;
+        m_gameState = GameState::Playing;
     } break;
 
-    case GameState::PlayerTurn:
-    case GameState::WaitingForAI: {
+    case GameState::Playing: {
         updateGoals();
 
         if (m_aiPlayer.hasWon() || m_humanPlayer.hasWon()) {
@@ -233,8 +234,7 @@ void Game::render()
     case GameState::GameStart: {
     } break;
 
-    case GameState::PlayerTurn:
-    case GameState::WaitingForAI: {
+    case GameState::Playing: {
         m_renderer.setView(m_mainView);
         drawBackground();
         drawCharacters();
@@ -258,14 +258,6 @@ void Game::initGoals()
 {
     m_aiPlayer.setGoalPositions({gf::Vector2i{1, 1}, gf::Vector2i{1, 4}});
     m_humanPlayer.setGoalPositions({gf::Vector2i{10, 1}, gf::Vector2i{10, 4}});
-
-    std::array<Goal, 2>& cthulhuGoal = m_humanPlayer.getGoals();
-    m_goals.push_back(&(cthulhuGoal[0]));
-    m_goals.push_back(&(cthulhuGoal[1]));
-
-    std::array<Goal, 2>& satanGoal = m_aiPlayer.getGoals();
-    m_goals.push_back(&(satanGoal[0]));
-    m_goals.push_back(&(satanGoal[1]));
 }
 
 void Game::initViews()
@@ -462,28 +454,36 @@ void Game::drawBackground()
             bool showTargetsInRange = m_selectedPos && m_targetsInRange.count({x, y}) > 0;
 
             auto tileSpr = [this, &x, &y]() -> gf::Sprite& {
-                auto foundGoal = std::find_if(m_goals.cbegin(), m_goals.cend(), [&x, &y](const Goal* goal) { return goal->getPosition() == gf::Vector2i{x, y}; });
-                if (foundGoal != m_goals.cend()) {
-                    if ((*foundGoal)->getTeam() == PlayerTeam::Cthulhu) {
-                        return m_goalSatan;
-                    } else {
-                        return m_goalCthulhu;
-                    }
-                } else if ((x + y) % 2 == 0) {
-                    return m_darkTile;
-                } else {
-                    return m_brightTile;
+                if (m_humanPlayer.isGoal({x, y})) {
+                    return (m_humanPlayer.getTeam() == PlayerTeam::Cthulhu) ? m_goalCthulhu : m_goalSatan;
+
                 }
+
+                if (m_aiPlayer.isGoal({x, y})) {
+                    return (m_aiPlayer.getTeam() == PlayerTeam::Cthulhu) ? m_goalCthulhu : m_goalSatan;
+
+                }
+
+                if ((x + y) % 2 == 0) {
+                    return m_darkTile;
+                }
+
+                return m_brightTile;
             }();
+
             tileSpr.setPosition(gameToScreenPos({x, y}));
             batch.draw(tileSpr);
 
             auto overTileSpr = [this, &tileSelected, &showPossibleTargets, &showTargetsInRange] {
                 if (tileSelected) {
                     return boost::optional<gf::Sprite&>{m_selectedTile};
-                } else if (showPossibleTargets) {
+                }
+
+                if (showPossibleTargets) {
                     return boost::optional<gf::Sprite&>{m_possibleTargetsTile};
-                } else if (showTargetsInRange) {
+                }
+
+                if (showTargetsInRange) {
                     return boost::optional<gf::Sprite&>{m_targetsInRangeTile};
                 }
 
@@ -501,16 +501,13 @@ void Game::drawBackground()
 
 void Game::switchTurn()
 {
-    m_board.switchTurn();
-    if (m_gameState == GameState::PlayerTurn) {
+    if (m_board.getPlayingTeam() == m_humanPlayer.getTeam()) {
         m_selectedPos = boost::none;
         stateSelectionUpdate(PlayerTurnSelection::NoSelection);
         m_humanPlayer.setMoved(false);
-
-        m_gameState = GameState::WaitingForAI;
-    } else if (m_gameState == GameState::WaitingForAI) {
-        m_gameState = GameState::PlayerTurn;
     }
+
+    m_board.switchTurn();
 }
 
 void Game::updateGoals()

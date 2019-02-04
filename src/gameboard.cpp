@@ -222,12 +222,11 @@ bool Gameboard::useCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest
         assert(m_array(dest));
 
         gf::Vector2i ejectedPos = dest + ejectionDistance * gf::sign(dest - origin);
-        gf::Vector2i lastReachablePos = getLastReachablePos(dest, ejectedPos);
 
-        if (ejectedPos != lastReachablePos) {
+        if (!isTargetReachable(dest, ejectedPos)) {
             m_array(dest)->damage(ejectionDamage);
             removeIfDead(dest);
-            ejectedPos = lastReachablePos;
+            ejectedPos = getLastReachablePos(dest, ejectedPos);
         }
 
         if (isOccupied(dest)) {
@@ -279,7 +278,8 @@ Ability Gameboard::canUseCapacity(const gf::Vector2i& origin, const gf::Vector2i
 }
 
 gf::Vector2i Gameboard::getLastReachablePos(const gf::Vector2i& origin,
-                                            const gf::Vector2i& dest, bool excludeDest) const
+                                            const gf::Vector2i& dest,
+                                            bool excludeDest) const
 {
     if ((!isOrthogonal(origin, dest) && !isDiagonal(origin, dest)) || origin == dest) {
         return origin;
@@ -303,9 +303,10 @@ gf::Vector2i Gameboard::getLastReachablePos(const gf::Vector2i& origin,
 }
 
 std::set<gf::Vector2i, PositionComp> Gameboard::getAllPossibleActionsOfAType(
-    Ability (Gameboard::* canDoSomething)(const gf::Vector2i&, const gf::Vector2i&, const gf::Vector2i&) const,
+    Ability (Gameboard::*canDoSomething)(const gf::Vector2i&, const gf::Vector2i&, const gf::Vector2i&) const,
     const gf::Vector2i& origin,
-    const gf::Vector2i& executor, bool usedForNotPossibleDisplay) const
+    const gf::Vector2i& executor,
+    bool usedForNotPossibleDisplay) const
 {
     std::set<gf::Vector2i, PositionComp> res;
     for (gf::Vector2i pos{0, 0}, size = m_array.getSize(); pos.x < size.width; ++pos.x) {
@@ -322,4 +323,3 @@ std::set<gf::Vector2i, PositionComp> Gameboard::getAllPossibleActionsOfAType(
     }
     return res;
 }
-

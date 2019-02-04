@@ -233,13 +233,9 @@ public:
         }
     }
 
-    /**
- * Tell if this player can play
- * \return True if this is this player's turn
- */
-    bool isTheirTurn() const
+    PlayerTeam getPlayingTeam() const
     {
-        return m_theirTurn;
+        return m_playingTeam;
     }
 
     /**
@@ -247,7 +243,7 @@ public:
      */
     void switchTurn()
     {
-        m_theirTurn = !m_theirTurn;
+        m_playingTeam = getEnemyTeam(m_playingTeam);
     }
 
 private:
@@ -294,7 +290,7 @@ private:
     }
 
     gf::Array2D<boost::optional<Character>> m_array;
-    bool m_theirTurn{true}; ///< Can the player play?
+    PlayerTeam m_playingTeam{PlayerTeam::Cthulhu}; ///< Can the player play?
 };
 
 

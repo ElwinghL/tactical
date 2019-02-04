@@ -113,8 +113,8 @@ public:
     void display() const
     {
         if (m_origin != m_dest) {
-            std::cout << "Move from (" << m_origin.x << ", " << m_origin.y << ") to (" <<
-                      m_dest.x << ", " << m_dest.y << ") then ";
+            std::cout << "Move from (" << m_origin.x << ", " << m_origin.y << ") to (" << m_dest.x << ", " << m_dest.y
+                      << ") then ";
         } else {
             std::cout << "From (" << m_origin.x << ", " << m_origin.y << "), ";
         }

@@ -15,6 +15,7 @@
 #include <array>
 #include <functional>
 #include <map>
+#include <utility>
 
 constexpr std::size_t nbOfGoalsPerPlayer{2}; ///< The number of goal to reach for each player
 
@@ -22,6 +23,14 @@ constexpr std::size_t nbOfGoalsPerPlayer{2}; ///< The number of goal to reach fo
  * A player, who is controlled by the computer of by a human
  */
 class Player {
+    template<typename T>
+    static auto getGoalIteratorForPosition(T&& player, const gf::Vector2i& position)
+    {
+        return std::find_if(player.m_goals.begin(), player.m_goals.end(), [&position](const Goal& elt) {
+            return position == elt.getPosition();
+        });
+    }
+
 public:
     /**
      * Deleted default constructor
@@ -54,7 +63,7 @@ public:
      *
      * \param team The team controlled by this player
      */
-    Player(PlayerTeam team) :
+    explicit Player(PlayerTeam team) :
         m_team{team},
         m_goals{Goal{m_team, {0, 0}}, Goal{m_team, {0, 0}}}
     {
@@ -73,15 +82,6 @@ public:
     PlayerTeam getTeam() const
     {
         return m_team;
-    }
-
-    /**
-     * Goals getter
-     * \return An array containing the goals
-     */
-    std::array<Goal, 2>& getGoals()
-    {
-        return m_goals;
     }
 
     /**
@@ -107,14 +107,40 @@ public:
         }
     }
 
+    bool isGoal(const gf::Vector2i& position) const
+    {
+        return getGoalIteratorForPosition(std::forward<const Player>(*this), position) != m_goals.end();
+    }
+
+    bool isGoalActivated(const gf::Vector2i& position) const
+    {
+        auto it = getGoalIteratorForPosition(std::forward<const Player>(*this), position);
+        assert(it != m_goals.end());
+        return it->isActivated();
+    }
+
+    void activateGoal(const gf::Vector2i& position)
+    {
+        auto it = getGoalIteratorForPosition(std::forward<Player>(*this), position);
+        assert(it != m_goals.end());
+        it->activate();
+    }
+
     /**
      * Activate goals if a character of this player is on top
      */
     void activateGoals();
 
 protected:
-    PlayerTeam m_team; ///< The team controlled by this player
+    int getNbOfActivatedGoals() const
+    {
+        return static_cast<int>(std::count_if(m_goals.begin(), m_goals.end(), [](const Goal& elt) {
+            return elt.isActivated();
+        }));
+    }
 
+private:
+    PlayerTeam m_team; ///< The team controlled by this player
 
     std::array<Goal, nbOfGoalsPerPlayer> m_goals; ///< The goals this player has to reach
 };

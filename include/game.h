@@ -82,8 +82,7 @@ private:
         MainMenu,
         Pause,
         GameStart,
-        PlayerTurn,
-        WaitingForAI,
+        Playing,
         GameEnd
     };
 
@@ -169,8 +168,6 @@ private:
 
     HumanPlayer m_humanPlayer{PlayerTeam::Cthulhu};
     GameAI m_aiPlayer{PlayerTeam::Satan};
-
-    std::vector<Goal*> m_goals{};
 
     boost::optional<gf::Vector2i> m_selectedPos;
 
