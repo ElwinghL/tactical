@@ -217,7 +217,7 @@ bool Gameboard::useCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest
 
     case CharacterType::Support: {
         constexpr int ejectionDistance = 2;
-        constexpr int ejectionDamage = 3;
+        constexpr int ejectionDamage = 4;
 
         assert(m_array(dest));
 

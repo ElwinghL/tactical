@@ -92,7 +92,7 @@ long GameAI::functionEval(const Gameboard& board)
         }
     }
 
-    score += enemyDamage;
+    score += enemyDamage * 5;
 
     //Check if you can attack
     for (auto myPos : myCharacterPositions) {
@@ -101,8 +101,16 @@ long GameAI::functionEval(const Gameboard& board)
                 score += 10;
             }
 
-            if (board.canAttack(myPos, otherPos)) {
+            if (board.canAttack(otherPos, myPos)) {
                 score -= 10;
+            }
+            
+            if(board.capacityWillHurt(myPos, otherPos)){
+                score += 20;
+            }
+            
+            if(board.capacityWillHurt(otherPos, myPos)){
+                score -= 20;
             }
         }
     }

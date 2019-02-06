@@ -175,6 +175,15 @@ public:
     {
         return canUseCapacity(origin, dest, origin);
     }
+    
+    bool capacityWillHurt(const gf::Vector2i& origin, const gf::Vector2i& dest) const
+    {
+        int ejectionDistance = 2;
+        if(m_array(origin)->getType() == CharacterType::Support && canUseCapacity(origin,dest) && !isTargetReachable(dest, dest + ejectionDistance * gf::sign(dest - origin))) {
+            return true;
+        }
+        return false;
+    }
 
     bool isEmpty(const gf::Vector2i& tile) const
     {
