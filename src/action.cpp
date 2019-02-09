@@ -10,9 +10,11 @@ bool Action::isValid(const Gameboard& board) const
     }
 
     switch (m_type) {
-    case ActionType::Capacity:return board.canUseCapacity(m_dest, m_target, m_origin);
+    case ActionType::Capacity:
+        return board.canUseCapacity(m_dest, m_target, m_origin);
 
-    case ActionType::Attack:return board.canAttack(m_dest, m_target, m_origin);
+    case ActionType::Attack:
+        return board.canAttack(m_dest, m_target, m_origin);
 
     case ActionType::None:
         break;

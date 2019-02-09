@@ -1,6 +1,8 @@
-//
-// Created by fabien on 28/01/19.
-//
+/**
+ * A file containing the game's board class
+ * \author Fabien Matusalem
+ * \date 28/01/19
+ */
 
 #ifndef CTHULHUVSSATAN_GAMEBOARD_H
 #define CTHULHUVSSATAN_GAMEBOARD_H
@@ -11,7 +13,6 @@
 #include <gf/Array2D.h>
 
 #include <boost/optional.hpp>
-
 #include <set>
 #include <vector>
 
@@ -61,9 +62,8 @@ public:
     explicit Gameboard();
 
     /**
-    * Get a set of every possible movement for the character
-     * \param board The board containing pointers to characters
-     * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
+     * Get a set of every possible movement for the character
+     * \param usedForNotPossibleDisplay Used for display purpose only. If true, does not consider view and if there is character on the case
      * \return The set of possible relative vector movements
      */
     std::set<gf::Vector2i, PositionComp> getAllPossibleMoves(const gf::Vector2i& origin,
@@ -74,8 +74,7 @@ public:
 
     /**
      * Get a set of every possible attack for the character
-     * \param board The board containing pointers to characters
-     * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
+     * \param usedForNotPossibleDisplay Used for display purpose only. If true, does not consider view and if there is character on the case
      * \return The set of possible relative vector attack
      */
     std::set<gf::Vector2i, PositionComp> getAllPossibleAttacks(const gf::Vector2i& origin,
@@ -86,20 +85,18 @@ public:
 
     /**
      * Get a set of every possible capacity for the character
-     * \param board The board containing pointers to characters
-     * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
+     * \param usedForNotPossibleDisplay Used for display purpose only. If true, does not consider view and if there is character on the case
      * \return The set of possible relative vector capacity
      */
     std::set<gf::Vector2i, PositionComp> getAllPossibleCapacities(const gf::Vector2i& origin,
                                                                   bool usedForNotPossibleDisplay = false) const
     {
-        return getAllPossibleActionsOfAType(&Gameboard::canUseCapacity, origin, origin,
-                                            usedForNotPossibleDisplay);
+        return getAllPossibleActionsOfAType(&Gameboard::canUseCapacity, origin, origin, usedForNotPossibleDisplay);
     }
 
     /**
-     * Give all the actions the character can do
-     * \param board The board
+     * Give all the actions a character can do
+     * \param origin The position of the character to get its actions
      * \return A vector with all the possible actions
      */
     std::vector<Action> getPossibleActions(const gf::Vector2i& origin) const;
@@ -110,8 +107,8 @@ public:
      * The amount of damage dealt to the other character
      * depends of the type of this one
      *
-     * \param other The character to attack
-     * \param board The board of the game
+     * \param origin The position of the attacking character
+     * \param dest The position of the character to attack
      * \return True if the attack succeeds
      */
     bool attack(const gf::Vector2i& origin, const gf::Vector2i& dest);
@@ -119,10 +116,12 @@ public:
     /**
      * Tell if the character can attack another one
      *
-     * \param other The other character this character is trying to attack
-     * \param board The board of the game
-     * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
-     * \return True if the other character may be attacked by this character
+     * \param origin The position where the character will be while attacking
+     * \param dest The position of the possibly attacked character
+     * \param executor The position of the character trying to attack
+     * \return Unable if the character never reach the dest position
+     *         Unavailable the attack can't reach an enemy
+     *         Able otherwise
      */
     Ability canAttack(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& executor) const;
 
@@ -134,21 +133,20 @@ public:
     /**
      * Move this character
      *
-     * \param dest The movement vector, which is difference between
-     *                 the start and the end of the movement
-     * \param board The board with the characters
-     * \return True if the character is able to move by this vector
+     * \param origin The position of the character
+     * \param dest The position where the character tries to move
+     * \return True if the character has moved
      */
     bool move(const gf::Vector2i& origin, const gf::Vector2i& dest);
 
     /**
-     * Tell if this character can move along a given vector
+     * Tell if this character can move from a position to another
      *
-     * \param dest The movement vector, which is difference between
-     *                 the start and the end of the movement
-     * \param board An array with all the characters
-     * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
-     * \return True if the character is able to move by this vector
+     * \param origin The position of the character
+     * \param dest The position where the character tries to move
+     * \return Able if the character can move to the dest position
+     *         Unavailable if the way to the dest position is blocked
+     *         Unable otherwise
      */
     Ability canMove(const gf::Vector2i& origin, const gf::Vector2i& dest) const
     {
@@ -158,20 +156,21 @@ public:
     /**
      * Use the character's capacity
      *
-     * \param dest The target vector, which is difference between
-     *                 the start and the end
-     * \return True if the character is able to use its capacity by this vector
+     * \param origin The position of the character using its capacity
+     * \param dest The position of target of the capacity
+     * \return True if the capacity succeeds
      */
     bool useCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest);
 
     /**
      * Tell if this character can use its capacity along a given vector
      *
-     * \param dest The target vector, which is difference between
-     *                 the start and the end
-     * \param board An array with all the characters
-     * \param usedForNotPossibleDisplay Used for display purpose only. False by default. If true, does not consider view and if there is  character on the case
-     * \return True if the character is able to use its capacity by this vector
+     * \param origin The position where the character will be while using its capacity
+     * \param dest The position of target of the capacity
+     * \param executor The position of the character trying to use its capacity
+     * \return Unable if the character never reach the dest position
+     *         Unavailable the capacity is blocked or can't reach its target
+     *         Able otherwise
      */
     Ability canUseCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& executor) const;
 
@@ -179,7 +178,7 @@ public:
     {
         return canUseCapacity(origin, dest, origin);
     }
-    
+
     bool capacityWillHurt(const gf::Vector2i& origin, const gf::Vector2i& dest) const
     {
         int ejectionDistance = 2;
@@ -226,13 +225,16 @@ public:
             for (pos.x = 0; pos.x < size.width; ++pos.x) {
                 if (m_array(pos)) {
                     switch (getTypeFor(pos)) {
-                    case CharacterType::Tank:std::cout << ((getTeamFor(pos) == PlayerTeam::Cthulhu) ? "T" : "t");
+                    case CharacterType::Tank:
+                        std::cout << ((getTeamFor(pos) == PlayerTeam::Cthulhu) ? "T" : "t");
                         break;
 
-                    case CharacterType::Scout:std::cout << ((getTeamFor(pos) == PlayerTeam::Cthulhu) ? "E" : "e");
+                    case CharacterType::Scout:
+                        std::cout << ((getTeamFor(pos) == PlayerTeam::Cthulhu) ? "E" : "e");
                         break;
 
-                    case CharacterType::Support:std::cout << ((getTeamFor(pos) == PlayerTeam::Cthulhu) ? "S" : "s");
+                    case CharacterType::Support:
+                        std::cout << ((getTeamFor(pos) == PlayerTeam::Cthulhu) ? "S" : "s");
                         break;
                     }
                 } else {
@@ -350,12 +352,12 @@ private:
     }
 
     std::set<gf::Vector2i, PositionComp> getAllPossibleActionsOfAType(
-        Ability (Gameboard::* canDoSomething)(const gf::Vector2i&, const gf::Vector2i&, const gf::Vector2i&) const,
-        const gf::Vector2i& origin,
-        const gf::Vector2i& executor, bool usedForNotPossibleDisplay) const;
+            Ability (Gameboard::*canDoSomething)(const gf::Vector2i&, const gf::Vector2i&, const gf::Vector2i&) const,
+            const gf::Vector2i& origin,
+            const gf::Vector2i& executor,
+            bool usedForNotPossibleDisplay) const;
 
-    gf::Vector2i getLastReachablePos(const gf::Vector2i& origin, const gf::Vector2i& dest,
-                                     bool excludeDest = false) const;
+    gf::Vector2i getLastReachablePos(const gf::Vector2i& origin, const gf::Vector2i& dest, bool excludeDest = false) const;
 
     bool isTargetReachable(const gf::Vector2i& origin, const gf::Vector2i& dest, bool excludeDest = false) const
     {
@@ -366,8 +368,8 @@ private:
     }
 
     /**
-     * Remove a character everywhere its informations are saved if it is dead
-     * \param target the position of the character
+     * Remove a character if its HP have fallen to 0
+     * \param target the position of the character to test
      */
     void removeIfDead(const gf::Vector2i& target)
     {
@@ -378,7 +380,7 @@ private:
 
     gf::Array2D<boost::optional<Character>> m_array;
     std::array<Goal, 2 * goalsPerTeam> m_goals;
-    PlayerTeam m_playingTeam{PlayerTeam::Cthulhu}; ///< Can the player play?
+    PlayerTeam m_playingTeam{PlayerTeam::Cthulhu};
 };
 
 

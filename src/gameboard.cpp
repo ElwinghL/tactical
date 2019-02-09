@@ -1,7 +1,3 @@
-//
-// Created by fabien on 28/01/19.
-//
-
 #include "gameboard.h"
 
 #include "action.h"
@@ -9,10 +5,10 @@
 Gameboard::Gameboard() :
     m_array{{12, 6}, boost::none},
     m_goals{
-        Goal{PlayerTeam::Cthulhu, {10, 1}},
-        Goal{PlayerTeam::Cthulhu, {10, 4}},
-        Goal{PlayerTeam::Satan, {1, 1}},
-        Goal{PlayerTeam::Satan, {1, 4}},
+            Goal{PlayerTeam::Cthulhu, {10, 1}},
+            Goal{PlayerTeam::Cthulhu, {10, 4}},
+            Goal{PlayerTeam::Satan, {1, 1}},
+            Goal{PlayerTeam::Satan, {1, 4}},
     }
 {
     auto initPlayerCharacters{[this](int column, PlayerTeam team) {
@@ -85,10 +81,9 @@ Ability Gameboard::canAttack(const gf::Vector2i& origin, const gf::Vector2i& des
         if (gf::manhattanDistance(origin, dest) <= 2) {
             gf::Vector2i direction = gf::sign(relative);
             result = (direction == relative || !m_array(origin + direction)) ? Ability::Able :
-                     Ability::Unavailable; // Can't attack through another character
+                                                                               Ability::Unavailable; // Can't attack through another character
         }
-    }
-        break;
+    } break;
 
     case CharacterType::Support: {
         constexpr int range = 3;
@@ -96,8 +91,7 @@ Ability Gameboard::canAttack(const gf::Vector2i& origin, const gf::Vector2i& des
         if (isOrthogonal(origin, dest) && gf::chebyshevLength(relative) <= range) {
             result = isTargetReachable(origin, dest, true) ? Ability::Able : Ability::Unavailable;
         }
-    }
-        break;
+    } break;
 
     case CharacterType::Tank:
         if (gf::chebyshevDistance(origin, dest) == 1) {
@@ -146,8 +140,7 @@ Ability Gameboard::canMove(const gf::Vector2i& origin, const gf::Vector2i& dest,
         if ((isOrthogonal(origin, dest) || isDiagonal(origin, dest)) && gf::chebyshevLength(relative) <= range) {
             result = isTargetReachable(origin, dest) ? Ability::Able : Ability::Unavailable;
         }
-    }
-        break;
+    } break;
 
     case CharacterType::Tank: {
         constexpr int sideRange = 2;
@@ -155,23 +148,20 @@ Ability Gameboard::canMove(const gf::Vector2i& origin, const gf::Vector2i& dest,
         if (gf::chebyshevDistance(origin, dest) == 1 || (relative.x == 0 && std::abs(relative.y) == sideRange)) {
             result = isTargetReachable(origin, dest) ? Ability::Able : Ability::Unavailable;
         }
-    }
-        break;
+    } break;
 
     case CharacterType::Support: {
         if (gf::manhattanDistance(origin, dest) == 3 && relative.x != 0 && relative.y != 0) {
             result = Ability::Able;
         }
-    }
-        break;
+    } break;
     }
 
     if (result) {
         if (m_array(dest)) { // If there is already a character at this location
             result = Ability::Unavailable;
         } else { // Check for nearby enemy Tank
-            constexpr gf::Orientation cardinals[] = {gf::Orientation::North, gf::Orientation::East,
-                                                     gf::Orientation::South, gf::Orientation::West};
+            constexpr gf::Orientation cardinals[] = {gf::Orientation::North, gf::Orientation::East, gf::Orientation::South, gf::Orientation::West};
             for (auto card : cardinals) {
                 gf::Vector2i sq2Check = origin + gf::displacement(card);
                 if (m_array.isValid(sq2Check)) {
@@ -201,14 +191,12 @@ bool Gameboard::useCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest
     switch (getTypeFor(origin)) {
     case CharacterType::Scout: {
         swapPositions(origin, dest);
-    }
-        break;
+    } break;
 
     case CharacterType::Tank: {
         gf::Vector2i newPos = origin + gf::sign(dest - origin);
         swapPositions(dest, newPos);
-    }
-        break;
+    } break;
 
     case CharacterType::Support: {
         constexpr int ejectionDistance = 2;
@@ -225,14 +213,12 @@ bool Gameboard::useCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest
 
         swapPositions(dest, ejectedPos);
         removeIfDead(ejectedPos);
-    }
-        break;
+    } break;
     }
     return true;
 }
 
-Ability Gameboard::canUseCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest,
-                                  const gf::Vector2i& executor) const
+Ability Gameboard::canUseCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& executor) const
 {
     assert(isOccupied(executor));
 
@@ -246,22 +232,19 @@ Ability Gameboard::canUseCapacity(const gf::Vector2i& origin, const gf::Vector2i
         if (manhattanDist == 1) {
             return m_array(dest) ? Ability::Unavailable : Ability::Able;
         }
-    }
-        break;
+    } break;
 
     case CharacterType::Support: {
         if (isOrthogonal(origin, dest) && manhattanDist == 2) {
             return m_array(dest) ? Ability::Able : Ability::Unavailable;
         }
-    }
-        break;
+    } break;
 
     case CharacterType::Tank: {
         if (isOrthogonal(origin, dest) && (manhattanDist == 2 || manhattanDist == 3)) {
             return (m_array(dest) && isTargetReachable(origin, dest, true)) ? Ability::Able : Ability::Unavailable;
         }
-    }
-        break;
+    } break;
     }
 
     return Ability::Unable;
@@ -293,10 +276,10 @@ gf::Vector2i Gameboard::getLastReachablePos(const gf::Vector2i& origin,
 }
 
 std::set<gf::Vector2i, PositionComp> Gameboard::getAllPossibleActionsOfAType(
-    Ability (Gameboard::*canDoSomething)(const gf::Vector2i&, const gf::Vector2i&, const gf::Vector2i&) const,
-    const gf::Vector2i& origin,
-    const gf::Vector2i& executor,
-    bool usedForNotPossibleDisplay) const
+        Ability (Gameboard::*canDoSomething)(const gf::Vector2i&, const gf::Vector2i&, const gf::Vector2i&) const,
+        const gf::Vector2i& origin,
+        const gf::Vector2i& executor,
+        bool usedForNotPossibleDisplay) const
 {
     std::set<gf::Vector2i, PositionComp> res;
     forEach([this, &canDoSomething, &origin, &executor, &usedForNotPossibleDisplay, &res](auto pos) {

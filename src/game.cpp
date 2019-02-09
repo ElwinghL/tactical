@@ -82,8 +82,7 @@ void Game::processEvents()
                         m_selectedPos = boost::none;
                         stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                     }
-                }
-                    break;
+                } break;
 
                 case PlayerTurnSelection::MoveSelection: {
                     assert(m_selectedPos);
@@ -104,8 +103,7 @@ void Game::processEvents()
                         m_selectedPos = boost::none;
                         stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                     }
-                }
-                    break;
+                } break;
 
                 case PlayerTurnSelection::AttackSelection: {
                     assert(m_selectedPos);
@@ -117,8 +115,7 @@ void Game::processEvents()
                         m_selectedPos = boost::none;
                         stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                     }
-                }
-                    break;
+                } break;
 
                 case PlayerTurnSelection::CapacitySelection: {
                     assert(m_selectedPos);
@@ -130,8 +127,7 @@ void Game::processEvents()
                         m_selectedPos = boost::none;
                         stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                     }
-                }
-                    break;
+                } break;
                 }
             }
         } else if (m_aiPlayer.playTurn(m_board)) {

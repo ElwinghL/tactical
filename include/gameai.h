@@ -43,12 +43,12 @@ public:
     void setInitialGameboard(const Gameboard& board);
 
     bool playTurn(Gameboard& board);
+
     /**
-     * \name: functionEval
-     * \function: Give a score to a state (9999 means win and -9999 means defeat
+     * Give a score to a state (9999 means win and -9999 means defeat
      *
-     * \param: Board game
-     * \return : Score the actual configuration
+     * \param board Board game
+     * \return Score of the actual configuration
      */
     long functionEval(const Gameboard& board);
 
@@ -70,7 +70,6 @@ private:
 
     bool m_waitingForThread{false};
     bool m_initialBoardSet{false};
-
 
     std::thread m_computingThread{&GameAI::simulateActions, this};
     BlockingQueue<Gameboard> m_threadInput{};

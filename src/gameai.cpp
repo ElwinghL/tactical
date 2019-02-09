@@ -28,15 +28,15 @@ void GameAI::simulateActions()
          */
         GameAI::depthActionsExploration actionToDo = bestActionInFuture(board, 0);
 
-//        if (actionToDo.first.getType() == ActionType::Attack) {
-//            std::cout << "Attaque\n";
-//        }
-//        if (actionToDo.first.getType() == ActionType::Capacity) {
-//            std::cout << "Capacité\n";
-//        }
-//        if (actionToDo.first.getType() == ActionType::None) {
-//            std::cout << "None\n";
-//        }
+        //        if (actionToDo.first.getType() == ActionType::Attack) {
+        //            std::cout << "Attaque\n";
+        //        }
+        //        if (actionToDo.first.getType() == ActionType::Capacity) {
+        //            std::cout << "Capacité\n";
+        //        }
+        //        if (actionToDo.first.getType() == ActionType::None) {
+        //            std::cout << "None\n";
+        //        }
 
 
         board.display();
@@ -95,12 +95,12 @@ long GameAI::functionEval(const Gameboard& board)
             if (board.canAttack(otherPos, myPos)) {
                 score -= 10;
             }
-            
-            if(board.capacityWillHurt(myPos, otherPos)){
+
+            if (board.capacityWillHurt(myPos, otherPos)) {
                 score += 20;
             }
-            
-            if(board.capacityWillHurt(otherPos, myPos)){
+
+            if (board.capacityWillHurt(otherPos, myPos)) {
                 score -= 20;
             }
         }
@@ -174,15 +174,15 @@ GameAI::depthActionsExploration GameAI::bestActionInFuture(Gameboard& board, uns
             }
         }
         GameAI::depthActionsExploration actionToDo = std::make_pair(bestAction, std::make_pair(bestScore, bestScore));
-//        if (actionToDo.first.getType() == ActionType::Attack) {
-//            std::cout << "Attaque\n";
-//        }
-//        if (actionToDo.first.getType() == ActionType::Capacity) {
-//            std::cout << "Capacité\n";
-//        }
-//        if (actionToDo.first.getType() == ActionType::None) {
-//            std::cout << "None\n";
-//        }
+        //        if (actionToDo.first.getType() == ActionType::Attack) {
+        //            std::cout << "Attaque\n";
+        //        }
+        //        if (actionToDo.first.getType() == ActionType::Capacity) {
+        //            std::cout << "Capacité\n";
+        //        }
+        //        if (actionToDo.first.getType() == ActionType::None) {
+        //            std::cout << "None\n";
+        //        }
         //std::cout << "Bottom reached. " << bestScore << "\n";
 
         assert(actionToDo.first.isValid(board));
@@ -219,15 +219,15 @@ GameAI::depthActionsExploration GameAI::bestActionInFuture(Gameboard& board, uns
         }
         GameAI::depthActionsExploration actionToDo = std::make_pair(bestAction, std::make_pair(bestScore, bestScoreRow));
         std::cout << "Best score  = " << bestScore << " Best Score reached = " << bestScoreRow << "\n";
-//            if (actionToDo.first.getType() == ActionType::Attack) {
-//                std::cout << "Attaque\n";
-//            }
-//            if (actionToDo.first.getType() == ActionType::Capacity) {
-//                std::cout << "Capacité\n";
-//            }
-//            if (actionToDo.first.getType() == ActionType::None) {
-//                std::cout << "None\n";
-//            }
+        //            if (actionToDo.first.getType() == ActionType::Attack) {
+        //                std::cout << "Attaque\n";
+        //            }
+        //            if (actionToDo.first.getType() == ActionType::Capacity) {
+        //                std::cout << "Capacité\n";
+        //            }
+        //            if (actionToDo.first.getType() == ActionType::None) {
+        //                std::cout << "None\n";
+        //            }
 
 
         assert(actionToDo.first.isValid(board));

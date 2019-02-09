@@ -27,9 +27,9 @@ public:
     /**
      * Constructor
      *
-     * \param character The character who is doing this action
      * \param type The type of this action
-     * \param dest A vector which is the difference between the start and the end of the movement
+     * \param origin The position of the character executing the action
+     * \param dest The position the character will move to
      * \param target The position which is the attack/capacity destination
      */
     Action(ActionType type, const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& target) :
@@ -46,7 +46,7 @@ public:
      *
      * Make an action with only a movement and without attack/capacity
      *
-     * \param origin The character who is doing this action
+     * \param origin The position of the character executing the action
      * \param dest A vector which is the difference between the start and the end of the movement
      */
     Action(const gf::Vector2i& origin, const gf::Vector2i& dest) :
@@ -58,10 +58,8 @@ public:
     /**
      * Constructor
      *
-     * Make an action without movement
-     *
-     * \param origin The character who is doing this action
      * \param type The type of this action
+     * \param origin The position of the character executing the action
      * \param target The position which is the attack/capacity destination
      */
     Action(ActionType type, const gf::Vector2i& origin, const gf::Vector2i& target) :
@@ -80,8 +78,9 @@ public:
      */
     bool isValid(const Gameboard& board) const;
 
-    /*
+    /**
      * Execute this action. The character moves then attacks or uses a capacity
+     * \param board The board of the game
      */
     void execute(Gameboard& board);
 
@@ -120,14 +119,16 @@ public:
         }
 
         switch (m_type) {
-        case ActionType::Attack:std::cout << "attack (" << m_target.x << ", " << m_target.y << ")" << std::endl;
+        case ActionType::Attack:
+            std::cout << "attack (" << m_target.x << ", " << m_target.y << ")" << std::endl;
             break;
 
         case ActionType::Capacity:
             std::cout << "use capacity on (" << m_target.x << ", " << m_target.y << ")" << std::endl;
             break;
 
-        case ActionType::None:std::cout << "do nothing" << std::endl;
+        case ActionType::None:
+            std::cout << "do nothing" << std::endl;
             break;
         }
     }
@@ -135,7 +136,7 @@ public:
 private:
     ActionType m_type; ///< The type of this action
     gf::Vector2i m_origin; ///< The position of the character who is doing this action
-    gf::Vector2i m_dest; ///< The movement vector
+    gf::Vector2i m_dest; ///< The destination position of the character
     gf::Vector2i m_target; ///< The attack/capacity targeted position
 };
 

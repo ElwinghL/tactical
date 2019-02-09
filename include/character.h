@@ -29,7 +29,6 @@ public:
      *
      * \param team The character's team : Cthulhu or Satan
      * \param type The character's type : Tank, Suppport, Scout
-     * \param pos The character's start position
      */
     Character(PlayerTeam team, CharacterType type) :
         m_team{team},
