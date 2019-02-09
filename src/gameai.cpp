@@ -6,16 +6,14 @@ void GameAI::simulateActions()
     Gameboard board{};
     while (m_threadInput.pop(board)) {
         std::vector<Action> allActions;
-        for (gf::Vector2i pos{0, 0}, size = board.getSize(); pos.x < size.width; ++pos.x) {
-            for (pos.y = 0; pos.y < size.height; ++pos.y) {
-                if (board.isOccupied(pos)) {
-                    std::vector<Action> thisCharacterActions = board.getPossibleActions(pos);
-                    for (auto& thisCharacterAction : thisCharacterActions) {
-                        allActions.push_back(thisCharacterAction);
-                    }
+        board.forEach([&board, &allActions](auto pos) {
+            if (board.isOccupied(pos)) {
+                std::vector<Action> thisCharacterActions = board.getPossibleActions(pos);
+                for (auto& thisCharacterAction : thisCharacterActions) {
+                    allActions.push_back(thisCharacterAction);
                 }
             }
-        }
+        });
 
         /*size_t randAction = rand() % allActions.size();
 
@@ -77,19 +75,12 @@ long GameAI::functionEval(const Gameboard& board)
     long score = 0;
     int enemyDamage = 0;
 
-    std::vector<gf::Vector2i> myCharacterPositions, otherCharacterPositions;
-    //find the differents characters positions
-    for (int i = 0; i < board.getSize().x; ++i) {
-        for (int j = 0; j < board.getSize().y; ++j) {
-            gf::Vector2i pos = {i, j};
-            if (board.isOccupied(pos)) {
-                Character character = board.getCharacter(pos);
-                if (character.getTeam() == getEnemyTeam(getTeam())) {
-                    enemyDamage += character.getHPMax() - character.getHP();
-                }
-                myCharacterPositions.push_back(pos);
-            }
-        }
+    auto myCharacterPositions = board.getTeamPositions(getTeam());
+    auto otherCharacterPositions = board.getTeamPositions(getEnemyTeam(getTeam()));
+
+    for (auto pos : otherCharacterPositions) {
+        auto character = board.getCharacter(pos);
+        enemyDamage = character.getHPMax() - character.getHP();
     }
 
     score += enemyDamage * 5;
@@ -115,29 +106,9 @@ long GameAI::functionEval(const Gameboard& board)
         }
     }
 
-    int nbOfCharactersOnGoals = getNbOfActivatedGoals();
-
     //check if one player is on goal
-    score += 50 * nbOfCharactersOnGoals;
-
-//    int nbOfEnemyCharactersOnGoals = 0;
-
-//    for (auto enemyGoal : m_goals) {
-//        if (enemyGoal.getTeam() == getEnemyTeam(m_team)) {
-//            if (enemyGoal.isActivated()) {
-//                score -= 50;
-//                ++nbOfEnemyCharactersOnGoals;
-//            }
-//        }
-//    }
-
-    if (nbOfCharactersOnGoals == nbOfGoalsPerPlayer) {
-        return 9999;
-    }
-
-//    if (nbOfEnemyCharactersOnGoals == nbOfGoalsPerPlayer) {
-//        return -9999;
-//    }
+    score += 50 * board.getNbOfActivatedGoals(getTeam());
+    score -= 50 * board.getNbOfActivatedGoals(getEnemyTeam(getTeam()));
 
     //check if one player has lost some characters
     int nbOfDeadCharacters = 6 - static_cast<int>(myCharacterPositions.size());
@@ -166,17 +137,15 @@ long GameAI::functionEval(const Gameboard& board)
 GameAI::depthActionsExploration GameAI::bestActionInFuture(Gameboard& board, unsigned int depth)
 {
     std::vector<Action> allActions;
-    for (gf::Vector2i pos{0, 0}, size = board.getSize(); pos.x < size.width; ++pos.x) {
-        for (pos.y = 0; pos.y < size.height; ++pos.y) {
-            if (board.isOccupied(pos) && board.getTeamFor(pos) == getTeam()) {
-                std::vector<Action> thisCharacterActions = board.getPossibleActions(pos);
-                for (auto& thisCharacterAction : thisCharacterActions) {
-                    assert(thisCharacterAction.isValid(board));
-                    allActions.push_back(thisCharacterAction);
-                }
+    board.forEach([this, &board, &allActions](auto pos) {
+        if (board.isOccupied(pos) && board.getTeamFor(pos) == this->getTeam()) {
+            std::vector<Action> thisCharacterActions = board.getPossibleActions(pos);
+            for (auto& thisCharacterAction : thisCharacterActions) {
+                assert(thisCharacterAction.isValid(board));
+                allActions.push_back(thisCharacterAction);
             }
         }
-    }
+    });
     std::vector<Gameboard> boardsToAnalyse;
 
     for (auto actionAvailable : allActions) {

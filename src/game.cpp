@@ -11,7 +11,6 @@ Game::Game(gf::ResourceManager* resMgr) :
     initActions();
     initWidgets();
     initSprites();
-    initGoals();
 
     m_aiPlayer.setInitialGameboard(m_board);
 }
@@ -199,19 +198,12 @@ void Game::update()
     } break;
 
     case GameState::Playing: {
-        updateGoals();
-
-        if (m_aiPlayer.hasWon() || m_humanPlayer.hasWon()) {
+        if (m_board.hasWon(PlayerTeam::Cthulhu) || m_board.hasWon(PlayerTeam::Satan)) {
             m_gameState = GameState::GameEnd;
         }
     } break;
 
     case GameState::GameEnd: {
-        if (m_humanPlayer.hasWon()) {
-            std::cout << "Le joueur a gagné !" << std::endl;
-        } else {
-            std::cout << "L'IA a gagné !" << std::endl;
-        }
     } break;
     }
 }
@@ -252,12 +244,6 @@ void Game::initWindow()
 {
     m_window.setVerticalSyncEnabled(true);
     m_window.setFramerateLimit(60);
-}
-
-void Game::initGoals()
-{
-    m_aiPlayer.setGoalPositions({gf::Vector2i{1, 1}, gf::Vector2i{1, 4}});
-    m_humanPlayer.setGoalPositions({gf::Vector2i{10, 1}, gf::Vector2i{10, 4}});
 }
 
 void Game::initViews()
@@ -443,59 +429,53 @@ void Game::drawUI()
 
 void Game::drawBackground()
 {
-    const gf::Vector2i size{m_board.getSize()};
-
     gf::SpriteBatch batch{m_renderer};
     batch.begin();
-    for (int x{size.width - 1}; x >= 0; --x) {
-        for (int y{0}; y < size.height; ++y) {
-            bool tileSelected = m_selectedPos && *m_selectedPos == gf::Vector2i{x, y};
-            bool showPossibleTargets = m_selectedPos && m_possibleTargets.count({x, y}) > 0;
-            bool showTargetsInRange = m_selectedPos && m_targetsInRange.count({x, y}) > 0;
+    m_board.forEach([this, &batch](auto pos) {
+        bool tileSelected = m_selectedPos && *m_selectedPos == pos;
+        bool showPossibleTargets = m_selectedPos && m_possibleTargets.count(pos) > 0;
+        bool showTargetsInRange = m_selectedPos && m_targetsInRange.count(pos) > 0;
 
-            auto tileSpr = [this, &x, &y]() -> gf::Sprite& {
-                if (m_humanPlayer.isGoal({x, y})) {
-                    return (m_humanPlayer.getTeam() == PlayerTeam::Cthulhu) ? m_goalCthulhu : m_goalSatan;
-
-                }
-
-                if (m_aiPlayer.isGoal({x, y})) {
-                    return (m_aiPlayer.getTeam() == PlayerTeam::Cthulhu) ? m_goalCthulhu : m_goalSatan;
-
-                }
-
-                if ((x + y) % 2 == 0) {
-                    return m_darkTile;
-                }
-
-                return m_brightTile;
-            }();
-
-            tileSpr.setPosition(gameToScreenPos({x, y}));
-            batch.draw(tileSpr);
-
-            auto overTileSpr = [this, &tileSelected, &showPossibleTargets, &showTargetsInRange] {
-                if (tileSelected) {
-                    return boost::optional<gf::Sprite&>{m_selectedTile};
-                }
-
-                if (showPossibleTargets) {
-                    return boost::optional<gf::Sprite&>{m_possibleTargetsTile};
-                }
-
-                if (showTargetsInRange) {
-                    return boost::optional<gf::Sprite&>{m_targetsInRangeTile};
-                }
-
-                return boost::optional<gf::Sprite&>{};
-            }();
-
-            if (overTileSpr) {
-                overTileSpr->setPosition(gameToScreenPos({x, y}));
-                batch.draw(*overTileSpr);
+        auto tileSpr = [this, &pos]() -> gf::Sprite& {
+            if (m_board.isGoal(pos, PlayerTeam::Cthulhu)) {
+                return m_goalCthulhu;
             }
+
+            if (m_board.isGoal(pos, PlayerTeam::Satan)) {
+                return m_goalSatan;
+            }
+
+            if ((pos.x + pos.y) % 2 == 0) {
+                return m_darkTile;
+            }
+
+            return m_brightTile;
+        }();
+
+        tileSpr.setPosition(gameToScreenPos(pos));
+        batch.draw(tileSpr);
+
+        auto overTileSpr = [this, &tileSelected, &showPossibleTargets, &showTargetsInRange] {
+            if (tileSelected) {
+                return boost::optional<gf::Sprite&>{m_selectedTile};
+            }
+
+            if (showPossibleTargets) {
+                return boost::optional<gf::Sprite&>{m_possibleTargetsTile};
+            }
+
+            if (showTargetsInRange) {
+                return boost::optional<gf::Sprite&>{m_targetsInRangeTile};
+            }
+
+            return boost::optional<gf::Sprite&>{};
+        }();
+
+        if (overTileSpr) {
+            overTileSpr->setPosition(gameToScreenPos(pos));
+            batch.draw(*overTileSpr);
         }
-    }
+    });
     batch.end();
 }
 
@@ -510,49 +490,40 @@ void Game::switchTurn()
     m_board.switchTurn();
 }
 
-void Game::updateGoals()
-{
-    m_humanPlayer.activateGoals();
-    m_aiPlayer.activateGoals();
-}
-
 void Game::drawCharacters()
 {
-    for (int i = 11; i >= 0; --i) {
-        for (int j = 0; j < 6; ++j) {
-            gf::Vector2i thisPos(i, j);
-            if (m_board.isOccupied(thisPos)) {
-                Character thisChar = m_board.getCharacter(thisPos);
-                std::string spriteName = "placeholders/character.png";
-                switch (thisChar.getType()) {
-                case CharacterType::Scout: {
-                    spriteName = "placeholders/scout.png";
-                    break;
-                }
-                case CharacterType::Tank: {
-                    spriteName = "placeholders/tank.png";
-                    break;
-                }
-                case CharacterType::Support: {
-                    spriteName = "placeholders/support.png";
-                    break;
-                }
-                }
-                gf::Sprite sprite = gf::Sprite{m_resMgr->getTexture(spriteName)};
-                if (thisChar.getTeam() == PlayerTeam::Cthulhu) {
-                    sprite.setScale({-1.0f, 1.0f}); // Mirrored
-                    sprite.setAnchor(gf::Anchor::CenterRight);
-                } else {
-                    sprite.setColor(gf::Color::Red); // Red variant
-                    sprite.setAnchor(gf::Anchor::CenterLeft);
-                }
-                sprite.setOrigin(sprite.getOrigin() + gf::Vector2f{0.0f, -4.0f});
-                sprite.setPosition(gameToScreenPos(thisPos));
-                m_renderer.draw(sprite, gf::RenderStates());
-                int imageIndexLife = thisChar.getHP() - 1;
-                m_lifeSprite[imageIndexLife].setPosition(gameToScreenPos(thisPos) + gf::Vector2i{30, -28});
-                m_renderer.draw(m_lifeSprite[imageIndexLife], gf::RenderStates());
+    m_board.forEach([this](auto pos) {
+        if (m_board.isOccupied(pos)) {
+            Character thisChar = m_board.getCharacter(pos);
+            std::string spriteName = "placeholders/character.png";
+            switch (thisChar.getType()) {
+            case CharacterType::Scout: {
+                spriteName = "placeholders/scout.png";
+                break;
             }
+            case CharacterType::Tank: {
+                spriteName = "placeholders/tank.png";
+                break;
+            }
+            case CharacterType::Support: {
+                spriteName = "placeholders/support.png";
+                break;
+            }
+            }
+            gf::Sprite sprite = gf::Sprite{m_resMgr->getTexture(spriteName)};
+            if (thisChar.getTeam() == PlayerTeam::Cthulhu) {
+                sprite.setScale({-1.0f, 1.0f}); // Mirrored
+                sprite.setAnchor(gf::Anchor::CenterRight);
+            } else {
+                sprite.setColor(gf::Color::Red); // Red variant
+                sprite.setAnchor(gf::Anchor::CenterLeft);
+            }
+            sprite.setOrigin(sprite.getOrigin() + gf::Vector2f{0.0f, -4.0f});
+            sprite.setPosition(gameToScreenPos(pos));
+            m_renderer.draw(sprite, gf::RenderStates());
+            int imageIndexLife = thisChar.getHP() - 1;
+            m_lifeSprite[imageIndexLife].setPosition(gameToScreenPos(pos) + gf::Vector2i{30, -28});
+            m_renderer.draw(m_lifeSprite[imageIndexLife], gf::RenderStates());
         }
-    }
+    });
 }

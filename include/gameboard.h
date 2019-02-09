@@ -6,6 +6,7 @@
 #define CTHULHUVSSATAN_GAMEBOARD_H
 
 #include "character.h"
+#include "goal.h"
 
 #include <gf/Array2D.h>
 
@@ -54,6 +55,9 @@ private:
 
 class Gameboard {
 public:
+    constexpr static int goalsPerTeam = 2;
+    constexpr static int charactersPerTeam = 6;
+
     explicit Gameboard();
 
     /**
@@ -179,10 +183,8 @@ public:
     bool capacityWillHurt(const gf::Vector2i& origin, const gf::Vector2i& dest) const
     {
         int ejectionDistance = 2;
-        if(m_array(origin)->getType() == CharacterType::Support && canUseCapacity(origin,dest) && !isTargetReachable(dest, dest + ejectionDistance * gf::sign(dest - origin))) {
-            return true;
-        }
-        return false;
+        return m_array(origin)->getType() == CharacterType::Support && canUseCapacity(origin, dest) &&
+               !isTargetReachable(dest, dest + ejectionDistance * gf::sign(dest - origin));
     }
 
     bool isEmpty(const gf::Vector2i& tile) const
@@ -255,7 +257,83 @@ public:
         m_playingTeam = getEnemyTeam(m_playingTeam);
     }
 
+    template<typename UnaryGoalFunc>
+    void doWithGoals(UnaryGoalFunc f) const
+    {
+        for (auto& goal : m_goals) {
+            f(goal);
+        }
+    }
+
+    bool isGoal(const gf::Vector2i& pos, PlayerTeam team) const
+    {
+        for (auto& goal : m_goals) {
+            if (goal.getPosition() == pos && goal.getTeam() == team) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    int getNbOfActivatedGoals(PlayerTeam team) const
+    {
+        int result = 0;
+        doWithGoals([&result, &team](const Goal& goal) {
+            if (goal.getTeam() == team && goal.isActivated()) {
+                ++result;
+            }
+        });
+
+        return result;
+    }
+
+    std::vector<gf::Vector2i> getTeamPositions(PlayerTeam team) const
+    {
+        std::vector<gf::Vector2i> results{};
+        forEach([this, &results, &team](auto pos) {
+            if (m_array(pos) && m_array(pos)->getTeam() == team) {
+                results.push_back(std::move(pos));
+            }
+        });
+        return results;
+    }
+
+    template<typename UnaryPositionFunc>
+    void forEach(UnaryPositionFunc f) const
+    {
+        gf::Vector2i size = m_array.getSize();
+        for (int y = 0; y < size.height; ++y) {
+            for (int x = size.width - 1; x >= 0; --x) {
+                f(gf::Vector2i{x, y});
+            }
+        }
+    }
+
+    bool hasWon(PlayerTeam team) const
+    {
+        return getNbOfActivatedGoals(team) == goalsPerTeam || getTeamPositions(getEnemyTeam(team)).empty();
+    }
+
 private:
+    void tryGoalActivation(PlayerTeam team, const gf::Vector2i& position)
+    {
+        for (auto& goal : m_goals) {
+            if (goal.getPosition() == position && goal.getTeam() == team) {
+                goal.activate();
+            }
+        }
+    }
+
+    void swapPositions(const gf::Vector2i& origin, const gf::Vector2i& dest)
+    {
+        assert(isOccupied(origin));
+        assert(origin == dest || isEmpty(dest));
+
+        boost::swap(m_array(origin), m_array(dest));
+        tryGoalActivation(m_array(dest)->getTeam(), dest);
+    }
+
     Ability canMove(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& /*executor*/) const;
 
     std::set<gf::Vector2i, PositionComp> getAllPossibleAttacks(const gf::Vector2i& origin,
@@ -299,6 +377,7 @@ private:
     }
 
     gf::Array2D<boost::optional<Character>> m_array;
+    std::array<Goal, 2 * goalsPerTeam> m_goals;
     PlayerTeam m_playingTeam{PlayerTeam::Cthulhu}; ///< Can the player play?
 };
 

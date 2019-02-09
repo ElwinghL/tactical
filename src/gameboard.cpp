@@ -7,7 +7,13 @@
 #include "action.h"
 
 Gameboard::Gameboard() :
-    m_array{{12, 6}, boost::none}
+    m_array{{12, 6}, boost::none},
+    m_goals{
+        Goal{PlayerTeam::Cthulhu, {10, 1}},
+        Goal{PlayerTeam::Cthulhu, {10, 4}},
+        Goal{PlayerTeam::Satan, {1, 1}},
+        Goal{PlayerTeam::Satan, {1, 4}},
+    }
 {
     auto initPlayerCharacters{[this](int column, PlayerTeam team) {
         gf::Vector2i pos{column, 0};
@@ -112,11 +118,7 @@ bool Gameboard::move(const gf::Vector2i& origin, const gf::Vector2i& dest)
     bool success{canMove(origin, dest)};
 
     if (success) {
-        assert(m_array.isValid(origin));
-        assert(m_array.isValid(dest));
-        assert(dest == origin || !m_array(dest));
-
-        boost::swap(m_array(origin), m_array(dest));
+        swapPositions(origin, dest);
     }
 
     return success;
@@ -198,20 +200,13 @@ bool Gameboard::useCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest
 
     switch (getTypeFor(origin)) {
     case CharacterType::Scout: {
-        assert(!m_array(dest));
-
-        boost::swap(m_array(origin), m_array(dest));
+        swapPositions(origin, dest);
     }
         break;
 
     case CharacterType::Tank: {
-        assert(m_array(dest));
         gf::Vector2i newPos = origin + gf::sign(dest - origin);
-
-        assert(isEmpty(newPos));
-        assert(!m_array(newPos));
-
-        boost::swap(m_array(dest), m_array(newPos));
+        swapPositions(dest, newPos);
     }
         break;
 
@@ -225,16 +220,11 @@ bool Gameboard::useCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest
 
         if (!isTargetReachable(dest, ejectedPos)) {
             m_array(dest)->damage(ejectionDamage);
-            removeIfDead(dest);
             ejectedPos = getLastReachablePos(dest, ejectedPos);
         }
 
-        if (isOccupied(dest)) {
-            assert(m_array.isValid(ejectedPos));
-            assert(dest == ejectedPos || !m_array(ejectedPos));
-
-            boost::swap(m_array(dest), m_array(ejectedPos));
-        }
+        swapPositions(dest, ejectedPos);
+        removeIfDead(ejectedPos);
     }
         break;
     }
@@ -309,17 +299,15 @@ std::set<gf::Vector2i, PositionComp> Gameboard::getAllPossibleActionsOfAType(
     bool usedForNotPossibleDisplay) const
 {
     std::set<gf::Vector2i, PositionComp> res;
-    for (gf::Vector2i pos{0, 0}, size = m_array.getSize(); pos.x < size.width; ++pos.x) {
-        for (pos.y = 0; pos.y < size.height; ++pos.y) {
-            Ability possibleAction = (this->*canDoSomething)(origin, pos, executor);
-            if (usedForNotPossibleDisplay) {
-                if (possibleAction != Ability::Unable) {
-                    res.insert(pos);
-                }
-            } else if (possibleAction == Ability::Able) {
+    forEach([this, &canDoSomething, &origin, &executor, &usedForNotPossibleDisplay, &res](auto pos) {
+        Ability possibleAction = (this->*canDoSomething)(origin, pos, executor);
+        if (usedForNotPossibleDisplay) {
+            if (possibleAction != Ability::Unable) {
                 res.insert(pos);
             }
+        } else if (possibleAction == Ability::Able) {
+            res.insert(pos);
         }
-    }
+    });
     return res;
 }

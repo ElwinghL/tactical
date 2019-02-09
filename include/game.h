@@ -98,7 +98,6 @@ private:
     void initActions();
     void initWidgets();
     void initSprites();
-    void initGoals();
 
     bool isFromTeam(const gf::Vector2i& tile, PlayerTeam team) const
     {
@@ -126,8 +125,6 @@ private:
      * Switch turn
      */
     void switchTurn();
-
-    void updateGoals();
 
     const gf::Vector2u m_screenSize{1024, 576};
     const gf::Vector2f m_viewSize{100.0f, 100.0f};
