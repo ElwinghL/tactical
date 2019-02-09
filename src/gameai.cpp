@@ -7,7 +7,7 @@ void GameAI::simulateActions()
     while (m_threadInput.pop(board)) {
         std::vector<Action> allActions;
         board.forEach([&board, &allActions](auto pos) {
-            if (board.isOccupied(pos)) {
+            if (board.isOccupied(pos) && board.getTeamFor(pos) == board.getPlayingTeam()) {
                 std::vector<Action> thisCharacterActions = board.getPossibleActions(pos);
                 for (auto& thisCharacterAction : thisCharacterActions) {
                     allActions.push_back(thisCharacterAction);
