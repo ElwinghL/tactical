@@ -226,14 +226,12 @@ void Game::render()
     case GameState::GameStart: {
     } break;
 
-    case GameState::Playing: {
+    case GameState::Playing:
+    case GameState::GameEnd: {
         m_renderer.setView(m_mainView);
         drawBackground();
         drawCharacters();
         drawUI();
-    } break;
-
-    case GameState::GameEnd: {
     } break;
     }
 
@@ -273,6 +271,18 @@ void Game::initWidgets()
     m_title.setAnchor(gf::Anchor::BottomCenter);
     m_title.setColor(gf::Color::Black);
     m_title.setPosition(gf::Vector2f{0.0f, -100.0f});
+
+    m_defeatText.setAnchor(gf::Anchor::Center);
+    m_defeatText.setOutlineThickness(1.0f);
+    m_defeatText.setOutlineColor(gf::Color::Black);
+    m_defeatText.setColor(gf::Color::Red);
+    m_defeatText.setPosition(gf::Vector2f{0.0f, 0.0f});
+
+    m_winText.setAnchor(gf::Anchor::Center);
+    m_winText.setOutlineThickness(1.0f);
+    m_winText.setOutlineColor(gf::Color::Black);
+    m_winText.setColor(gf::Color::Green);
+    m_winText.setPosition(gf::Vector2f{0.0f, 0.0f});
 
     m_uiWidgets.addWidget(m_buttonAttack);
     m_uiWidgets.addWidget(m_buttonCapacity);
@@ -349,82 +359,91 @@ void Game::initSprites()
 
 void Game::drawUI()
 {
-    if (m_selectedPos) {
-        //Dans l'idée, ça serait plus ergonomique d'afficher les boutons en bas à droite
-        gf::Vector2i posButtonAttack{0, 80};
-        m_buttonAttack.setPosition(posButtonAttack);
-        gf::Vector2i posButtonCapacity{35, 80};
-        m_buttonCapacity.setPosition(posButtonCapacity);
-        gf::Vector2i posButtonPass{70, 80};
-        m_buttonPass.setPosition(posButtonPass);
-        m_uiWidgets.render(m_renderer);
-    }
+    if (m_gameState == GameState::Playing) {
+        if (m_selectedPos) {
+            //Dans l'idée, ça serait plus ergonomique d'afficher les boutons en bas à droite
+            gf::Vector2i posButtonAttack{0, 80};
+            m_buttonAttack.setPosition(posButtonAttack);
+            gf::Vector2i posButtonCapacity{35, 80};
+            m_buttonCapacity.setPosition(posButtonCapacity);
+            gf::Vector2i posButtonPass{70, 80};
+            m_buttonPass.setPosition(posButtonPass);
+            m_uiWidgets.render(m_renderer);
+        }
 
-    //Affichage des infobox :
-    gf::Vector2i tile{screenToGamePos(m_mouseCoords)};
-    gf::SpriteBatch batch{m_renderer};
-    batch.begin();
-    if (m_board.isOccupied(tile)) {
-        CharacterType mouseOverType = m_board.getTypeFor(tile);
-        switch (mouseOverType) {
-        case CharacterType::Scout: {
-            m_infoboxScout.setPosition(m_mouseCoords);
-            batch.draw(m_infoboxScout);
-            break;
+        //Affichage des infobox :
+        gf::Vector2i tile{screenToGamePos(m_mouseCoords)};
+        gf::SpriteBatch batch{m_renderer};
+        batch.begin();
+        if (m_board.isOccupied(tile)) {
+            CharacterType mouseOverType = m_board.getTypeFor(tile);
+            switch (mouseOverType) {
+            case CharacterType::Scout: {
+                m_infoboxScout.setPosition(m_mouseCoords);
+                batch.draw(m_infoboxScout);
+                break;
+            }
+            case CharacterType::Tank: {
+                m_infoboxTank.setPosition(m_mouseCoords);
+                batch.draw(m_infoboxTank);
+                break;
+            }
+            case CharacterType::Support: {
+                m_infoboxSupport.setPosition(m_mouseCoords);
+                batch.draw(m_infoboxSupport);
+                break;
+            }
+            }
         }
-        case CharacterType::Tank: {
-            m_infoboxTank.setPosition(m_mouseCoords);
-            batch.draw(m_infoboxTank);
-            break;
+        if (m_buttonAttack.contains(m_mouseCoords) && m_selectedPos) {
+            assert(m_board.isOccupied(*m_selectedPos));
+            switch (m_board.getTypeFor(*m_selectedPos)) {
+            case CharacterType::Scout: {
+                m_infoboxScoutAttack.setPosition(m_mouseCoords);
+                batch.draw(m_infoboxScoutAttack);
+                break;
+            }
+            case CharacterType::Tank: {
+                m_infoboxTankAttack.setPosition(m_mouseCoords);
+                batch.draw(m_infoboxTankAttack);
+                break;
+            }
+            case CharacterType::Support: {
+                m_infoboxSupportAttack.setPosition(m_mouseCoords);
+                batch.draw(m_infoboxSupportAttack);
+                break;
+            }
+            }
         }
-        case CharacterType::Support: {
-            m_infoboxSupport.setPosition(m_mouseCoords);
-            batch.draw(m_infoboxSupport);
-            break;
+        if (m_buttonCapacity.contains(m_mouseCoords) && m_selectedPos) {
+            assert(m_board.isOccupied(*m_selectedPos));
+            switch (m_board.getTypeFor(*m_selectedPos)) {
+            case CharacterType::Scout: {
+                m_infoboxScoutCapacity.setPosition(m_mouseCoords);
+                batch.draw(m_infoboxScoutCapacity);
+                break;
+            }
+            case CharacterType::Tank: {
+                m_infoboxTankCapacity.setPosition(m_mouseCoords);
+                batch.draw(m_infoboxTankCapacity);
+                break;
+            }
+            case CharacterType::Support: {
+                m_infoboxSupportCapacity.setPosition(m_mouseCoords);
+                batch.draw(m_infoboxSupportCapacity);
+                break;
+            }
+            }
         }
+        batch.end();
+    } else {
+        m_renderer.setView(m_menuView);
+        if (m_board.hasWon(m_humanPlayer.getTeam())) {
+            m_renderer.draw(m_winText);
+        } else {
+            m_renderer.draw(m_defeatText);
         }
     }
-    if (m_buttonAttack.contains(m_mouseCoords) && m_selectedPos) {
-        assert(m_board.isOccupied(*m_selectedPos));
-        switch (m_board.getTypeFor(*m_selectedPos)) {
-        case CharacterType::Scout: {
-            m_infoboxScoutAttack.setPosition(m_mouseCoords);
-            batch.draw(m_infoboxScoutAttack);
-            break;
-        }
-        case CharacterType::Tank: {
-            m_infoboxTankAttack.setPosition(m_mouseCoords);
-            batch.draw(m_infoboxTankAttack);
-            break;
-        }
-        case CharacterType::Support: {
-            m_infoboxSupportAttack.setPosition(m_mouseCoords);
-            batch.draw(m_infoboxSupportAttack);
-            break;
-        }
-        }
-    }
-    if (m_buttonCapacity.contains(m_mouseCoords) && m_selectedPos) {
-        assert(m_board.isOccupied(*m_selectedPos));
-        switch (m_board.getTypeFor(*m_selectedPos)) {
-        case CharacterType::Scout: {
-            m_infoboxScoutCapacity.setPosition(m_mouseCoords);
-            batch.draw(m_infoboxScoutCapacity);
-            break;
-        }
-        case CharacterType::Tank: {
-            m_infoboxTankCapacity.setPosition(m_mouseCoords);
-            batch.draw(m_infoboxTankCapacity);
-            break;
-        }
-        case CharacterType::Support: {
-            m_infoboxSupportCapacity.setPosition(m_mouseCoords);
-            batch.draw(m_infoboxSupportCapacity);
-            break;
-        }
-        }
-    }
-    batch.end();
 }
 
 void Game::drawBackground()

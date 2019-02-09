@@ -153,13 +153,15 @@ private:
     gf::Action m_leftClickAction{"Left click"};
 
     gf::Text m_title{getName(), m_resMgr->getFont("fonts/title.ttf")};
+    gf::Text m_winText{"Vous avez invoqué votre divinité !", m_resMgr->getFont("fonts/title.ttf")};
+    gf::Text m_defeatText{"L'adversaire vous a écrasé avec sa divinité", m_resMgr->getFont("fonts/title.ttf")};
 
     gf::WidgetContainer m_menuWidgets{};
 
     gf::Font& m_buttonFont{m_resMgr->getFont("fonts/button.ttf")};
 
-    gf::TextButtonWidget m_playButton{"Play!", m_buttonFont};
-    gf::TextButtonWidget m_quitButton{"Quit", m_buttonFont};
+    gf::TextButtonWidget m_playButton{"Jouer !", m_buttonFont};
+    gf::TextButtonWidget m_quitButton{"Quitter", m_buttonFont};
 
     gf::Clock m_clock{};
 
