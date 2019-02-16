@@ -5,7 +5,6 @@
 Game::Game(gf::ResourceManager* resMgr) :
     m_resMgr{resMgr}
 {
-    //    srand(time(NULL)); // TODO Replace with gf::Random
     initWindow();
     initViews();
     initActions();
@@ -42,12 +41,6 @@ void Game::processEvents()
             m_menuWidgets.pointTo(m_mouseCoords);
             m_menuWidgets.triggerAction();
         }
-    } break;
-
-    case GameState::Pause: {
-    } break;
-
-    case GameState::GameStart: {
     } break;
 
     case GameState::Playing: {
@@ -184,15 +177,6 @@ void Game::update()
     case GameState::MainMenu: {
     } break;
 
-    case GameState::Pause: {
-    } break;
-
-    case GameState::GameStart: {
-        m_clearColor = gf::Color::Black;
-
-        m_gameState = GameState::Playing;
-    } break;
-
     case GameState::Playing: {
         if (m_board.hasWon(PlayerTeam::Cthulhu) || m_board.hasWon(PlayerTeam::Satan)) {
             m_gameState = GameState::GameEnd;
@@ -213,13 +197,6 @@ void Game::render()
         m_renderer.setView(m_menuView);
         m_renderer.draw(m_title);
         m_menuWidgets.render(m_renderer);
-    } break;
-
-    case GameState::Pause: {
-        m_renderer.setView(m_mainView);
-    } break;
-
-    case GameState::GameStart: {
     } break;
 
     case GameState::Playing:
@@ -301,7 +278,8 @@ void Game::initWidgets()
 
     buttonInit(m_playButton, gf::Anchor::BottomCenter, {0.0f, -20.0f});
     m_playButton.setCallback([this] {
-        m_gameState = GameState::GameStart;
+        m_clearColor = gf::Color::Black;
+        m_gameState = GameState::Playing;
     });
 
     buttonInit(m_quitButton, gf::Anchor::TopCenter, {0.0f, 20.0f});

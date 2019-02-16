@@ -80,8 +80,6 @@ public:
 private:
     enum class GameState {
         MainMenu,
-        Pause,
-        GameStart,
         Playing,
         GameEnd
     };
