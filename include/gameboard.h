@@ -317,6 +317,18 @@ public:
         return getNbOfActivatedGoals(team) == goalsPerTeam || getTeamPositions(getEnemyTeam(team)).empty();
     }
 
+    std::vector<int> getGoalsDistance(const gf::Vector2i pos) const
+    {
+        std::vector<int> ret;
+        for (auto goal : m_goals) {
+            auto gPos = goal.getPosition();
+            if (!goal.isActivated()) {
+                ret.push_back((gPos.x - pos.x)*(gPos.x - pos.x) + (gPos.y - pos.y)*(gPos.y - pos.y));
+            }
+        }
+        return ret;
+    }
+
 private:
     void tryGoalActivation(PlayerTeam team, const gf::Vector2i& position)
     {

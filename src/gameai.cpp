@@ -107,18 +107,18 @@ long GameAI::functionEval(const Gameboard& board)
     }
 
     //check if one player is on goal
-    score += 50 * board.getNbOfActivatedGoals(getTeam());
-    score -= 50 * board.getNbOfActivatedGoals(getEnemyTeam(getTeam()));
+    score += 100 * board.getNbOfActivatedGoals(getTeam());
+    score -= 100 * board.getNbOfActivatedGoals(getEnemyTeam(getTeam()));
 
     //check if one player has lost some characters
-    int nbOfDeadCharacters = 6 - static_cast<int>(myCharacterPositions.size());
-    int nbOfEnemyDeadCharacters = 6 - static_cast<int>(otherCharacterPositions.size());
+    int nbOfDeadCharacters = board.charactersPerTeam - static_cast<int>(myCharacterPositions.size());
+    int nbOfEnemyDeadCharacters = board.charactersPerTeam  - static_cast<int>(otherCharacterPositions.size());
 
-    if (nbOfDeadCharacters == 6 - 1) {
+    if (nbOfDeadCharacters == board.charactersPerTeam ) {
         return -9999;
     }
 
-    if (nbOfEnemyDeadCharacters == 6 - 1) {
+    if (nbOfEnemyDeadCharacters == board.charactersPerTeam ) {
         return 9999;
     }
 
@@ -129,7 +129,16 @@ long GameAI::functionEval(const Gameboard& board)
     if (nbOfEnemyDeadCharacters > 0) {
         score += nbOfEnemyDeadCharacters * 10;
     }
-    //Check if you can attack someone
+
+    //Get points if you're near a goal
+    for (auto myPos : myCharacterPositions) {
+        for (auto dist : board.getGoalsDistance(myPos))
+        score+= std::abs((125 - dist)/3);
+    }
+    for (auto oPos : otherCharacterPositions) {
+        for (auto dist : board.getGoalsDistance(oPos))
+            score-= std::abs((125 - dist)/3);
+    }
 
     return score;
 }
