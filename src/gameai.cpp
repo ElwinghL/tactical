@@ -135,10 +135,6 @@ long GameAI::functionEval(const Gameboard& board)
         for (auto dist : board.getGoalsDistance(myPos))
         score+= std::abs((125 - dist)/3);
     }
-    for (auto oPos : otherCharacterPositions) {
-        for (auto dist : board.getGoalsDistance(oPos))
-            score-= std::abs((125 - dist)/3);
-    }
 
     return score;
 }
