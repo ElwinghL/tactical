@@ -345,6 +345,8 @@ void Game::initSprites()
     m_infoboxTankCapacity.setScale(infoboxScale);
     m_infoboxSupportCapacity.setAnchor(gf::Anchor::TopLeft);
     m_infoboxSupportCapacity.setScale(infoboxScale);
+    m_infoboxPass.setAnchor(gf::Anchor::TopLeft);
+    m_infoboxPass.setScale(infoboxScale);
 
     for (size_t i = 0; i < 8; ++i) {
         m_lifeSprite.emplace_back(
@@ -430,6 +432,10 @@ void Game::drawUI()
                 break;
             }
             }
+        }
+        if (m_buttonPass.contains(m_mouseCoords) && m_selectedPos) {
+            m_infoboxPass.setPosition(m_mouseCoords);
+            batch.draw(m_infoboxPass);
         }
         batch.end();
     } else {
@@ -542,7 +548,6 @@ void Game::drawCharacters()
             int imageIndexLife = thisChar.getHP() - 1;
             m_lifeSprite[imageIndexLife].setPosition(gameToScreenPos(pos) + gf::Vector2i{30, -28});
             m_renderer.draw(m_lifeSprite[imageIndexLife], gf::RenderStates());
-            bool isSurroundedByATank = false;
             if(m_board.isLocked(pos)){
                 m_effectCharacterLocked.setScale(sprite.getScale());
                 m_effectCharacterLocked.setAnchor(anchor);
