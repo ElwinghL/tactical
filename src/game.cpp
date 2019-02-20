@@ -333,18 +333,20 @@ void Game::initSprites()
     m_infoboxTank.setScale(infoboxScale);
     m_infoboxSupport.setAnchor(gf::Anchor::TopLeft);
     m_infoboxSupport.setScale(infoboxScale);
-    m_infoboxScoutAttack.setAnchor(gf::Anchor::TopLeft);
+    m_infoboxScoutAttack.setAnchor(gf::Anchor::TopRight);
     m_infoboxScoutAttack.setScale(infoboxScale);
-    m_infoboxTankAttack.setAnchor(gf::Anchor::TopLeft);
+    m_infoboxTankAttack.setAnchor(gf::Anchor::TopRight);
     m_infoboxTankAttack.setScale(infoboxScale);
-    m_infoboxSupportAttack.setAnchor(gf::Anchor::TopLeft);
+    m_infoboxSupportAttack.setAnchor(gf::Anchor::TopRight);
     m_infoboxSupportAttack.setScale(infoboxScale);
-    m_infoboxScoutCapacity.setAnchor(gf::Anchor::TopLeft);
+    m_infoboxScoutCapacity.setAnchor(gf::Anchor::TopRight);
     m_infoboxScoutCapacity.setScale(infoboxScale);
-    m_infoboxTankCapacity.setAnchor(gf::Anchor::TopLeft);
+    m_infoboxTankCapacity.setAnchor(gf::Anchor::TopRight);
     m_infoboxTankCapacity.setScale(infoboxScale);
-    m_infoboxSupportCapacity.setAnchor(gf::Anchor::TopLeft);
+    m_infoboxSupportCapacity.setAnchor(gf::Anchor::TopRight);
     m_infoboxSupportCapacity.setScale(infoboxScale);
+    m_infoboxPass.setAnchor(gf::Anchor::TopRight);
+    m_infoboxPass.setScale(infoboxScale);
 
     for (size_t i = 0; i < 8; ++i) {
         m_lifeSprite.emplace_back(
@@ -358,11 +360,11 @@ void Game::drawUI()
     if (m_gameState == GameState::Playing) {
         if (m_selectedPos) {
             //Dans l'idée, ça serait plus ergonomique d'afficher les boutons en bas à droite
-            gf::Vector2i posButtonAttack{0, 80};
+            gf::Vector2i posButtonAttack{465, 15};
             m_buttonAttack.setPosition(posButtonAttack);
-            gf::Vector2i posButtonCapacity{35, 80};
+            gf::Vector2i posButtonCapacity{500, 15};
             m_buttonCapacity.setPosition(posButtonCapacity);
-            gf::Vector2i posButtonPass{70, 80};
+            gf::Vector2i posButtonPass{535, 15};
             m_buttonPass.setPosition(posButtonPass);
             m_uiWidgets.render(m_renderer);
         }
@@ -430,6 +432,10 @@ void Game::drawUI()
                 break;
             }
             }
+        }
+        if (m_buttonPass.contains(m_mouseCoords) && m_selectedPos) {
+            m_infoboxPass.setPosition(m_mouseCoords);
+            batch.draw(m_infoboxPass);
         }
         batch.end();
     } else {
@@ -542,7 +548,6 @@ void Game::drawCharacters()
             int imageIndexLife = thisChar.getHP() - 1;
             m_lifeSprite[imageIndexLife].setPosition(gameToScreenPos(pos) + gf::Vector2i{30, -28});
             m_renderer.draw(m_lifeSprite[imageIndexLife], gf::RenderStates());
-            bool isSurroundedByATank = false;
             if(m_board.isLocked(pos)){
                 m_effectCharacterLocked.setScale(sprite.getScale());
                 m_effectCharacterLocked.setAnchor(anchor);
