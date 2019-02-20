@@ -78,10 +78,9 @@ Ability Gameboard::canAttack(const gf::Vector2i& origin, const gf::Vector2i& des
     gf::Vector2i relative = dest - origin;
     switch (getTypeFor(executor)) {
     case CharacterType::Scout: {
-        if (gf::manhattanDistance(origin, dest) <= 2) {
+        if (gf::manhattanDistance(origin, dest) <= 1) {
             gf::Vector2i direction = gf::sign(relative);
-            result = (direction == relative || !m_array(origin + direction)) ? Ability::Able :
-                                                                               Ability::Unavailable; // Can't attack through another character
+            result = (direction == relative || !m_array(origin + direction)) ? Ability::Able : Ability::Unavailable; // Can't attack through another character
         }
     } break;
 
@@ -135,7 +134,7 @@ Ability Gameboard::canMove(const gf::Vector2i& origin, const gf::Vector2i& dest,
 
     switch (getTypeFor(origin)) {
     case CharacterType::Scout: {
-        constexpr int range = 4;
+        constexpr int range = 2;
 
         if ((isOrthogonal(origin, dest) || isDiagonal(origin, dest)) && gf::chebyshevLength(relative) <= range) {
             result = isTargetReachable(origin, dest) ? Ability::Able : Ability::Unavailable;
@@ -200,7 +199,7 @@ bool Gameboard::useCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest
 
     switch (getTypeFor(origin)) {
     case CharacterType::Scout: {
-        swapPositions(origin, dest);
+        swapOccupiedPositions(origin, dest);
     } break;
 
     case CharacterType::Tank: {
@@ -239,8 +238,8 @@ Ability Gameboard::canUseCapacity(const gf::Vector2i& origin, const gf::Vector2i
     int manhattanDist = gf::manhattanDistance(origin, dest);
     switch (getTypeFor(executor)) {
     case CharacterType::Scout: {
-        if (manhattanDist == 1) {
-            return m_array(dest) ? Ability::Unavailable : Ability::Able;
+        if (isDiagonal(origin,dest) && (manhattanDist == 2 || manhattanDist == 4)) {
+            return m_array(dest) ? Ability::Able : Ability::Unavailable;
         }
     } break;
 

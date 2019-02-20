@@ -350,6 +350,15 @@ private:
         boost::swap(m_array(origin), m_array(dest));
         tryGoalActivation(m_array(dest)->getTeam(), dest);
     }
+    
+    void swapOccupiedPositions(const gf::Vector2i& origin, const gf::Vector2i& dest)
+    {
+        assert(isOccupied(origin));
+        assert(isOccupied(dest));
+
+        boost::swap(m_array(origin), m_array(dest));
+        tryGoalActivation(m_array(dest)->getTeam(), dest);
+    }
 
     Ability canMove(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& /*executor*/) const;
 

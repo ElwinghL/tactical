@@ -83,32 +83,32 @@ long GameAI::functionEval(const Gameboard& board)
         enemyDamage = character.getHPMax() - character.getHP();
     }
 
-    score += enemyDamage * 5;
+    score += enemyDamage * 15;
 
     //Check if you can attack
     for (auto myPos : myCharacterPositions) {
         for (auto otherPos : otherCharacterPositions) {
             if (board.canAttack(myPos, otherPos)) {
-                score += 10;
+                score += 5;
             }
 
             if (board.canAttack(otherPos, myPos)) {
-                score -= 10;
+                score -= 5;
             }
 
             if (board.capacityWillHurt(myPos, otherPos)) {
-                score += 20;
+                score += 8;
             }
 
             if (board.capacityWillHurt(otherPos, myPos)) {
-                score -= 20;
+                score -= 8;
             }
         }
     }
 
     //check if one player is on goal
-    score += 100 * board.getNbOfActivatedGoals(getTeam());
-    score -= 100 * board.getNbOfActivatedGoals(getEnemyTeam(getTeam()));
+    score += 1000 * board.getNbOfActivatedGoals(getTeam());
+    score -= 1000 * board.getNbOfActivatedGoals(getEnemyTeam(getTeam()));
 
     //check if one player has lost some characters
     int nbOfDeadCharacters = board.charactersPerTeam - static_cast<int>(myCharacterPositions.size());
@@ -123,18 +123,24 @@ long GameAI::functionEval(const Gameboard& board)
     }
 
     if (nbOfDeadCharacters > 0) {
-        score -= nbOfDeadCharacters * 10;
+        score -= nbOfDeadCharacters * 130;
     }
 
     if (nbOfEnemyDeadCharacters > 0) {
-        score += nbOfEnemyDeadCharacters * 10;
+        score += nbOfEnemyDeadCharacters * 130;
     }
-
+    std::array<int, 2> max = {0,0};
+    size_t i;
     //Get points if you're near a goal
     for (auto myPos : myCharacterPositions) {
-        for (auto dist : board.getGoalsDistance(myPos))
-        score+= std::abs((125 - dist)/3);
+        i = 0;
+        for (auto dist : board.getGoalsDistance(myPos)){
+            max[i] = std::max(max[i],std::abs((125 - dist)));
+            ++i;
+        }
     }
+    score += max[0];
+    score += max[1];
 
     return score;
 }
@@ -214,7 +220,7 @@ GameAI::depthActionsExploration GameAI::bestActionInFuture(Gameboard& board, uns
         for (auto currentBoard : boardsToAnalyse) {
             allPossibilities.push_back(bestActionInFuture(currentBoard, depth - 1));
         }
-        long bestScoreRow = -10000; // So if the "best action" is to loose with a -9999 score it will be possible
+        long bestScoreRow = -10000; // So if the "best action" is to lose with a -9999 score it will be possible
         for (auto tab : allPossibilities) {
             if (tab.second.second > bestScoreRow && tab.first.isValid(board)) {
                 bestScoreRow = tab.second.second;
