@@ -526,12 +526,15 @@ void Game::drawCharacters()
             }
             }
             gf::Sprite sprite = gf::Sprite{m_resMgr->getTexture(spriteName)};
+            gf::Anchor anchor;
             if (thisChar.getTeam() == PlayerTeam::Cthulhu) {
                 sprite.setScale({-1.0f, 1.0f}); // Mirrored
-                sprite.setAnchor(gf::Anchor::CenterRight);
+                anchor = gf::Anchor::CenterRight;
+                sprite.setAnchor(anchor);
             } else {
                 sprite.setColor(gf::Color::Red); // Red variant
-                sprite.setAnchor(gf::Anchor::CenterLeft);
+                anchor = gf::Anchor::CenterLeft;
+                sprite.setAnchor(anchor);
             }
             sprite.setOrigin(sprite.getOrigin() + gf::Vector2f{0.0f, -4.0f});
             sprite.setPosition(gameToScreenPos(pos));
@@ -539,6 +542,14 @@ void Game::drawCharacters()
             int imageIndexLife = thisChar.getHP() - 1;
             m_lifeSprite[imageIndexLife].setPosition(gameToScreenPos(pos) + gf::Vector2i{30, -28});
             m_renderer.draw(m_lifeSprite[imageIndexLife], gf::RenderStates());
+            bool isSurroundedByATank = false;
+            if(m_board.isLocked(pos)){
+                m_effectCharacterLocked.setScale(sprite.getScale());
+                m_effectCharacterLocked.setAnchor(anchor);
+                m_effectCharacterLocked.setOrigin(sprite.getOrigin());
+                m_effectCharacterLocked.setPosition(gameToScreenPos(pos));
+                m_renderer.draw(m_effectCharacterLocked);
+            }
         }
     });
 }

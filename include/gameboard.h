@@ -129,6 +129,9 @@ public:
     {
         return canAttack(origin, dest, origin);
     }
+    
+    
+    bool isLocked(gf::Vector2i pos) const;
 
     /**
      * Move this character
