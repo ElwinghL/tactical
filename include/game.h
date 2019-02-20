@@ -195,6 +195,7 @@ private:
     gf::Sprite m_infoboxTankCapacity{m_resMgr->getTexture("placeholders/infoboxTankCapacity.png")};
     gf::Sprite m_infoboxSupportCapacity{m_resMgr->getTexture("placeholders/infoboxSupportCapacity.png")};
     std::vector<gf::Sprite> m_lifeSprite;
+    gf::Sprite m_effectCharacterLocked{m_resMgr->getTexture("placeholders/locked.png")};
 
     gf::SpriteWidget m_buttonAttack{m_resMgr->getTexture("placeholders/iconAttack.png"), m_resMgr->getTexture("placeholders/iconAttack.png"), m_resMgr->getTexture("placeholders/iconAttack.png")};
     gf::SpriteWidget m_buttonCapacity{m_resMgr->getTexture("placeholders/iconCapacity.png"), m_resMgr->getTexture("placeholders/iconCapacity.png"), m_resMgr->getTexture("placeholders/iconCapacity.png")};

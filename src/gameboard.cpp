@@ -161,22 +161,32 @@ Ability Gameboard::canMove(const gf::Vector2i& origin, const gf::Vector2i& dest,
         if (m_array(dest)) { // If there is already a character at this location
             result = Ability::Unavailable;
         } else { // Check for nearby enemy Tank
-            constexpr gf::Orientation cardinals[] = {gf::Orientation::North, gf::Orientation::East, gf::Orientation::South, gf::Orientation::West};
-            for (auto card : cardinals) {
-                gf::Vector2i sq2Check = origin + gf::displacement(card);
-                if (m_array.isValid(sq2Check)) {
-                    auto character2Check = m_array(sq2Check);
-                    if (character2Check && character2Check->getTeam() == getEnemyTeam(getTeamFor(origin)) &&
-                        character2Check->getType() == CharacterType::Tank) {
-                        result = Ability::Unavailable;
-                        break;
-                    }
-                }
+            if(isLocked(origin)){
+                result = Ability::Unavailable;
             }
         }
     }
 
     return result;
+}
+
+bool Gameboard::isLocked(gf::Vector2i pos) const
+{
+    if(!m_array.isValid(pos)){
+        return false;
+    }
+    constexpr gf::Orientation cardinals[] = {gf::Orientation::North, gf::Orientation::East, gf::Orientation::South, gf::Orientation::West};
+    for (auto card : cardinals) {
+        gf::Vector2i sq2Check = pos + gf::displacement(card);
+        if (m_array.isValid(sq2Check)) {
+            auto character2Check = m_array(sq2Check);
+            if (character2Check && character2Check->getTeam() == getEnemyTeam(getTeamFor(pos)) &&
+                character2Check->getType() == CharacterType::Tank) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 bool Gameboard::useCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest)
