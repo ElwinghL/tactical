@@ -86,6 +86,14 @@ void GameboardView::notifyMove(const gf::Vector2i& origin, const gf::Vector2i& d
     assert(entity);
     m_entities.erase(origin);
     entity->moveTo(dest);
+
+    if (m_entities.count(dest) > 0) { // TODO better solution to swap characters
+        auto otherEntity = std::move(m_entities[dest]);
+        m_entities.erase(dest);
+        otherEntity->moveTo(origin);
+        m_entities.emplace(origin, std::move(otherEntity));
+    }
+
     m_entities.emplace(dest, std::move(entity));
 }
 

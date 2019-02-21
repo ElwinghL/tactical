@@ -185,6 +185,7 @@ private:
     gf::Sprite m_infoboxScoutCapacity{m_resMgr->getTexture("infoboxScoutCapacity.png")};
     gf::Sprite m_infoboxTankCapacity{m_resMgr->getTexture("infoboxTankCapacity.png")};
     gf::Sprite m_infoboxSupportCapacity{m_resMgr->getTexture("infoboxSupportCapacity.png")};
+    gf::Sprite m_infoboxPass{m_resMgr->getTexture("infoboxPass.png")};
 
     gf::SpriteWidget m_buttonAttack{m_resMgr->getTexture("iconAttack.png"), m_resMgr->getTexture("iconAttack.png"),
                                     m_resMgr->getTexture("iconAttack.png")};

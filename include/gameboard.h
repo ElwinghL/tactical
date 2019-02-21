@@ -132,6 +132,9 @@ public:
         return canAttack(origin, dest, origin);
     }
 
+
+    bool isLocked(gf::Vector2i pos) const;
+
     /**
      * Move this character
      *
@@ -334,6 +337,18 @@ public:
         }
     }
 
+    std::vector<int> getGoalsDistance(const gf::Vector2i pos) const
+    {
+        std::vector<int> ret;
+        for (auto goal : m_goals) {
+            auto gPos = goal.getPosition();
+            if (!goal.isActivated()) {
+                ret.push_back((gPos.x - pos.x) * (gPos.x - pos.x) + (gPos.y - pos.y) * (gPos.y - pos.y));
+            }
+        }
+        return ret;
+    }
+
 private:
     void tryGoalActivation(PlayerTeam team, const gf::Vector2i& position)
     {
@@ -348,6 +363,15 @@ private:
     {
         assert(isOccupied(origin));
         assert(origin == dest || isEmpty(dest));
+
+        boost::swap(m_array(origin), m_array(dest));
+        tryGoalActivation(m_array(dest)->getTeam(), dest);
+    }
+
+    void swapOccupiedPositions(const gf::Vector2i& origin, const gf::Vector2i& dest)
+    {
+        assert(isOccupied(origin));
+        assert(isOccupied(dest));
 
         boost::swap(m_array(origin), m_array(dest));
         tryGoalActivation(m_array(dest)->getTeam(), dest);
