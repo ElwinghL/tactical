@@ -56,6 +56,9 @@ GameboardView::GameboardView(const Gameboard& board, gf::ResourceManager& resMgr
     m_darkTile.setAnchor(gf::Anchor::Center);
     m_brightTile.setAnchor(gf::Anchor::Center);
 
+    m_magicLock.setAnchor(gf::Anchor::BottomCenter);
+    m_magicLock.setOrigin(m_magicLock.getOrigin() - gf::Vector2f{0.f, 16.f});
+
     for (auto& goal : m_goalCthulhu) {
         goal.setAnchor(gf::Anchor::Center);
     }
@@ -66,6 +69,13 @@ GameboardView::GameboardView(const Gameboard& board, gf::ResourceManager& resMgr
 
     for (auto& lifeSpr : m_lifeSprites) {
         lifeSpr.setAnchor(gf::Anchor::BottomCenter);
+    }
+}
+
+void GameboardView::update()
+{
+    for (auto& entity : m_entities) {
+        entity.second->setLocked(m_board->isLocked(entity.first));
     }
 }
 
@@ -146,4 +156,11 @@ void GameboardView::EntityCharacter::render(gf::RenderTarget& target, const gf::
     showBoundingBox(m_sprite, target, states);
 #endif // SHOW_BOUNDING_BOXES
     drawLife(target, states);
+    if (m_locked) {
+        m_gbView->m_magicLock.setPosition(m_sprite.getPosition());
+        m_gbView->m_magicLock.draw(target, states);
+#ifdef SHOW_BOUNDING_BOXES
+        showBoundingBox(m_gbView->m_magicLock, target, states);
+#endif // SHOW_BOUNDING_BOXES
+    }
 }

@@ -133,7 +133,7 @@ public:
     }
 
 
-    bool isLocked(gf::Vector2i pos) const;
+    bool isLocked(const gf::Vector2i& pos) const;
 
     /**
      * Move this character

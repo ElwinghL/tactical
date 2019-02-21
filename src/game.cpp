@@ -194,6 +194,7 @@ void Game::update()
 
     case GameState::Playing: {
         m_entityMgr.update(time);
+        m_gbView->update();
         if (m_board.hasWon(PlayerTeam::Cthulhu) || m_board.hasWon(PlayerTeam::Satan)) {
             m_gameState = GameState::GameEnd;
         }

@@ -172,7 +172,7 @@ Ability Gameboard::canMove(const gf::Vector2i& origin, const gf::Vector2i& dest,
     return result;
 }
 
-bool Gameboard::isLocked(gf::Vector2i pos) const
+bool Gameboard::isLocked(const gf::Vector2i& pos) const
 {
     if (!m_array.isValid(pos)) {
         return false;

@@ -36,6 +36,8 @@ public:
 
     void drawGrid(gf::RenderTarget& target, const gf::RenderStates& states = gf::RenderStates{});
 
+    void update();
+
     void notifyMove(const gf::Vector2i& origin, const gf::Vector2i& dest);
 
     void notifyHP(const gf::Vector2i& pos, int hp);
@@ -67,6 +69,11 @@ private:
             m_sprite.setPosition(gameToScreenPos(pos));
         }
 
+        void setLocked(bool locked)
+        {
+            m_locked = locked;
+        }
+
     private:
         std::size_t checkHP(int hp)
         {
@@ -88,6 +95,8 @@ private:
         gf::Sprite m_sprite;
 
         std::size_t m_currentHPSprite;
+
+        bool m_locked{false};
     };
 
     std::size_t getActivationIndex(bool activated) const
@@ -123,6 +132,8 @@ private:
         m_resMgr->getTexture("life7.png"),
         m_resMgr->getTexture("life8.png")
     };
+
+    gf::Sprite m_magicLock{m_resMgr->getTexture("locked.png")};
 
     std::map<gf::Vector2i, std::unique_ptr<EntityCharacter>, PositionComp> m_entities{};
 };
