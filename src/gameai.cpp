@@ -111,14 +111,14 @@ long GameAI::functionEval(const Gameboard& board)
     score -= 50 * board.getNbOfActivatedGoals(getEnemyTeam(getTeam()));
 
     //check if one player has lost some characters
-    int nbOfDeadCharacters = 6 - static_cast<int>(myCharacterPositions.size());
-    int nbOfEnemyDeadCharacters = 6 - static_cast<int>(otherCharacterPositions.size());
+    int nbOfDeadCharacters = Gameboard::charactersPerTeam - static_cast<int>(myCharacterPositions.size());
+    int nbOfEnemyDeadCharacters = Gameboard::charactersPerTeam - static_cast<int>(otherCharacterPositions.size());
 
-    if (nbOfDeadCharacters == 6 - 1) {
+    if (nbOfDeadCharacters == Gameboard::charactersPerTeam - 1) {
         return -9999;
     }
 
-    if (nbOfEnemyDeadCharacters == 6 - 1) {
+    if (nbOfEnemyDeadCharacters == Gameboard::charactersPerTeam - 1) {
         return 9999;
     }
 

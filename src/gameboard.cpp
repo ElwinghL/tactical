@@ -3,7 +3,7 @@
 #include "action.h"
 
 Gameboard::Gameboard() :
-    m_array{{12, 6}, boost::none},
+    m_array{getSize(), boost::none},
     m_goals{
             Goal{PlayerTeam::Cthulhu, {10, 1}},
             Goal{PlayerTeam::Cthulhu, {10, 4}},
@@ -60,6 +60,7 @@ bool Gameboard::attack(const gf::Vector2i& origin, const gf::Vector2i& dest)
         assert(isOccupied(origin));
         assert(isOccupied(dest));
         m_array(origin)->attack(*m_array(dest));
+        pushLastHPChange(dest, m_array(dest)->getHP());
         removeIfDead(dest);
     }
 
@@ -113,6 +114,7 @@ bool Gameboard::move(const gf::Vector2i& origin, const gf::Vector2i& dest)
 
     if (success) {
         swapPositions(origin, dest);
+        pushLastMove(origin, dest);
     }
 
     return success;
@@ -190,11 +192,13 @@ bool Gameboard::useCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest
 
     switch (getTypeFor(origin)) {
     case CharacterType::Scout: {
+        pushLastMove(origin, dest);
         swapPositions(origin, dest);
     } break;
 
     case CharacterType::Tank: {
         gf::Vector2i newPos = origin + gf::sign(dest - origin);
+        pushLastMove(dest, newPos);
         swapPositions(dest, newPos);
     } break;
 
@@ -208,10 +212,12 @@ bool Gameboard::useCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest
 
         if (!isTargetReachable(dest, ejectedPos)) {
             m_array(dest)->damage(ejectionDamage);
+            pushLastHPChange(dest, m_array(dest)->getHP());
             ejectedPos = getLastReachablePos(dest, ejectedPos);
         }
 
         swapPositions(dest, ejectedPos);
+        pushLastMove(dest, ejectedPos);
         removeIfDead(ejectedPos);
     } break;
     }

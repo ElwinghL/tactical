@@ -101,6 +101,11 @@ public:
         other.damage(getDamageForType(m_type));
     }
 
+    static constexpr int getGlobalHPMax()
+    {
+        return getHPMaxForType(CharacterType::Tank);
+    }
+
 private:
     /**
      * Give the maximum amount of HP according to the type of character
@@ -108,7 +113,7 @@ private:
      * \param type The type of character
      * \return The maximum number of of HP for this type
      */
-    static int getHPMaxForType(CharacterType type)
+    static constexpr int getHPMaxForType(CharacterType type)
     {
         switch (type) {
         case CharacterType::Tank:
@@ -128,7 +133,7 @@ private:
      * \param type The type of character
      * \return The amount of damage this type of character deal
      */
-    static int getDamageForType(CharacterType type)
+    static constexpr int getDamageForType(CharacterType type)
     {
         switch (type) {
         case CharacterType::Tank:

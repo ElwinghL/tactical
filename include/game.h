@@ -9,6 +9,7 @@
 #include "gameboard.h"
 #include "humanplayer.h"
 #include "player.h"
+#include "gameboardview.h"
 
 #include <gf/Action.h>
 #include <gf/Array2D.h>
@@ -42,7 +43,7 @@ public:
      * Constructor
      * \param resMgr The resource manager of the game
      */
-    explicit Game(gf::ResourceManager* resMgr);
+    explicit Game(gf::ResourceManager& resMgr);
 
     /**
      * Tell if the game is running
@@ -105,19 +106,14 @@ private:
     void stateSelectionUpdate(PlayerTurnSelection nextState);
 
     /**
-     * Draw the background of the game
+     * Draw targets for the selected character
      */
-    void drawBackground();
+    void drawTargets();
 
     /**
      * Draw the user interface of the game
      */
     void drawUI();
-
-    /**
-     * Draw characters
-     */
-    void drawCharacters();
 
     /**
      * Switch turn
@@ -150,16 +146,18 @@ private:
     gf::Action m_fullscreenAction{"Fullscreen"};
     gf::Action m_leftClickAction{"Left click"};
 
-    gf::Text m_title{getName(), m_resMgr->getFont("fonts/title.ttf")};
-    gf::Text m_winText{"Vous avez invoqué votre divinité !", m_resMgr->getFont("fonts/title.ttf")};
-    gf::Text m_defeatText{"L'adversaire vous a écrasé avec sa divinité", m_resMgr->getFont("fonts/title.ttf")};
+    gf::Text m_title{getName(), m_resMgr->getFont("title.ttf")};
+    gf::Text m_winText{"Vous avez invoqué votre divinité !", m_resMgr->getFont("title.ttf")};
+    gf::Text m_defeatText{"L'adversaire vous a écrasé avec sa divinité", m_resMgr->getFont("title.ttf")};
 
     gf::WidgetContainer m_menuWidgets{};
 
-    gf::Font& m_buttonFont{m_resMgr->getFont("fonts/button.ttf")};
+    gf::Font& m_buttonFont{m_resMgr->getFont("button.ttf")};
 
     gf::TextButtonWidget m_playButton{"Jouer !", m_buttonFont};
     gf::TextButtonWidget m_quitButton{"Quitter", m_buttonFont};
+
+    gf::EntityContainer m_entityMgr{};
 
     gf::Clock m_clock{};
 
@@ -168,35 +166,33 @@ private:
 
     boost::optional<gf::Vector2i> m_selectedPos;
 
+    std::unique_ptr<GameboardView> m_gbView{nullptr}; // Deleted after gameboard because of callbacks
     Gameboard m_board{};
 
     std::set<gf::Vector2i, PositionComp> m_possibleTargets;
     std::set<gf::Vector2i, PositionComp> m_targetsInRange;
 
-    gf::Sprite m_darkTile{m_resMgr->getTexture("placeholders/case.png")};
-    gf::Sprite m_brightTile{m_resMgr->getTexture("placeholders/case2.png")};
-    gf::Sprite m_selectedTile{m_resMgr->getTexture("placeholders/caseSelected.png")};
-    gf::Sprite m_possibleTargetsTile{m_resMgr->getTexture("placeholders/casePossibleTargets.png")};
-    gf::Sprite m_targetsInRangeTile{m_resMgr->getTexture("placeholders/caseTargetsInRange.png")};
+    gf::Sprite m_selectedTile{m_resMgr->getTexture("caseSelected.png")};
+    gf::Sprite m_possibleTargetsTile{m_resMgr->getTexture("casePossibleTargets.png")};
+    gf::Sprite m_targetsInRangeTile{m_resMgr->getTexture("caseTargetsInRange.png")};
 
-    gf::Sprite m_goalCthulhu{m_resMgr->getTexture("placeholders/caseGoalCthulhu.png")};
-    gf::Sprite m_goalCthulhuActivated{m_resMgr->getTexture("placeholders/caseGoalCthulhuActivated.png")};
-    gf::Sprite m_goalSatan{m_resMgr->getTexture("placeholders/caseGoalSatan.png")};
-    gf::Sprite m_goalSatanActivated{m_resMgr->getTexture("placeholders/caseGoalSatanActivated.png")};
-    gf::Sprite m_infoboxScout{m_resMgr->getTexture("placeholders/infoboxScout.png")};
-    gf::Sprite m_infoboxTank{m_resMgr->getTexture("placeholders/infoboxTank.png")};
-    gf::Sprite m_infoboxSupport{m_resMgr->getTexture("placeholders/infoboxSupport.png")};
-    gf::Sprite m_infoboxScoutAttack{m_resMgr->getTexture("placeholders/infoboxScoutAttack.png")};
-    gf::Sprite m_infoboxTankAttack{m_resMgr->getTexture("placeholders/infoboxTankAttack.png")};
-    gf::Sprite m_infoboxSupportAttack{m_resMgr->getTexture("placeholders/infoboxSupportAttack.png")};
-    gf::Sprite m_infoboxScoutCapacity{m_resMgr->getTexture("placeholders/infoboxScoutCapacity.png")};
-    gf::Sprite m_infoboxTankCapacity{m_resMgr->getTexture("placeholders/infoboxTankCapacity.png")};
-    gf::Sprite m_infoboxSupportCapacity{m_resMgr->getTexture("placeholders/infoboxSupportCapacity.png")};
-    std::vector<gf::Sprite> m_lifeSprite;
+    gf::Sprite m_infoboxScout{m_resMgr->getTexture("infoboxScout.png")};
+    gf::Sprite m_infoboxTank{m_resMgr->getTexture("infoboxTank.png")};
+    gf::Sprite m_infoboxSupport{m_resMgr->getTexture("infoboxSupport.png")};
+    gf::Sprite m_infoboxScoutAttack{m_resMgr->getTexture("infoboxScoutAttack.png")};
+    gf::Sprite m_infoboxTankAttack{m_resMgr->getTexture("infoboxTankAttack.png")};
+    gf::Sprite m_infoboxSupportAttack{m_resMgr->getTexture("infoboxSupportAttack.png")};
+    gf::Sprite m_infoboxScoutCapacity{m_resMgr->getTexture("infoboxScoutCapacity.png")};
+    gf::Sprite m_infoboxTankCapacity{m_resMgr->getTexture("infoboxTankCapacity.png")};
+    gf::Sprite m_infoboxSupportCapacity{m_resMgr->getTexture("infoboxSupportCapacity.png")};
 
-    gf::SpriteWidget m_buttonAttack{m_resMgr->getTexture("placeholders/iconAttack.png"), m_resMgr->getTexture("placeholders/iconAttack.png"), m_resMgr->getTexture("placeholders/iconAttack.png")};
-    gf::SpriteWidget m_buttonCapacity{m_resMgr->getTexture("placeholders/iconCapacity.png"), m_resMgr->getTexture("placeholders/iconCapacity.png"), m_resMgr->getTexture("placeholders/iconCapacity.png")};
-    gf::SpriteWidget m_buttonPass{m_resMgr->getTexture("placeholders/iconPass.png"), m_resMgr->getTexture("placeholders/iconPass.png"), m_resMgr->getTexture("placeholders/iconPass.png")};
+    gf::SpriteWidget m_buttonAttack{m_resMgr->getTexture("iconAttack.png"), m_resMgr->getTexture("iconAttack.png"),
+                                    m_resMgr->getTexture("iconAttack.png")};
+    gf::SpriteWidget m_buttonCapacity{m_resMgr->getTexture("iconCapacity.png"),
+                                      m_resMgr->getTexture("iconCapacity.png"),
+                                      m_resMgr->getTexture("iconCapacity.png")};
+    gf::SpriteWidget m_buttonPass{m_resMgr->getTexture("iconPass.png"), m_resMgr->getTexture("iconPass.png"),
+                                  m_resMgr->getTexture("iconPass.png")};
 
     gf::WidgetContainer m_uiWidgets{};
 };

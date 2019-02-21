@@ -5,9 +5,10 @@
 int main()
 {
     gf::ResourceManager resMgr{};
-    resMgr.addSearchDir("../assets/");
+    resMgr.addSearchDir("../assets/fonts");
+    resMgr.addSearchDir("../assets/placeholders");
 
-    Game game{&resMgr};
+    Game game{resMgr};
 
     while (game.isRunning()) {
         game.processEvents();

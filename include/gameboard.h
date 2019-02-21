@@ -13,6 +13,8 @@
 #include <gf/Array2D.h>
 
 #include <boost/optional.hpp>
+#include <functional>
+#include <queue>
 #include <set>
 #include <vector>
 
@@ -204,7 +206,7 @@ public:
 
     gf::Vector2i getSize() const
     {
-        return m_array.getSize();
+        return gf::Vector2i{12, 6};
     }
 
     PlayerTeam getTeamFor(const gf::Vector2i& tile) const
@@ -302,19 +304,34 @@ public:
     }
 
     template<typename UnaryPositionFunc>
-    void forEach(UnaryPositionFunc f) const
+    constexpr void forEach(UnaryPositionFunc f) const
     {
-        gf::Vector2i size = m_array.getSize();
-        for (int y = 0; y < size.height; ++y) {
-            for (int x = size.width - 1; x >= 0; --x) {
-                f(gf::Vector2i{x, y});
-            }
-        }
+        forEachPosition(getSize(), f);
     }
 
     bool hasWon(PlayerTeam team) const
     {
         return getNbOfActivatedGoals(team) == goalsPerTeam || getTeamPositions(getEnemyTeam(team)).empty();
+    }
+
+    template<typename BinaryFunc>
+    void setMoveCallback(BinaryFunc f)
+    {
+        m_moveCallback = f;
+    }
+
+    template<typename BinaryFunc>
+    void setHPChangeCallback(BinaryFunc f)
+    {
+        m_hpChangeCallback = f;
+    }
+
+    void callActionsCallbacks()
+    {
+        while (!m_lastActions.empty()) {
+            (m_lastActions.front())();
+            m_lastActions.pop();
+        }
     }
 
 private:
@@ -378,9 +395,24 @@ private:
         }
     }
 
+    void pushLastMove(const gf::Vector2i& origin, const gf::Vector2i& dest)
+    {
+        m_lastActions.emplace(std::bind(m_moveCallback, origin, dest));
+    }
+
+    void pushLastHPChange(const gf::Vector2i& pos, int hp)
+    {
+        m_lastActions.emplace(std::bind(m_hpChangeCallback, pos, hp));
+    }
+
     gf::Array2D<boost::optional<Character>> m_array;
     std::array<Goal, 2 * goalsPerTeam> m_goals;
     PlayerTeam m_playingTeam{PlayerTeam::Cthulhu};
+
+    std::function<void(const gf::Vector2i&, const gf::Vector2i&)> m_moveCallback = [](auto, auto) {};
+    std::function<void(const gf::Vector2i&, int)> m_hpChangeCallback = [](auto, auto) {};
+
+    std::queue<std::function<void()>> m_lastActions{};
 };
 
 

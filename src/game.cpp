@@ -2,9 +2,18 @@
 
 #include <gf/SpriteBatch.h>
 
-Game::Game(gf::ResourceManager* resMgr) :
-    m_resMgr{resMgr}
+#include <functional>
+
+Game::Game(gf::ResourceManager& resMgr) :
+    m_resMgr{&resMgr}
 {
+    using namespace std::placeholders;
+
+    m_gbView = std::make_unique<GameboardView>(m_board, *m_resMgr, m_entityMgr);
+
+    m_board.setMoveCallback(std::bind(&GameboardView::notifyMove, m_gbView.get(), _1, _2));
+    m_board.setHPChangeCallback(std::bind(&GameboardView::notifyHP, m_gbView.get(), _1, _2));
+
     initWindow();
     initViews();
     initActions();
@@ -44,6 +53,10 @@ void Game::processEvents()
     } break;
 
     case GameState::Playing: {
+        if (!m_gbView->animationFinished()) {
+            break;
+        }
+
         if (m_board.getPlayingTeam() == m_humanPlayer.getTeam()) {
             if (m_leftClickAction.isActive()) {
                 gf::Vector2i tile{screenToGamePos(m_mouseCoords)};
@@ -126,6 +139,8 @@ void Game::processEvents()
         } else if (m_aiPlayer.playTurn(m_board)) {
             switchTurn();
         }
+
+        m_board.callActionsCallbacks();
     } break;
 
     case GameState::GameEnd: {
@@ -178,6 +193,7 @@ void Game::update()
     } break;
 
     case GameState::Playing: {
+        m_entityMgr.update(time);
         if (m_board.hasWon(PlayerTeam::Cthulhu) || m_board.hasWon(PlayerTeam::Satan)) {
             m_gameState = GameState::GameEnd;
         }
@@ -202,8 +218,9 @@ void Game::render()
     case GameState::Playing:
     case GameState::GameEnd: {
         m_renderer.setView(m_mainView);
-        drawBackground();
-        drawCharacters();
+        m_gbView->drawGrid(m_renderer);
+        drawTargets();
+        m_entityMgr.render(m_renderer);
         drawUI();
     } break;
     }
@@ -290,15 +307,9 @@ void Game::initWidgets()
 
 void Game::initSprites()
 {
-    m_brightTile.setAnchor(gf::Anchor::TopLeft);
-    m_darkTile.setAnchor(gf::Anchor::TopLeft);
-    m_selectedTile.setAnchor(gf::Anchor::TopLeft);
-    m_possibleTargetsTile.setAnchor(gf::Anchor::TopLeft);
-    m_targetsInRangeTile.setAnchor(gf::Anchor::TopLeft);
-    m_goalCthulhu.setAnchor(gf::Anchor::TopLeft);
-    m_goalCthulhuActivated.setAnchor(gf::Anchor::TopLeft);
-    m_goalSatan.setAnchor(gf::Anchor::TopLeft);
-    m_goalSatanActivated.setAnchor(gf::Anchor::TopLeft);
+    m_selectedTile.setAnchor(gf::Anchor::Center);
+    m_possibleTargetsTile.setAnchor(gf::Anchor::Center);
+    m_targetsInRangeTile.setAnchor(gf::Anchor::Center);
 
     m_buttonAttack.setAnchor(gf::Anchor::TopLeft);
     m_buttonCapacity.setAnchor(gf::Anchor::TopLeft);
@@ -323,12 +334,6 @@ void Game::initSprites()
     m_infoboxTankCapacity.setScale(infoboxScale);
     m_infoboxSupportCapacity.setAnchor(gf::Anchor::TopLeft);
     m_infoboxSupportCapacity.setScale(infoboxScale);
-
-    for (size_t i = 0; i < 8; ++i) {
-        m_lifeSprite.emplace_back(
-                m_resMgr->getTexture(std::string("placeholders/life") + std::to_string(8 - i) + std::string(".png")));
-        m_lifeSprite[i].setAnchor(gf::Anchor::Center);
-    }
 }
 
 void Game::drawUI()
@@ -420,7 +425,7 @@ void Game::drawUI()
     }
 }
 
-void Game::drawBackground()
+void Game::drawTargets()
 {
     gf::SpriteBatch batch{m_renderer};
     batch.begin();
@@ -428,25 +433,6 @@ void Game::drawBackground()
         bool tileSelected = m_selectedPos && *m_selectedPos == pos;
         bool showPossibleTargets = m_selectedPos && m_possibleTargets.count(pos) > 0;
         bool showTargetsInRange = m_selectedPos && m_targetsInRange.count(pos) > 0;
-
-        auto tileSpr = [this, &pos]() -> gf::Sprite& {
-            if (m_board.isGoal(pos, PlayerTeam::Cthulhu)) {
-                return m_goalCthulhu;
-            }
-
-            if (m_board.isGoal(pos, PlayerTeam::Satan)) {
-                return m_goalSatan;
-            }
-
-            if ((pos.x + pos.y) % 2 == 0) {
-                return m_darkTile;
-            }
-
-            return m_brightTile;
-        }();
-
-        tileSpr.setPosition(gameToScreenPos(pos));
-        batch.draw(tileSpr);
 
         auto overTileSpr = [this, &tileSelected, &showPossibleTargets, &showTargetsInRange] {
             if (tileSelected) {
@@ -481,42 +467,4 @@ void Game::switchTurn()
     }
 
     m_board.switchTurn();
-}
-
-void Game::drawCharacters()
-{
-    m_board.forEach([this](auto pos) {
-        if (m_board.isOccupied(pos)) {
-            Character thisChar = m_board.getCharacter(pos);
-            std::string spriteName = "placeholders/character.png";
-            switch (thisChar.getType()) {
-            case CharacterType::Scout: {
-                spriteName = "placeholders/scout.png";
-                break;
-            }
-            case CharacterType::Tank: {
-                spriteName = "placeholders/tank.png";
-                break;
-            }
-            case CharacterType::Support: {
-                spriteName = "placeholders/support.png";
-                break;
-            }
-            }
-            gf::Sprite sprite = gf::Sprite{m_resMgr->getTexture(spriteName)};
-            if (thisChar.getTeam() == PlayerTeam::Cthulhu) {
-                sprite.setScale({-1.0f, 1.0f}); // Mirrored
-                sprite.setAnchor(gf::Anchor::CenterRight);
-            } else {
-                sprite.setColor(gf::Color::Red); // Red variant
-                sprite.setAnchor(gf::Anchor::CenterLeft);
-            }
-            sprite.setOrigin(sprite.getOrigin() + gf::Vector2f{0.0f, -4.0f});
-            sprite.setPosition(gameToScreenPos(pos));
-            m_renderer.draw(sprite, gf::RenderStates());
-            int imageIndexLife = thisChar.getHP() - 1;
-            m_lifeSprite[imageIndexLife].setPosition(gameToScreenPos(pos) + gf::Vector2i{30, -28});
-            m_renderer.draw(m_lifeSprite[imageIndexLife], gf::RenderStates());
-        }
-    });
 }

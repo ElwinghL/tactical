@@ -4,6 +4,8 @@ project(CthulhuVsSatan
     VERSION 0.1.0
 )
 
+option(SHOW_BOUNDING_BOXES "Show bounding boxes of sprites" OFF)
+
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++14 -O0 -g")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -33,8 +35,8 @@ add_executable(game
     src/player.cpp
     src/humanplayer.cpp
     src/utility.cpp
-        src/gameboard.cpp
-)
+    src/gameboard.cpp
+    src/gameboardview.cpp include/gameboardview.h)
 
 target_include_directories(game PRIVATE
 	${Boost_INCLUDE_DIRS}
@@ -45,3 +47,9 @@ target_link_libraries(game
 	Threads::Threads
     gf::gf0
 )
+
+if (SHOW_BOUNDING_BOXES)
+    target_compile_definitions(game PRIVATE
+        SHOW_BOUNDING_BOXES
+        )
+endif (SHOW_BOUNDING_BOXES)
