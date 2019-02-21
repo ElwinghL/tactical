@@ -300,9 +300,10 @@ public:
         std::vector<gf::Vector2i> results{};
         forEach([this, &results, &team](auto pos) {
             if (m_array(pos) && m_array(pos)->getTeam() == team) {
-                results.push_back(std::move(pos));
+                results.push_back(pos);
             }
         });
+
         return results;
     }
 
@@ -421,7 +422,9 @@ private:
 
     void pushLastMove(const gf::Vector2i& origin, const gf::Vector2i& dest)
     {
-        m_lastActions.emplace(std::bind(m_moveCallback, origin, dest));
+        if (origin != dest) {
+            m_lastActions.emplace(std::bind(m_moveCallback, origin, dest));
+        }
     }
 
     void pushLastHPChange(const gf::Vector2i& pos, int hp)

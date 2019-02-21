@@ -3,16 +3,10 @@
 #include <gf/SpriteBatch.h>
 
 GameboardView::GameboardView(const Gameboard& board, gf::ResourceManager& resMgr, gf::EntityContainer& entityMgr) :
-    m_size{board.getSize()},
+    m_board{&board},
     m_resMgr{&resMgr},
     m_entityMgr{&entityMgr}
 {
-    std::size_t i = 0;
-    board.doWithGoals([this, &i](const Goal& goal) {
-        m_goals[i] = &goal;
-        ++i;
-    });
-
     auto initSprite = [this](CharacterType type, PlayerTeam team) {
         std::string path{};
         switch (type) {
@@ -112,13 +106,18 @@ void GameboardView::drawGrid(gf::RenderTarget& target, const gf::RenderStates& s
     gf::SpriteBatch batch{target};
     batch.begin();
 
-    forEachPosition(m_size, [this, &states, &batch](auto pos) {
+    m_board->forEach([this, &states, &batch](auto pos) {
         auto tileSpr = [this, &pos]() -> gf::Sprite& {
-            for (auto goal : m_goals) {
-                if (goal->getPosition() == pos) {
-                    auto goalSprArr = (goal->getTeam() == PlayerTeam::Satan) ? m_goalSatan : m_goalCthulhu;
-                    return goalSprArr[this->getActivationIndex(goal->isActivated())];
+            gf::Sprite* res = nullptr;
+            m_board->doWithGoals([this, &pos, &res](const Goal& goal) {
+                if (goal.getPosition() == pos) {
+                    auto& goalSprArr = (goal.getTeam() == PlayerTeam::Satan) ? m_goalSatan : m_goalCthulhu;
+                    res = &goalSprArr[this->getActivationIndex(goal.isActivated())];
                 }
+            });
+
+            if (res) {
+                return *res;
             }
 
             if ((pos.x + pos.y) % 2 == 0) {

@@ -95,8 +95,7 @@ private:
         return activated ? 1 : 0;
     }
 
-    gf::Vector2i m_size;
-    std::array<const Goal*, Gameboard::goalsPerTeam * 2> m_goals{};
+    const Gameboard* m_board;
 
     gf::ResourceManager* m_resMgr;
     gf::EntityContainer* m_entityMgr;
