@@ -28,6 +28,11 @@ class Action;
 
 class Goal;
 
+constexpr int getPriorityFromPos(const gf::Vector2i& pos)
+{
+    return pos.y - pos.x - Gameboard::charactersPerTeam;
+}
+
 class GameboardView {
 public:
     explicit GameboardView(const Gameboard& board, gf::ResourceManager& resMgr, gf::EntityContainer& entityMgr);
@@ -45,10 +50,11 @@ public:
 private:
     class EntityCharacter : public gf::Entity {
     public:
-        explicit EntityCharacter(GameboardView& gbView, gf::Sprite sprite, int hp, int priority = 0) :
-            Entity{priority},
+        explicit EntityCharacter(GameboardView& gbView, gf::Sprite sprite, int hp, const gf::Vector2i& pos) :
+            Entity{getPriorityFromPos(pos)},
             m_gbView{&gbView},
             m_sprite{std::move(sprite)},
+            m_dest{pos},
             m_currentHPSprite{checkHP(hp)}
         {
             // Nothing
@@ -65,13 +71,19 @@ private:
 
         void moveTo(const gf::Vector2i& pos)
         {
-            setPriority(-(pos.x + 6 - pos.y));
+            m_dest = pos;
+            setPriority(getPriorityFromPos(pos));
             m_sprite.setPosition(gameToScreenPos(pos));
         }
 
         void setLocked(bool locked)
         {
             m_locked = locked;
+        }
+
+        gf::Vector2i getDest() const
+        {
+            return m_dest;
         }
 
     private:
@@ -93,6 +105,9 @@ private:
 
         GameboardView* m_gbView;
         gf::Sprite m_sprite;
+
+        gf::Vector2f m_pos;
+        gf::Vector2i m_dest;
 
         std::size_t m_currentHPSprite;
 
@@ -135,7 +150,7 @@ private:
 
     gf::Sprite m_magicLock{m_resMgr->getTexture("locked.png")};
 
-    std::map<gf::Vector2i, std::unique_ptr<EntityCharacter>, PositionComp> m_entities{};
+    std::vector<std::unique_ptr<EntityCharacter>> m_entities{};
 };
 
 #endif //CTHULHUVSSATAN_GAMEBOARDVIEW_H

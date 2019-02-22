@@ -44,9 +44,9 @@ GameboardView::GameboardView(const Gameboard& board, gf::ResourceManager& resMgr
             Character c = board.getCharacter(pos);
             auto putEntity = [this, &pos, &c](gf::Sprite&& spr) {
                 spr.setPosition(gameToScreenPos(pos));
-                auto createdEntity = std::make_unique<EntityCharacter>(*this, spr, c.getHP(), -(pos.x + 6 - pos.y));
+                auto createdEntity = std::make_unique<EntityCharacter>(*this, spr, c.getHP(), pos);
                 m_entityMgr->addEntity(*createdEntity);
-                m_entities.emplace(pos, std::move(createdEntity));
+                m_entities.emplace_back(std::move(createdEntity));
             };
 
             putEntity(initSprite(c.getType(), c.getTeam()));
@@ -75,7 +75,7 @@ GameboardView::GameboardView(const Gameboard& board, gf::ResourceManager& resMgr
 void GameboardView::update()
 {
     for (auto& entity : m_entities) {
-        entity.second->setLocked(m_board->isLocked(entity.first));
+        entity->setLocked(m_board->isLocked(entity->getDest()));
     }
 }
 
@@ -86,28 +86,27 @@ bool GameboardView::animationFinished() const
 
 void GameboardView::notifyMove(const gf::Vector2i& origin, const gf::Vector2i& dest)
 {
-    auto entity = std::move(m_entities[origin]);
-    assert(entity);
-    m_entities.erase(origin);
-    entity->moveTo(dest);
+    auto it = std::find_if(m_entities.begin(), m_entities.end(), [&origin](auto& entity) {
+        return entity->getDest() == origin;
+    });
 
-    if (m_entities.count(dest) > 0) { // TODO better solution to swap characters
-        auto otherEntity = std::move(m_entities[dest]);
-        m_entities.erase(dest);
-        otherEntity->moveTo(origin);
-        m_entities.emplace(origin, std::move(otherEntity));
-    }
-
-    m_entities.emplace(dest, std::move(entity));
+    assert(it != m_entities.end());
+    (*it)->moveTo(dest);
 }
 
 void GameboardView::notifyHP(const gf::Vector2i& pos, int hp)
 {
+    auto it = std::find_if(m_entities.begin(), m_entities.end(), [&pos](auto& entity) {
+        return entity->getDest() == pos;
+    });
+
+    assert(it != m_entities.end());
+
     if (hp <= 0) {
-        m_entityMgr->removeTypedEntity(m_entities[pos].get());
-        m_entities.erase(pos);
+        m_entityMgr->removeTypedEntity(it->get());
+        m_entities.erase(it);
     } else {
-        m_entities[pos]->setHP(hp);
+        (*it)->setHP(hp);
     }
 }
 

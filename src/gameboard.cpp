@@ -204,6 +204,7 @@ bool Gameboard::useCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest
     switch (getTypeFor(origin)) {
     case CharacterType::Scout: {
         pushLastMove(origin, dest);
+        pushLastMove(dest, origin);
         swapOccupiedPositions(origin, dest);
     } break;
 
