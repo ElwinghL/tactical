@@ -1,6 +1,15 @@
 #include "gameboardview.h"
 
+#include <gf/Easings.h>
 #include <gf/SpriteBatch.h>
+
+#include <gameboardview.h>
+
+static constexpr gf::Vector2f getEasingPos(gf::Easing easing, const gf::Vector2f& origin, const gf::Vector2f& dest,
+                                           float timeFrac)
+{
+    return gf::lerp(origin, dest, easing(timeFrac));
+}
 
 GameboardView::GameboardView(const Gameboard& board, gf::ResourceManager& resMgr, gf::EntityContainer& entityMgr) :
     m_board{&board},
@@ -46,7 +55,7 @@ GameboardView::GameboardView(const Gameboard& board, gf::ResourceManager& resMgr
                 spr.setPosition(gameToScreenPos(pos));
                 auto createdEntity = std::make_unique<EntityCharacter>(*this, spr, c.getHP(), pos);
                 m_entityMgr->addEntity(*createdEntity);
-                m_entities.emplace_back(std::move(createdEntity));
+                m_entities.emplace(pos, std::move(createdEntity));
             };
 
             putEntity(initSprite(c.getType(), c.getTeam()));
@@ -75,38 +84,41 @@ GameboardView::GameboardView(const Gameboard& board, gf::ResourceManager& resMgr
 void GameboardView::update()
 {
     for (auto& entity : m_entities) {
-        entity->setLocked(m_board->isLocked(entity->getDest()));
+        entity.second->setLocked(m_board->isLocked(entity.first));
     }
 }
 
 bool GameboardView::animationFinished() const
 {
-    return true;
+    return std::all_of(m_entities.begin(), m_entities.end(), [](auto& entity) {
+        return entity.second->animationFinished();
+    });
 }
 
 void GameboardView::notifyMove(const gf::Vector2i& origin, const gf::Vector2i& dest)
 {
-    auto it = std::find_if(m_entities.begin(), m_entities.end(), [&origin](auto& entity) {
-        return entity->getDest() == origin;
-    });
+    auto entity = std::move(m_entities[origin]);
+    assert(entity);
+    m_entities.erase(origin);
+    entity->moveTo(dest);
 
-    assert(it != m_entities.end());
-    (*it)->moveTo(dest);
+    if (m_entities.count(dest) > 0) { // TODO better solution to swap characters
+        auto otherEntity = std::move(m_entities[dest]);
+        m_entities.erase(dest);
+        otherEntity->moveTo(origin);
+        m_entities.emplace(origin, std::move(otherEntity));
+    }
+
+    m_entities.emplace(dest, std::move(entity));
 }
 
 void GameboardView::notifyHP(const gf::Vector2i& pos, int hp)
 {
-    auto it = std::find_if(m_entities.begin(), m_entities.end(), [&pos](auto& entity) {
-        return entity->getDest() == pos;
-    });
-
-    assert(it != m_entities.end());
-
     if (hp <= 0) {
-        m_entityMgr->removeTypedEntity(it->get());
-        m_entities.erase(it);
+        m_entityMgr->removeTypedEntity(m_entities[pos].get());
+        m_entities.erase(pos);
     } else {
-        (*it)->setHP(hp);
+        m_entities[pos]->setHP(hp);
     }
 }
 
@@ -143,9 +155,14 @@ void GameboardView::drawGrid(gf::RenderTarget& target, const gf::RenderStates& s
     batch.end();
 }
 
-void GameboardView::EntityCharacter::update(gf::Time /*time*/)
+void GameboardView::EntityCharacter::update(gf::Time time)
 {
+    m_timeFrac += time.asSeconds() / 0.2f;
+    m_timeFrac = gf::clamp(m_timeFrac, 0.0f, 1.0f);
 
+    auto pos = getEasingPos(gf::Ease::smooth, m_origin, m_dest, m_timeFrac);
+    setPriority(getPriorityFromPos(pos));
+    m_sprite.setPosition(gameToScreenPos(pos));
 }
 
 void GameboardView::EntityCharacter::render(gf::RenderTarget& target, const gf::RenderStates& states)
@@ -162,4 +179,26 @@ void GameboardView::EntityCharacter::render(gf::RenderTarget& target, const gf::
         showBoundingBox(m_gbView->m_magicLock, target, states);
 #endif // SHOW_BOUNDING_BOXES
     }
+}
+
+void GameboardView::EntityCharacter::moveTo(const gf::Vector2i& pos)
+{
+    setPriority(getPriorityFromPos(pos));
+    m_sprite.setPosition(gameToScreenPos(pos));
+
+    m_origin = getEasingPos(gf::Ease::smooth, m_origin, m_dest, m_timeFrac);
+    m_dest.x = pos.x;
+    m_dest.y = pos.y;
+
+    m_timeFrac = 0.0f;
+}
+
+void GameboardView::EntityCharacter::drawLife(gf::RenderTarget& target, const gf::RenderStates& states)
+{
+    auto& lifeSpr = m_gbView->m_lifeSprites[m_currentHPSprite];
+    lifeSpr.setPosition(m_sprite.getPosition() + gf::Vector2f{0.f, 16.f - m_sprite.getOrigin().y});
+    lifeSpr.draw(target, states);
+#ifdef SHOW_BOUNDING_BOXES
+    showBoundingBox(lifeSpr, target, states);
+#endif // SHOW_BOUNDING_BOXES
 }

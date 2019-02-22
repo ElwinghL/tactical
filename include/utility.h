@@ -110,6 +110,13 @@ void resizeView(gf::View& view, const gf::Vector2i& gameSize);
 gf::Vector2f gameToScreenPos(const gf::Vector2i& gamePos);
 gf::Vector2i screenToGamePos(const gf::Vector2f& screenPos);
 
+constexpr gf::Vector2f halfTileSize{64.0f / 2.0f, 31.0f / 2.0f};
+
+constexpr gf::Vector2f gameToScreenPos(const gf::Vector2f& gamePos)
+{
+    return gf::Vector2f{gamePos.y + gamePos.x, gamePos.y - gamePos.x - 1.0f} * halfTileSize;
+}
+
 #ifdef SHOW_BOUNDING_BOXES
 void showBoundingBox(const gf::Sprite& obj, gf::RenderTarget& target, const gf::RenderStates& states);
 #endif // SHOW_BOUNDING_BOXES

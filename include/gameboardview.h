@@ -17,11 +17,12 @@
 #include <gf/EntityContainer.h>
 #include <gf/ResourceManager.h>
 #include <gf/Sprite.h>
+
 #include <gf/Time.h>
-
 #include <array>
-#include <memory>
+#include <map>
 
+#include <memory>
 #include <cassert>
 
 class Action;
@@ -30,7 +31,12 @@ class Goal;
 
 constexpr int getPriorityFromPos(const gf::Vector2i& pos)
 {
-    return pos.y - pos.x - Gameboard::charactersPerTeam;
+    return pos.y - pos.x - 6; // TODO magic constant
+}
+
+constexpr int getPriorityFromPos(const gf::Vector2f& pos)
+{
+    return static_cast<int>(pos.y - pos.x) - 6;
 }
 
 class GameboardView {
@@ -54,7 +60,9 @@ private:
             Entity{getPriorityFromPos(pos)},
             m_gbView{&gbView},
             m_sprite{std::move(sprite)},
-            m_dest{pos},
+            m_origin{static_cast<float>(pos.x), static_cast<float>(pos.y)},
+            m_dest{m_origin},
+            m_timeFrac{0.0f},
             m_currentHPSprite{checkHP(hp)}
         {
             // Nothing
@@ -69,21 +77,16 @@ private:
             m_currentHPSprite = checkHP(hp);
         }
 
-        void moveTo(const gf::Vector2i& pos)
-        {
-            m_dest = pos;
-            setPriority(getPriorityFromPos(pos));
-            m_sprite.setPosition(gameToScreenPos(pos));
-        }
+        void moveTo(const gf::Vector2i& pos);
 
         void setLocked(bool locked)
         {
             m_locked = locked;
         }
 
-        gf::Vector2i getDest() const
+        bool animationFinished() const
         {
-            return m_dest;
+            return gf::almostEquals(m_timeFrac, 1.0f);
         }
 
     private:
@@ -93,21 +96,15 @@ private:
             return static_cast<std::size_t>(hp - 1);
         }
 
-        void drawLife(gf::RenderTarget& target, const gf::RenderStates& states)
-        {
-            auto& lifeSpr = m_gbView->m_lifeSprites[m_currentHPSprite];
-            lifeSpr.setPosition(m_sprite.getPosition() + gf::Vector2f{0.f, 16.f - m_sprite.getOrigin().y});
-            lifeSpr.draw(target, states);
-#ifdef SHOW_BOUNDING_BOXES
-            showBoundingBox(lifeSpr, target, states);
-#endif // SHOW_BOUNDING_BOXES
-        }
+        void drawLife(gf::RenderTarget& target, const gf::RenderStates& states);
 
         GameboardView* m_gbView;
         gf::Sprite m_sprite;
 
-        gf::Vector2f m_pos;
-        gf::Vector2i m_dest;
+        gf::Vector2f m_origin;
+        gf::Vector2f m_dest;
+
+        float m_timeFrac;
 
         std::size_t m_currentHPSprite;
 
@@ -150,7 +147,7 @@ private:
 
     gf::Sprite m_magicLock{m_resMgr->getTexture("locked.png")};
 
-    std::vector<std::unique_ptr<EntityCharacter>> m_entities{};
+    std::map<gf::Vector2i, std::unique_ptr<EntityCharacter>, PositionComp> m_entities{};
 };
 
 #endif //CTHULHUVSSATAN_GAMEBOARDVIEW_H

@@ -6,16 +6,14 @@
 
 #include <cmath>
 
-static constexpr gf::Vector2f halfTileSize{64.0f / 2.0f, 31.0f / 2.0f};
-
 void resizeView(gf::View& view, const gf::Vector2i& gameSize)
 {
     constexpr gf::Vector2f padding{50.0f, 50.0f};
 
-    gf::Vector2f left{gameToScreenPos({0, 0})};
+    gf::Vector2f left{gameToScreenPos(gf::Vector2i{0, 0})};
     gf::Vector2f right{gameToScreenPos(gameSize)};
-    gf::Vector2f top{gameToScreenPos({gameSize.width, 0})};
-    gf::Vector2f bottom{gameToScreenPos({0, gameSize.height})};
+    gf::Vector2f top{gameToScreenPos(gf::Vector2i{gameSize.width, 0})};
+    gf::Vector2f bottom{gameToScreenPos(gf::Vector2i{0, gameSize.height})};
 
     view.setCenter({(left.x + right.x) / 2.0f - halfTileSize.width, (top.y + bottom.y) / 2.0f});
     view.setSize({right.x - left.x + padding.width, bottom.y - top.y + padding.height});
