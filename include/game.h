@@ -197,7 +197,9 @@ private:
     gf::Sprite m_infoboxPass{m_resMgr->getTexture("placeholders/infoboxPass.png")};
     std::vector<gf::Sprite> m_lifeSprite;
     gf::Sprite m_effectCharacterLocked{m_resMgr->getTexture("placeholders/locked.png")};
-
+    gf::Sprite m_menu_background{m_resMgr->getTexture("menu/background.png")};
+    gf::Sprite m_title_sprite{m_resMgr->getTexture("menu/titre.png")};
+    
     gf::SpriteWidget m_buttonAttack{m_resMgr->getTexture("placeholders/iconAttack.png"), m_resMgr->getTexture("placeholders/iconAttack.png"), m_resMgr->getTexture("placeholders/iconAttack.png")};
     gf::SpriteWidget m_buttonCapacity{m_resMgr->getTexture("placeholders/iconCapacity.png"), m_resMgr->getTexture("placeholders/iconCapacity.png"), m_resMgr->getTexture("placeholders/iconCapacity.png")};
     gf::SpriteWidget m_buttonPass{m_resMgr->getTexture("placeholders/iconPass.png"), m_resMgr->getTexture("placeholders/iconPass.png"), m_resMgr->getTexture("placeholders/iconPass.png")};

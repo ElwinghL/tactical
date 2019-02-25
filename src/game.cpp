@@ -210,9 +210,11 @@ void Game::render()
 
     switch (m_gameState) {
     case GameState::MainMenu: {
+        m_renderer.draw(m_menu_background);
         m_renderer.setView(m_menuView);
-        m_renderer.draw(m_title);
+        //m_renderer.draw(m_title);
         m_menuWidgets.render(m_renderer);
+        m_renderer.draw(m_title_sprite);
     } break;
 
     case GameState::Pause: {
@@ -312,6 +314,13 @@ void Game::initWidgets()
 
 void Game::initSprites()
 {
+    m_title_sprite.setAnchor(gf::Anchor::TopCenter);
+    m_title_sprite.setPosition(gf::Vector2f{0.0f, -250.0f});
+    m_title_sprite.setScale(0.3f);
+    m_menu_background.setAnchor(gf::Anchor::Center);
+    m_menu_background.setPosition(gf::Vector2f{0.0f, 0.0f});
+    m_menu_background.setScale(0.5f);
+    
     m_brightTile.setAnchor(gf::Anchor::TopLeft);
     m_darkTile.setAnchor(gf::Anchor::TopLeft);
     m_selectedTile.setAnchor(gf::Anchor::TopLeft);
