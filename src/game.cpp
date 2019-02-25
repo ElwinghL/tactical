@@ -51,6 +51,9 @@ void Game::processEvents()
     } break;
 
     case GameState::Playing: {
+        m_buttonAttack.setDefault();
+        m_buttonCapacity.setDefault();
+        m_buttonPass.setDefault();
         if (m_board.getPlayingTeam() == m_humanPlayer.getTeam()) {
             if (m_leftClickAction.isActive()) {
                 gf::Vector2i tile{screenToGamePos(m_mouseCoords)};
@@ -107,7 +110,6 @@ void Game::processEvents()
 
                 case PlayerTurnSelection::AttackSelection: {
                     assert(m_selectedPos);
-
                     if (m_board.attack(*m_selectedPos, tile)) {
                         m_selectedPos = tile;
                         switchTurn();
@@ -133,12 +135,27 @@ void Game::processEvents()
         } else if (m_aiPlayer.playTurn(m_board)) {
             switchTurn();
         }
+        if(m_playerTurnSelection == PlayerTurnSelection::CapacitySelection){
+            m_buttonCapacity.setDisabled();
+        }
+        if(m_playerTurnSelection == PlayerTurnSelection::AttackSelection){
+            m_buttonAttack.setDisabled();
+        }
+        
+        if(!m_buttonAttack.isDisabled() && m_buttonAttack.contains(m_mouseCoords)){
+            m_buttonAttack.setSelected();
+        }
+        if(!m_buttonCapacity.isDisabled() && m_buttonCapacity.contains(m_mouseCoords)){
+            m_buttonCapacity.setSelected();
+        }
+        if(!m_buttonPass.isDisabled() && m_buttonPass.contains(m_mouseCoords)){
+            m_buttonPass.setSelected();
+        }
     } break;
 
     case GameState::GameEnd: {
     } break;
     }
-
     m_actions.reset();
 }
 
@@ -330,10 +347,17 @@ void Game::initSprites()
     m_goalCthulhuActivated.setAnchor(gf::Anchor::TopLeft);
     m_goalSatan.setAnchor(gf::Anchor::TopLeft);
     m_goalSatanActivated.setAnchor(gf::Anchor::TopLeft);
+    
+    m_gameBackground.setAnchor(gf::Anchor::CenterLeft);
+    m_gameBackground.setPosition(gf::Vector2f{-20.0f, -20.0f});
+    m_gameBackground.setScale(0.27f);
 
-    m_buttonAttack.setAnchor(gf::Anchor::TopLeft);
-    m_buttonCapacity.setAnchor(gf::Anchor::TopLeft);
-    m_buttonPass.setAnchor(gf::Anchor::TopLeft);
+    gf::Vector2f UIScale{0.4f, 0.4f};
+    m_buttonAttack.setAnchor(gf::Anchor::CenterRight);
+    m_buttonAttack.setScale(UIScale);
+    m_buttonCapacity.setAnchor(gf::Anchor::CenterRight);
+    m_buttonCapacity.setScale(UIScale);
+    m_buttonPass.setAnchor(gf::Anchor::CenterRight); m_buttonPass.setScale(UIScale);
 
     gf::Vector2f infoboxScale{0.3f, 0.3f};
     m_infoboxScout.setAnchor(gf::Anchor::TopLeft);
@@ -368,11 +392,11 @@ void Game::drawUI()
 {
     if (m_gameState == GameState::Playing) {
         if (m_selectedPos) {
-            gf::Vector2i posButtonAttack{465, 15};
+            gf::Vector2i posButtonAttack{500, 15};
             m_buttonAttack.setPosition(posButtonAttack);
-            gf::Vector2i posButtonCapacity{500, 15};
+            gf::Vector2i posButtonCapacity{570, 15};
             m_buttonCapacity.setPosition(posButtonCapacity);
-            gf::Vector2i posButtonPass{535, 15};
+            gf::Vector2i posButtonPass{570, 80};
             m_buttonPass.setPosition(posButtonPass);
             m_uiWidgets.render(m_renderer);
         }
@@ -458,6 +482,7 @@ void Game::drawUI()
 
 void Game::drawBackground()
 {
+    m_renderer.draw(m_gameBackground);
     gf::SpriteBatch batch{m_renderer};
     batch.begin();
     m_board.forEach([this, &batch](auto pos) {

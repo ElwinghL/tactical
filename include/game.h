@@ -175,6 +175,8 @@ private:
     std::set<gf::Vector2i, PositionComp> m_possibleTargets;
     std::set<gf::Vector2i, PositionComp> m_targetsInRange;
 
+    gf::Sprite m_gameBackground{m_resMgr->getTexture("decor/gameBackground.png")};
+    
     gf::Sprite m_darkTile{m_resMgr->getTexture("placeholders/case.png")};
     gf::Sprite m_brightTile{m_resMgr->getTexture("placeholders/case2.png")};
     gf::Sprite m_selectedTile{m_resMgr->getTexture("placeholders/caseSelected.png")};
@@ -200,9 +202,9 @@ private:
     gf::Sprite m_menu_background{m_resMgr->getTexture("menu/background.png")};
     gf::Sprite m_title_sprite{m_resMgr->getTexture("menu/titre.png")};
     
-    gf::SpriteWidget m_buttonAttack{m_resMgr->getTexture("placeholders/iconAttack.png"), m_resMgr->getTexture("placeholders/iconAttack.png"), m_resMgr->getTexture("placeholders/iconAttack.png")};
-    gf::SpriteWidget m_buttonCapacity{m_resMgr->getTexture("placeholders/iconCapacity.png"), m_resMgr->getTexture("placeholders/iconCapacity.png"), m_resMgr->getTexture("placeholders/iconCapacity.png")};
-    gf::SpriteWidget m_buttonPass{m_resMgr->getTexture("placeholders/iconPass.png"), m_resMgr->getTexture("placeholders/iconPass.png"), m_resMgr->getTexture("placeholders/iconPass.png")};
+    gf::SpriteWidget m_buttonAttack{m_resMgr->getTexture("UI/buttonAttack3.png"), m_resMgr->getTexture("UI/buttonAttack1.png"), m_resMgr->getTexture("UI/buttonAttack2.png")};
+    gf::SpriteWidget m_buttonCapacity{m_resMgr->getTexture("UI/buttonCapacity3.png"), m_resMgr->getTexture("UI/buttonCapacity1.png"), m_resMgr->getTexture("UI/buttonCapacity2.png")};
+    gf::SpriteWidget m_buttonPass{m_resMgr->getTexture("UI/buttonPass3.png"), m_resMgr->getTexture("UI/buttonPass1.png"), m_resMgr->getTexture("UI/buttonPass2.png")};
 
     gf::WidgetContainer m_uiWidgets{};
 };
