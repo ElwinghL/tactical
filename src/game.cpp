@@ -368,7 +368,6 @@ void Game::drawUI()
 {
     if (m_gameState == GameState::Playing) {
         if (m_selectedPos) {
-            //Dans l'idée, ça serait plus ergonomique d'afficher les boutons en bas à droite
             gf::Vector2i posButtonAttack{465, 15};
             m_buttonAttack.setPosition(posButtonAttack);
             gf::Vector2i posButtonCapacity{500, 15};
@@ -468,10 +467,16 @@ void Game::drawBackground()
 
         auto tileSpr = [this, &pos]() -> gf::Sprite& {
             if (m_board.isGoal(pos, PlayerTeam::Cthulhu)) {
+                if(m_board.isAnActivatedGoal(pos, PlayerTeam::Cthulhu)){
+                    return m_goalCthulhuActivated;
+                }
                 return m_goalCthulhu;
             }
 
             if (m_board.isGoal(pos, PlayerTeam::Satan)) {
+                if(m_board.isAnActivatedGoal(pos, PlayerTeam::Satan)){
+                    return m_goalSatanActivated;
+                }
                 return m_goalSatan;
             }
 

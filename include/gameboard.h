@@ -280,6 +280,17 @@ public:
 
         return false;
     }
+    
+    bool isAnActivatedGoal(const gf::Vector2i& pos, PlayerTeam team) const
+    {
+        for (auto& goal : m_goals) {
+            if (goal.getPosition() == pos && goal.getTeam() == team && goal.isActivated()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     int getNbOfActivatedGoals(PlayerTeam team) const
     {
