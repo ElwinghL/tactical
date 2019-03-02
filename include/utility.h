@@ -96,16 +96,6 @@ constexpr bool isDiagonal(const gf::Vector2i& origin, const gf::Vector2i& dest)
     return isDiagonal(dest - origin);
 }
 
-template<typename UnaryPositionFunc>
-constexpr void forEachPosition(const gf::Vector2i& size, UnaryPositionFunc f)
-{
-    for (int y = 0; y < size.height; ++y) {
-        for (int x = size.width - 1; x >= 0; --x) {
-            f(gf::Vector2i{x, y});
-        }
-    }
-}
-
 void resizeView(gf::View& view, const gf::Vector2i& gameSize);
 gf::Vector2f gameToScreenPos(const gf::Vector2i& gamePos);
 gf::Vector2i screenToGamePos(const gf::Vector2f& screenPos);

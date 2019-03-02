@@ -84,7 +84,7 @@ GameboardView::GameboardView(const Gameboard& board, gf::ResourceManager& resMgr
 void GameboardView::update()
 {
     for (auto& entity : m_entities) {
-        entity.second->setLocked(m_board->isLocked(entity.first));
+        entity.second->setLocked(m_board->isOccupied(entity.first) && m_board->isLocked(entity.first));
     }
 }
 
@@ -97,8 +97,8 @@ bool GameboardView::animationFinished() const
 
 void GameboardView::notifyMove(const gf::Vector2i& origin, const gf::Vector2i& dest)
 {
+    assert(m_entities.count(origin) > 0);
     auto entity = std::move(m_entities[origin]);
-    assert(entity);
     m_entities.erase(origin);
     entity->moveTo(dest);
 
@@ -157,7 +157,7 @@ void GameboardView::drawGrid(gf::RenderTarget& target, const gf::RenderStates& s
 
 void GameboardView::EntityCharacter::update(gf::Time time)
 {
-    m_timeFrac += time.asSeconds() / 0.2f;
+    m_timeFrac += time.asSeconds() / 0.8f;
     m_timeFrac = gf::clamp(m_timeFrac, 0.0f, 1.0f);
 
     auto pos = getEasingPos(gf::Ease::smooth, m_origin, m_dest, m_timeFrac);

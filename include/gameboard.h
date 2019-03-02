@@ -310,7 +310,12 @@ public:
     template<typename UnaryPositionFunc>
     constexpr void forEach(UnaryPositionFunc f) const
     {
-        forEachPosition(getSize(), f);
+        gf::Vector2i size = getSize();
+        for (int y = 0; y < size.height; ++y) {
+            for (int x = size.width - 1; x >= 0; --x) {
+                f(gf::Vector2i{x, y});
+            }
+        }
     }
 
     bool hasWon(PlayerTeam team) const
@@ -330,12 +335,15 @@ public:
         m_hpChangeCallback = f;
     }
 
-    void callActionsCallbacks()
+    bool isCallbackNeeded() const
     {
-        while (!m_lastActions.empty()) {
-            (m_lastActions.front())();
-            m_lastActions.pop();
-        }
+        return !m_lastActions.empty();
+    }
+
+    void doFirstCallback()
+    {
+        (m_lastActions.front())();
+        m_lastActions.pop();
     }
 
     std::vector<int> getGoalsDistance(const gf::Vector2i pos) const

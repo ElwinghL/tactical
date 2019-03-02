@@ -228,7 +228,9 @@ bool Gameboard::useCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest
         }
 
         swapPositions(dest, ejectedPos);
-        pushLastMove(dest, ejectedPos);
+        if (isOccupied(dest)) {
+            pushLastMove(dest, ejectedPos);
+        }
         removeIfDead(ejectedPos);
     } break;
     }

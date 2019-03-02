@@ -57,6 +57,11 @@ void Game::processEvents()
             break;
         }
 
+        if (m_board.isCallbackNeeded()) {
+            m_board.doFirstCallback();
+            break;
+        }
+
         if (m_board.getPlayingTeam() == m_humanPlayer.getTeam()) {
             if (m_leftClickAction.isActive()) {
                 gf::Vector2i tile{screenToGamePos(m_mouseCoords)};
@@ -139,11 +144,13 @@ void Game::processEvents()
         } else if (m_aiPlayer.playTurn(m_board)) {
             switchTurn();
         }
-
-        m_board.callActionsCallbacks();
     } break;
 
     case GameState::GameEnd: {
+        if (m_board.isCallbackNeeded()) {
+            m_board.doFirstCallback();
+            break;
+        }
     } break;
     }
 
@@ -201,6 +208,8 @@ void Game::update()
     } break;
 
     case GameState::GameEnd: {
+        m_entityMgr.update(time);
+        m_gbView->update();
     } break;
     }
 }
@@ -220,9 +229,14 @@ void Game::render()
     case GameState::GameEnd: {
         m_renderer.setView(m_mainView);
         m_gbView->drawGrid(m_renderer);
-        drawTargets();
+        bool animationFinished = m_gbView->animationFinished();
+        if (animationFinished && m_gameState == GameState::Playing) {
+            drawTargets();
+        }
         m_entityMgr.render(m_renderer);
-        drawUI();
+        if (animationFinished) {
+            drawUI();
+        }
     } break;
     }
 

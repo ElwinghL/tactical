@@ -1,6 +1,5 @@
 #include "gameai.h"
 
-
 void GameAI::simulateActions()
 {
     Gameboard board{};
@@ -75,8 +74,8 @@ long GameAI::functionEval(const Gameboard& board)
     long score = 0;
     int enemyDamage = 0;
 
-    auto myCharacterPositions = board.getTeamPositions(getTeam());
-    auto otherCharacterPositions = board.getTeamPositions(getEnemyTeam(getTeam()));
+    std::vector<gf::Vector2i> myCharacterPositions{board.getTeamPositions(getTeam())};
+    std::vector<gf::Vector2i> otherCharacterPositions{board.getTeamPositions(getEnemyTeam(getTeam()))};
 
     for (auto pos : otherCharacterPositions) {
         auto character = board.getCharacter(pos);

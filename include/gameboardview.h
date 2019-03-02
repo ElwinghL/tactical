@@ -62,7 +62,7 @@ private:
             m_sprite{std::move(sprite)},
             m_origin{static_cast<float>(pos.x), static_cast<float>(pos.y)},
             m_dest{m_origin},
-            m_timeFrac{0.0f},
+            m_timeFrac{1.0f},
             m_currentHPSprite{checkHP(hp)}
         {
             // Nothing
