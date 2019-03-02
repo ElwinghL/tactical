@@ -62,6 +62,10 @@ void Game::processEvents()
             break;
         }
 
+        m_buttonAttack.setDefault();
+        m_buttonCapacity.setDefault();
+        m_buttonPass.setDefault();
+
         if (m_board.getPlayingTeam() == m_humanPlayer.getTeam()) {
             if (m_leftClickAction.isActive()) {
                 gf::Vector2i tile{screenToGamePos(m_mouseCoords)};
@@ -118,7 +122,6 @@ void Game::processEvents()
 
                 case PlayerTurnSelection::AttackSelection: {
                     assert(m_selectedPos);
-
                     if (m_board.attack(*m_selectedPos, tile)) {
                         m_selectedPos = tile;
                         switchTurn();
@@ -144,6 +147,22 @@ void Game::processEvents()
         } else if (m_aiPlayer.playTurn(m_board)) {
             switchTurn();
         }
+        if (m_playerTurnSelection == PlayerTurnSelection::CapacitySelection) {
+            m_buttonCapacity.setDisabled();
+        }
+        if (m_playerTurnSelection == PlayerTurnSelection::AttackSelection) {
+            m_buttonAttack.setDisabled();
+        }
+
+        if (!m_buttonAttack.isDisabled() && m_buttonAttack.contains(m_mouseCoords)) {
+            m_buttonAttack.setSelected();
+        }
+        if (!m_buttonCapacity.isDisabled() && m_buttonCapacity.contains(m_mouseCoords)) {
+            m_buttonCapacity.setSelected();
+        }
+        if (!m_buttonPass.isDisabled() && m_buttonPass.contains(m_mouseCoords)) {
+            m_buttonPass.setSelected();
+        }
     } break;
 
     case GameState::GameEnd: {
@@ -153,7 +172,6 @@ void Game::processEvents()
         }
     } break;
     }
-
     m_actions.reset();
 }
 
@@ -220,13 +238,16 @@ void Game::render()
 
     switch (m_gameState) {
     case GameState::MainMenu: {
+        m_renderer.setView(m_backMenuView);
+        m_renderer.draw(m_menuBackground);
         m_renderer.setView(m_menuView);
-        m_renderer.draw(m_title);
         m_menuWidgets.render(m_renderer);
+        m_renderer.draw(m_title);
     } break;
 
     case GameState::Playing:
     case GameState::GameEnd: {
+        m_renderer.draw(m_gameBackground);
         m_renderer.setView(m_mainView);
         m_gbView->drawGrid(m_renderer);
         bool animationFinished = m_gbView->animationFinished();
@@ -253,8 +274,9 @@ void Game::initViews()
 {
     resizeView(m_mainView, m_board.getSize());
 
-    m_views.addView(m_mainView);
     m_views.addView(m_menuView);
+    m_views.addView(m_backMenuView);
+    m_views.addView(m_mainView);
 
     m_views.setInitialScreenSize(m_screenSize);
 }
@@ -273,10 +295,6 @@ void Game::initActions()
 
 void Game::initWidgets()
 {
-    m_title.setAnchor(gf::Anchor::BottomCenter);
-    m_title.setColor(gf::Color::Black);
-    m_title.setPosition(gf::Vector2f{0.0f, -100.0f});
-
     m_defeatText.setAnchor(gf::Anchor::Center);
     m_defeatText.setOutlineThickness(1.0f);
     m_defeatText.setOutlineColor(gf::Color::Black);
@@ -310,7 +328,7 @@ void Game::initWidgets()
 
     buttonInit(m_playButton, gf::Anchor::BottomCenter, {0.0f, -20.0f});
     m_playButton.setCallback([this] {
-        m_clearColor = gf::Color::Black;
+        m_clearColor = gf::Color::fromRgba32(28, 25, 38);
         m_gameState = GameState::Playing;
     });
 
@@ -320,15 +338,42 @@ void Game::initWidgets()
     });
 }
 
+static float getBackgroundScale(const gf::Vector2f& viewSize, const gf::Vector2f& backgroundSize)
+{
+    float viewRatio = viewSize.width / viewSize.height;
+    float backgroundRatio = backgroundSize.width / backgroundSize.height;
+
+    if (viewRatio > backgroundRatio) {
+        return viewSize.height / backgroundSize.height;
+    }
+
+    return viewSize.width / backgroundSize.width;
+}
+
 void Game::initSprites()
 {
+    m_title.setAnchor(gf::Anchor::TopCenter);
+    m_title.setPosition(gf::Vector2f{0.0f, -200.0f});
+    m_title.setScale(0.3f);
+
+    m_menuBackground.setAnchor(gf::Anchor::Center);
+    m_menuBackground.setPosition(gf::Vector2f{0.0f, 0.0f});
+
     m_selectedTile.setAnchor(gf::Anchor::Center);
     m_possibleTargetsTile.setAnchor(gf::Anchor::Center);
     m_targetsInRangeTile.setAnchor(gf::Anchor::Center);
 
-    m_buttonAttack.setAnchor(gf::Anchor::TopLeft);
-    m_buttonCapacity.setAnchor(gf::Anchor::TopLeft);
-    m_buttonPass.setAnchor(gf::Anchor::TopLeft);
+    m_gameBackground.setAnchor(gf::Anchor::Center);
+    m_gameBackground.setPosition(m_mainView.getCenter());
+    m_gameBackground.setScale(getBackgroundScale(m_mainView.getSize(), m_gameBackground.getLocalBounds().getSize()));
+
+    gf::Vector2f UIScale{0.4f, 0.4f};
+    m_buttonAttack.setAnchor(gf::Anchor::CenterRight);
+    m_buttonAttack.setScale(UIScale);
+    m_buttonCapacity.setAnchor(gf::Anchor::CenterRight);
+    m_buttonCapacity.setScale(UIScale);
+    m_buttonPass.setAnchor(gf::Anchor::CenterRight);
+    m_buttonPass.setScale(UIScale);
 
     gf::Vector2f infoboxScale{0.3f, 0.3f};
     m_infoboxScout.setAnchor(gf::Anchor::TopLeft);
@@ -357,12 +402,11 @@ void Game::drawUI()
 {
     if (m_gameState == GameState::Playing) {
         if (m_selectedPos) {
-            //Dans l'idée, ça serait plus ergonomique d'afficher les boutons en bas à droite
-            gf::Vector2i posButtonAttack{465, 15};
+            gf::Vector2i posButtonAttack{500, 15};
             m_buttonAttack.setPosition(posButtonAttack);
-            gf::Vector2i posButtonCapacity{500, 15};
+            gf::Vector2i posButtonCapacity{570, 15};
             m_buttonCapacity.setPosition(posButtonCapacity);
-            gf::Vector2i posButtonPass{535, 15};
+            gf::Vector2i posButtonPass{570, 80};
             m_buttonPass.setPosition(posButtonPass);
             m_uiWidgets.render(m_renderer);
         }

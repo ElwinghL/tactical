@@ -5,6 +5,7 @@
 int main()
 {
     gf::ResourceManager resMgr{};
+    resMgr.addSearchDir("../assets/");
     resMgr.addSearchDir("../assets/fonts");
     resMgr.addSearchDir("../assets/placeholders");
 

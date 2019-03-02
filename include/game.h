@@ -124,7 +124,7 @@ private:
     const gf::Vector2f m_viewSize{100.0f, 100.0f};
     const gf::Vector2f m_viewCenter{0.0f, 0.0f};
 
-    gf::Vector4f m_clearColor{gf::Color::White};
+    gf::Color4f m_clearColor{gf::Color::White};
 
     gf::Vector2f m_mouseCoords{};
 
@@ -138,15 +138,15 @@ private:
     gf::RenderWindow m_renderer{m_window};
 
     gf::ViewContainer m_views{};
-    gf::ExtendView m_mainView{m_viewCenter, m_viewSize};
     gf::ExtendView m_menuView{m_viewCenter, gf::Vector2f{800.0f, 450.0f}};
+    gf::FillView m_backMenuView{m_viewCenter, gf::Vector2f{1920.0f, 1080.0f}};
+    gf::ExtendView m_mainView{m_viewCenter, m_viewSize};
 
     gf::ActionContainer m_actions{};
     gf::Action m_closeWindowAction{"Close window"};
     gf::Action m_fullscreenAction{"Fullscreen"};
     gf::Action m_leftClickAction{"Left click"};
 
-    gf::Text m_title{getName(), m_resMgr->getFont("title.ttf")};
     gf::Text m_winText{"Vous avez invoqué votre divinité !", m_resMgr->getFont("title.ttf")};
     gf::Text m_defeatText{"L'adversaire vous a écrasé avec sa divinité", m_resMgr->getFont("title.ttf")};
 
@@ -172,6 +172,8 @@ private:
     std::set<gf::Vector2i, PositionComp> m_possibleTargets;
     std::set<gf::Vector2i, PositionComp> m_targetsInRange;
 
+    gf::Sprite m_gameBackground{m_resMgr->getTexture("decor/gameBackground.png")};
+
     gf::Sprite m_selectedTile{m_resMgr->getTexture("caseSelected.png")};
     gf::Sprite m_possibleTargetsTile{m_resMgr->getTexture("casePossibleTargets.png")};
     gf::Sprite m_targetsInRangeTile{m_resMgr->getTexture("caseTargetsInRange.png")};
@@ -187,13 +189,18 @@ private:
     gf::Sprite m_infoboxSupportCapacity{m_resMgr->getTexture("infoboxSupportCapacity.png")};
     gf::Sprite m_infoboxPass{m_resMgr->getTexture("infoboxPass.png")};
 
-    gf::SpriteWidget m_buttonAttack{m_resMgr->getTexture("iconAttack.png"), m_resMgr->getTexture("iconAttack.png"),
-                                    m_resMgr->getTexture("iconAttack.png")};
-    gf::SpriteWidget m_buttonCapacity{m_resMgr->getTexture("iconCapacity.png"),
-                                      m_resMgr->getTexture("iconCapacity.png"),
-                                      m_resMgr->getTexture("iconCapacity.png")};
-    gf::SpriteWidget m_buttonPass{m_resMgr->getTexture("iconPass.png"), m_resMgr->getTexture("iconPass.png"),
-                                  m_resMgr->getTexture("iconPass.png")};
+    gf::Sprite m_menuBackground{m_resMgr->getTexture("menu/background.png")};
+    gf::Sprite m_title{m_resMgr->getTexture("menu/titre.png")};
+
+    gf::SpriteWidget m_buttonAttack{m_resMgr->getTexture("UI/buttonAttack3.png"),
+                                    m_resMgr->getTexture("UI/buttonAttack1.png"),
+                                    m_resMgr->getTexture("UI/buttonAttack2.png")};
+    gf::SpriteWidget m_buttonCapacity{m_resMgr->getTexture("UI/buttonCapacity3.png"),
+                                      m_resMgr->getTexture("UI/buttonCapacity1.png"),
+                                      m_resMgr->getTexture("UI/buttonCapacity2.png")};
+    gf::SpriteWidget m_buttonPass{m_resMgr->getTexture("UI/buttonPass3.png"),
+                                  m_resMgr->getTexture("UI/buttonPass1.png"),
+                                  m_resMgr->getTexture("UI/buttonPass2.png")};
 
     gf::WidgetContainer m_uiWidgets{};
 };
