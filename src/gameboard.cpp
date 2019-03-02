@@ -223,14 +223,14 @@ bool Gameboard::useCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest
 
         if (!isTargetReachable(dest, ejectedPos)) {
             m_array(dest)->damage(ejectionDamage);
-            pushLastHPChange(dest, m_array(dest)->getHP());
             ejectedPos = getLastReachablePos(dest, ejectedPos);
+            pushLastMove(dest, ejectedPos);
+            pushLastHPChange(ejectedPos, m_array(dest)->getHP());
+        } else {
+            pushLastMove(dest, ejectedPos);
         }
 
         swapPositions(dest, ejectedPos);
-        if (isOccupied(dest)) {
-            pushLastMove(dest, ejectedPos);
-        }
         removeIfDead(ejectedPos);
     } break;
     }
