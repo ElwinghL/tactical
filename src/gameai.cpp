@@ -1,6 +1,27 @@
 #include "gameai.h"
 
 #include <queue>
+#include <bitset>
+
+//class GameAI::GameboardStateMap {
+//public:
+//    const Action& operator[](const Gameboard& board) const
+//    {
+//
+//    }
+//
+//    bool insert(const Gameboard& board, const Action& action)
+//    {
+//
+//    }
+//
+//    bool contains(const Gameboard& board)
+//    {
+//
+//    }
+//
+//private:
+//};
 
 void GameAI::simulateActions()
 {
@@ -37,7 +58,7 @@ void GameAI::simulateActions()
                     nextActions.pop();
                 } else {
                     nextActions = std::queue<Action>{};
-                    currentBoard = inputBoard;
+                    currentBoard = std::move(inputBoard);
                 }
             }
         }
@@ -45,10 +66,13 @@ void GameAI::simulateActions()
         // 2. Compute action
         // TODO change for saving actions according to a state
         if (nextActions.empty()) {
-            depthActionsExploration actionToDo = bestActionInFuture(currentBoard, 0);
-            nextActions.push(actionToDo.first);
-//            nextActions.push(currentBoard.getPossibleActions()[0]);
+//            depthActionsExploration actionToDo = bestActionInFuture(currentBoard, 0);
+//            nextActions.push(actionToDo.first);
+            nextActions.push(currentBoard.getPossibleActions()[0]);
             currentBoard.display();
+            Gameboard::HashType hash = currentBoard.computeHash();
+            std::cout << "Hash: " << ((std::bitset<128>{hash.first} << 64) | std::bitset<128>{hash.second}).to_string()
+                      << std::endl;
 //            std::cout << "Score = " << actionToDo.second.first << " Best score reached = " << actionToDo.second.second << "\n";
 //            std::cout << "Possible actions : " << allActions.size() << "\n";
         }

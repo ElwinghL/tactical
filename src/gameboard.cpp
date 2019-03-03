@@ -2,6 +2,8 @@
 
 #include "action.h"
 
+#include <bitset>
+
 Gameboard::Gameboard() :
     m_array{getSize(), boost::none},
     m_goals{
@@ -359,4 +361,85 @@ void Gameboard::display() const
     }
 
     std::cout << "Playing: " << ((m_playingTeam == PlayerTeam::Cthulhu) ? "Cthulhu" : "Satan") << std::endl;
+}
+
+Gameboard::HashType Gameboard::computeHash() const
+{
+    constexpr std::size_t xBitCount = 4;
+    constexpr std::size_t yBitCount = 3;
+    constexpr std::size_t hpBitCount = 3;
+
+    constexpr std::size_t characterBitCount = xBitCount + yBitCount + hpBitCount;
+    constexpr std::size_t resultBitCount = (characterBitCount * charactersPerTeam + goalsPerTeam) * 2 + 1;
+
+    std::bitset<resultBitCount> bitResult{};
+
+    std::bitset<charactersPerTeam> occupiedBits{};
+
+    forEach([this, &bitResult, &occupiedBits](auto pos) {
+        if (m_array(pos)) {
+            auto& c = *m_array(pos);
+
+            std::bitset<characterBitCount> characterState{};
+
+            if (c.isDead()) {
+                characterState.set();
+            } else {
+                characterState |= pos.x & ((1U << xBitCount) - 1);
+                characterState |= (pos.y & ((1U << yBitCount) - 1)) << xBitCount;
+                characterState |= ((c.getHP() - 1) & ((1U << hpBitCount) - 1)) << (xBitCount + yBitCount);
+            }
+
+            std::size_t bitPos = 0;
+            switch (c.getType()) {
+            case CharacterType::Tank: {
+                // Nothing, tank at 0
+            }
+                break;
+
+            case CharacterType::Support: {
+                bitPos = 2;
+            }
+                break;
+
+            case CharacterType::Scout: {
+                bitPos = 4;
+            }
+                break;
+            }
+
+            if (c.getTeam() == PlayerTeam::Satan) {
+                bitPos += 1;
+            }
+
+            if (occupiedBits.test(bitPos)) {
+                bitPos += charactersPerTeam;
+            } else {
+                occupiedBits.set(bitPos);
+            }
+
+            bitPos *= characterBitCount;
+
+            bitResult |= std::bitset<resultBitCount>{characterState.to_ullong()} << bitPos;
+        }
+    });
+
+    for (std::size_t i = 0; i < m_goals.size(); ++i) {
+        if (m_goals[i].isActivated()) {
+            bitResult.set(i + characterBitCount * charactersPerTeam * 2);
+        }
+    }
+
+    if (m_playingTeam == PlayerTeam::Satan) {
+        bitResult.set(resultBitCount - 1);
+    }
+
+    HashType result{0, 0};
+    result.second = static_cast<uint64_t>(
+        (bitResult & std::bitset<resultBitCount>{std::numeric_limits<unsigned long long>::max()}).to_ullong() &
+        std::numeric_limits<uint64_t>::max());
+    bitResult >>= 64;
+    result.first = static_cast<uint64_t>(bitResult.to_ullong() & std::numeric_limits<uint64_t>::max());
+
+    return result;
 }
