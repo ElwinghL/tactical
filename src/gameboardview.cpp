@@ -3,8 +3,6 @@
 #include <gf/Easings.h>
 #include <gf/SpriteBatch.h>
 
-#include <gameboardview.h>
-
 static constexpr gf::Vector2f getEasingPos(gf::Easing easing, const gf::Vector2f& origin, const gf::Vector2f& dest,
                                            float timeFrac)
 {
@@ -84,6 +82,7 @@ GameboardView::GameboardView(const Gameboard& board, gf::ResourceManager& resMgr
 void GameboardView::update()
 {
     for (auto& entity : m_entities) {
+        assert(entity.second);
         entity.second->setLocked(m_board->isOccupied(entity.first) && m_board->isLocked(entity.first));
     }
 }
@@ -91,6 +90,7 @@ void GameboardView::update()
 bool GameboardView::animationFinished() const
 {
     return std::all_of(m_entities.begin(), m_entities.end(), [](auto& entity) {
+        assert(entity.second);
         return entity.second->animationFinished();
     });
 }
@@ -99,6 +99,7 @@ void GameboardView::notifyMove(const gf::Vector2i& origin, const gf::Vector2i& d
 {
     assert(m_entities.count(origin) > 0);
     auto entity = std::move(m_entities[origin]);
+    assert(entity);
     m_entities.erase(origin);
     entity->moveTo(dest);
 
@@ -114,6 +115,8 @@ void GameboardView::notifyMove(const gf::Vector2i& origin, const gf::Vector2i& d
 
 void GameboardView::notifyHP(const gf::Vector2i& pos, int hp)
 {
+    assert(m_entities.count(pos) > 0);
+    assert(m_entities[pos]);
     if (hp <= 0) {
         m_entityMgr->removeTypedEntity(m_entities[pos].get());
         m_entities.erase(pos);

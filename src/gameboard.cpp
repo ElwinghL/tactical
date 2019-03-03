@@ -15,6 +15,7 @@ Gameboard::Gameboard() :
         gf::Vector2i pos{column, 0};
 
         auto addCharacterInColumn{[this, &pos, &team](CharacterType type) {
+            assert(m_array.isValid(pos));
             m_array(pos) = Character{team, type};
             ++pos.y;
         }};
@@ -81,6 +82,7 @@ Ability Gameboard::canAttack(const gf::Vector2i& origin, const gf::Vector2i& des
     case CharacterType::Scout: {
         if (gf::manhattanDistance(origin, dest) <= 1) {
             gf::Vector2i direction = gf::sign(relative);
+            assert(m_array.isValid(origin + direction));
             result = (direction == relative || !m_array(origin + direction)) ? Ability::Able :
                      Ability::Unavailable; // Can't attack through another character
         }
@@ -312,4 +314,49 @@ std::set<gf::Vector2i, PositionComp> Gameboard::getAllPossibleActionsOfAType(
         }
     });
     return res;
+}
+
+std::vector<Action> Gameboard::getPossibleActions() const
+{
+    std::vector<Action> results{};
+    forEach([this, &results](auto pos) {
+        if (isOccupied(pos) && getTeamFor(pos) == m_playingTeam) {
+            auto characterActions = getPossibleActions(pos);
+            results.insert(results.end(), characterActions.begin(), characterActions.end());
+        }
+    });
+
+    return results;
+}
+
+void Gameboard::display() const
+{
+    for (gf::Vector2i pos{0, 0}, size = m_array.getSize(); pos.y < size.height; ++pos.y) {
+        for (pos.x = 0; pos.x < size.width; ++pos.x) {
+            if (m_array(pos)) {
+                switch (getTypeFor(pos)) {
+                case CharacterType::Tank:std::cout << ((getTeamFor(pos) == PlayerTeam::Cthulhu) ? "T" : "t");
+                    break;
+
+                case CharacterType::Scout:std::cout << ((getTeamFor(pos) == PlayerTeam::Cthulhu) ? "E" : "e");
+                    break;
+
+                case CharacterType::Support:std::cout << ((getTeamFor(pos) == PlayerTeam::Cthulhu) ? "S" : "s");
+                    break;
+                }
+            } else if (isGoal(pos, PlayerTeam::Cthulhu) || isGoal(pos, PlayerTeam::Satan)) {
+                for (auto& goal : m_goals) {
+                    if (goal.getPosition() == pos) {
+                        std::cout << (goal.isActivated() ? "X" : "O");
+                    }
+                }
+            } else {
+                std::cout << " ";
+            }
+            std::cout << " ";
+        }
+        std::cout << "\n";
+    }
+
+    std::cout << "Playing: " << ((m_playingTeam == PlayerTeam::Cthulhu) ? "Cthulhu" : "Satan") << std::endl;
 }

@@ -82,7 +82,7 @@ public:
      * Execute this action. The character moves then attacks or uses a capacity
      * \param board The board of the game
      */
-    void execute(Gameboard& board);
+    void execute(Gameboard& board) const;
 
     gf::Vector2i getDest() const
     {

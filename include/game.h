@@ -118,7 +118,7 @@ private:
     /**
      * Switch turn
      */
-    void switchTurn();
+    void endPlayerTurn();
 
     const gf::Vector2u m_screenSize{1024, 576};
     const gf::Vector2f m_viewSize{100.0f, 100.0f};

@@ -106,6 +106,11 @@ public:
         return getHPMaxForType(CharacterType::Tank);
     }
 
+    bool operator==(const Character& other) const
+    {
+        return std::tie(m_team, m_type, m_hp) == std::tie(other.m_team, other.m_type, other.m_hp);
+    }
+
 private:
     /**
      * Give the maximum amount of HP according to the type of character

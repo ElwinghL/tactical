@@ -65,6 +65,11 @@ public:
         return m_activated;
     }
 
+    bool operator==(const Goal& other) const
+    {
+        return std::tie(m_team, m_pos, m_activated) == std::tie(other.m_team, other.m_pos, other.m_activated);
+    }
+
 private:
     PlayerTeam m_team; ///< The team aiming to this goal
     gf::Vector2i m_pos; ///< This goal's position

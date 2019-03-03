@@ -1,72 +1,68 @@
 #include "gameai.h"
 
+#include <queue>
+
 void GameAI::simulateActions()
 {
-    Gameboard board{};
-    while (m_threadInput.pop(board)) {
-        std::vector<Action> allActions;
-        board.forEach([&board, &allActions](auto pos) {
-            if (board.isOccupied(pos) && board.getTeamFor(pos) == board.getPlayingTeam()) {
-                std::vector<Action> thisCharacterActions = board.getPossibleActions(pos);
-                for (auto& thisCharacterAction : thisCharacterActions) {
-                    allActions.push_back(thisCharacterAction);
+    Gameboard currentBoard{};
+    std::queue<Action> nextActions{};
+
+    while (m_gameOpen) {
+        // 1. Who is playing?
+        if (currentBoard.getPlayingTeam() == getTeam()) {
+            // 1.a. If an action is computed, send it
+            if (!nextActions.empty()) {
+                auto action = nextActions.front();
+
+                assert(action.isValid(currentBoard));
+                action.execute(currentBoard);
+                currentBoard.switchTurn();
+
+                action.display();
+                m_threadOutput.push(std::move(action));
+                nextActions.pop();
+            }
+        } else if (!m_threadInput.empty()) {
+            // 1.b.1. Do the action
+            auto inputBoard = m_threadInput.poll();
+
+            // 1.b.2. Check the prediction if any
+            if (!nextActions.empty()) {
+                auto action = nextActions.front();
+
+                action.execute(currentBoard);
+                currentBoard.switchTurn();
+
+                if (inputBoard == currentBoard) {
+                    nextActions.pop();
+                } else {
+                    nextActions = std::queue<Action>{};
+                    currentBoard = inputBoard;
                 }
             }
-        });
+        }
 
-        /*size_t randAction = rand() % allActions.size();
-
-        using namespace std::literals;
-        std::this_thread::sleep_for(5s); // TODO Replace this simulation
-
-        m_threadOutput.push(allActions[randAction]);
-        std::cout << "Possible actions : " << allActions.size() << "\n";*/
-
-        /* TODO chnage the int value to get a more powerfull AI
-         * 0 means best immediate action
-         */
-        GameAI::depthActionsExploration actionToDo = bestActionInFuture(board, 0);
-
-        //        if (actionToDo.first.getType() == ActionType::Attack) {
-        //            std::cout << "Attaque\n";
-        //        }
-        //        if (actionToDo.first.getType() == ActionType::Capacity) {
-        //            std::cout << "Capacité\n";
-        //        }
-        //        if (actionToDo.first.getType() == ActionType::None) {
-        //            std::cout << "None\n";
-        //        }
-
-
-        board.display();
-        actionToDo.first.display();
-        m_threadOutput.push(actionToDo.first);
-        std::cout << "Score = " << actionToDo.second.first << " Best score reached = " << actionToDo.second.second << "\n";
-        std::cout << "Possible actions : " << allActions.size() << "\n";
+        // 2. Compute action
+        // TODO change for saving actions according to a state
+        if (nextActions.empty()) {
+            depthActionsExploration actionToDo = bestActionInFuture(currentBoard, 0);
+            nextActions.push(actionToDo.first);
+//            nextActions.push(currentBoard.getPossibleActions()[0]);
+            currentBoard.display();
+//            std::cout << "Score = " << actionToDo.second.first << " Best score reached = " << actionToDo.second.second << "\n";
+//            std::cout << "Possible actions : " << allActions.size() << "\n";
+        }
     }
 }
 
-void GameAI::setInitialGameboard(const Gameboard& board)
+void GameAI::tryToPlay(Gameboard& board)
 {
-    if (!m_initialBoardSet) {
-        //m_threadInput.push(board);
+    if (!m_threadOutput.empty()) {
+        Action action = m_threadOutput.poll();
+        assert(action.isValid(board));
+        action.execute(board);
+        board.switchTurn();
     }
-}
-
-bool GameAI::playTurn(Gameboard& board)
-{
-    if (!m_waitingForThread) {
-        m_threadInput.push(board);
-        m_waitingForThread = true;
-    }
-
-    auto result = m_threadOutput.pop();
-    if (result) {
-        m_waitingForThread = false;
-        result->execute(board);
-    }
-
-    return static_cast<bool>(result);
 }
 
 long GameAI::functionEval(const Gameboard& board)
@@ -133,7 +129,8 @@ long GameAI::functionEval(const Gameboard& board)
     //Get points if you're near a goal
     for (auto myPos : myCharacterPositions) {
         i = 0;
-        for (auto dist : board.getGoalsDistance(myPos)) {
+        auto goalDistances = board.getGoalsDistance(myPos);
+        for (auto dist : goalDistances) {
             max[i] = std::max(max[i], std::abs((125 - dist)));
             ++i;
         }
@@ -144,18 +141,9 @@ long GameAI::functionEval(const Gameboard& board)
     return score;
 }
 
-GameAI::depthActionsExploration GameAI::bestActionInFuture(Gameboard& board, unsigned int depth)
+GameAI::depthActionsExploration GameAI::bestActionInFuture(const Gameboard& board, unsigned int depth)
 {
-    std::vector<Action> allActions;
-    board.forEach([this, &board, &allActions](auto pos) {
-        if (board.isOccupied(pos) && board.getTeamFor(pos) == this->getTeam()) {
-            std::vector<Action> thisCharacterActions = board.getPossibleActions(pos);
-            for (auto& thisCharacterAction : thisCharacterActions) {
-                assert(thisCharacterAction.isValid(board));
-                allActions.push_back(thisCharacterAction);
-            }
-        }
-    });
+    std::vector<Action> allActions = board.getPossibleActions();
     std::vector<Gameboard> boardsToAnalyse;
 
     for (auto actionAvailable : allActions) {
@@ -183,7 +171,7 @@ GameAI::depthActionsExploration GameAI::bestActionInFuture(Gameboard& board, uns
                 }
             }
         }
-        GameAI::depthActionsExploration actionToDo = std::make_pair(bestAction, std::make_pair(bestScore, bestScore));
+        depthActionsExploration actionToDo = std::make_pair(bestAction, std::make_pair(bestScore, bestScore));
         //        if (actionToDo.first.getType() == ActionType::Attack) {
         //            std::cout << "Attaque\n";
         //        }
@@ -198,7 +186,7 @@ GameAI::depthActionsExploration GameAI::bestActionInFuture(Gameboard& board, uns
         assert(actionToDo.first.isValid(board));
         return actionToDo;
     } else {
-        std::vector<GameAI::depthActionsExploration> allPossibilities;
+        std::vector<depthActionsExploration> allPossibilities;
         long score = 0;
         for (auto actionAvailable : allActions) {
             Gameboard anOtherBoard{board};
@@ -216,7 +204,7 @@ GameAI::depthActionsExploration GameAI::bestActionInFuture(Gameboard& board, uns
             return std::make_pair(bestAction, std::make_pair(bestScore, bestScore));
         }
 
-        for (auto currentBoard : boardsToAnalyse) {
+        for (const auto& currentBoard : boardsToAnalyse) {
             allPossibilities.push_back(bestActionInFuture(currentBoard, depth - 1));
         }
         long bestScoreRow = -10000; // So if the "best action" is to lose with a -9999 score it will be possible
@@ -227,7 +215,7 @@ GameAI::depthActionsExploration GameAI::bestActionInFuture(Gameboard& board, uns
                 bestAction = tab.first;
             }
         }
-        GameAI::depthActionsExploration actionToDo = std::make_pair(bestAction, std::make_pair(bestScore, bestScoreRow));
+        depthActionsExploration actionToDo = std::make_pair(bestAction, std::make_pair(bestScore, bestScoreRow));
         std::cout << "Best score  = " << bestScore << " Best Score reached = " << bestScoreRow << "\n";
         //            if (actionToDo.first.getType() == ActionType::Attack) {
         //                std::cout << "Attaque\n";

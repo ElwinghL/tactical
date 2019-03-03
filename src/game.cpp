@@ -19,8 +19,6 @@ Game::Game(gf::ResourceManager& resMgr) :
     initActions();
     initWidgets();
     initSprites();
-
-    m_aiPlayer.setInitialGameboard(m_board);
 }
 
 void Game::processEvents()
@@ -83,7 +81,7 @@ void Game::processEvents()
                     }
 
                     if (m_buttonPass.contains(m_mouseCoords)) {
-                        switchTurn();
+                        endPlayerTurn();
                         break;
                     }
                 }
@@ -124,7 +122,7 @@ void Game::processEvents()
                     assert(m_selectedPos);
                     if (m_board.attack(*m_selectedPos, tile)) {
                         m_selectedPos = tile;
-                        switchTurn();
+                        endPlayerTurn();
                     } else if (!m_humanPlayer.hasMoved()) {
                         m_selectedPos = boost::none;
                         stateSelectionUpdate(PlayerTurnSelection::NoSelection);
@@ -136,7 +134,7 @@ void Game::processEvents()
 
                     if (m_board.useCapacity(*m_selectedPos, tile)) {
                         m_selectedPos = tile;
-                        switchTurn();
+                        endPlayerTurn();
                     } else if (!m_humanPlayer.hasMoved()) {
                         m_selectedPos = boost::none;
                         stateSelectionUpdate(PlayerTurnSelection::NoSelection);
@@ -144,9 +142,10 @@ void Game::processEvents()
                 } break;
                 }
             }
-        } else if (m_aiPlayer.playTurn(m_board)) {
-            switchTurn();
+        } else {
+            m_aiPlayer.tryToPlay(m_board);
         }
+
         if (m_playerTurnSelection == PlayerTurnSelection::CapacitySelection) {
             m_buttonCapacity.setDisabled();
         }
@@ -247,8 +246,8 @@ void Game::render()
 
     case GameState::Playing:
     case GameState::GameEnd: {
-        m_renderer.draw(m_gameBackground);
         m_renderer.setView(m_mainView);
+        m_renderer.draw(m_gameBackground);
         m_gbView->drawGrid(m_renderer);
         bool animationFinished = m_gbView->animationFinished();
         if (animationFinished && m_gameState == GameState::Playing) {
@@ -523,13 +522,15 @@ void Game::drawTargets()
     batch.end();
 }
 
-void Game::switchTurn()
+void Game::endPlayerTurn()
 {
-    if (m_board.getPlayingTeam() == m_humanPlayer.getTeam()) {
-        m_selectedPos = boost::none;
-        stateSelectionUpdate(PlayerTurnSelection::NoSelection);
-        m_humanPlayer.setMoved(false);
-    }
+    assert(m_board.getPlayingTeam() == m_humanPlayer.getTeam());
+
+    m_selectedPos = boost::none;
+    stateSelectionUpdate(PlayerTurnSelection::NoSelection);
+    m_humanPlayer.setMoved(false);
 
     m_board.switchTurn();
+
+    m_aiPlayer.askToPlay(m_board);
 }

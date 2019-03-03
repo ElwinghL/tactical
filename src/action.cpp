@@ -4,8 +4,7 @@
 
 bool Action::isValid(const Gameboard& board) const
 {
-    assert(board.isOccupied(m_origin));
-    if (!board.canMove(m_origin, m_dest)) {
+    if (!board.isOccupied(m_origin) || !board.canMove(m_origin, m_dest)) {
         return false;
     }
 
@@ -23,7 +22,7 @@ bool Action::isValid(const Gameboard& board) const
     return true;
 }
 
-void Action::execute(Gameboard& board)
+void Action::execute(Gameboard& board) const
 {
     board.move(m_origin, m_dest);
 

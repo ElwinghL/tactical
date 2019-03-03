@@ -103,6 +103,8 @@ public:
      */
     std::vector<Action> getPossibleActions(const gf::Vector2i& origin) const;
 
+    std::vector<Action> getPossibleActions() const;
+
     /**
      * Attack another character
      *
@@ -186,6 +188,7 @@ public:
 
     bool capacityWillHurt(const gf::Vector2i& origin, const gf::Vector2i& dest) const
     {
+        assert(m_array.isValid(origin));
         int ejectionDistance = 2;
         return m_array(origin)->getType() == CharacterType::Support && canUseCapacity(origin, dest) &&
                !isTargetReachable(dest, dest + ejectionDistance * gf::sign(dest - origin));
@@ -224,32 +227,7 @@ public:
         return m_array(tile)->getType();
     }
 
-    void display() const
-    {
-        for (gf::Vector2i pos{0, 0}, size = m_array.getSize(); pos.y < size.height; ++pos.y) {
-            for (pos.x = 0; pos.x < size.width; ++pos.x) {
-                if (m_array(pos)) {
-                    switch (getTypeFor(pos)) {
-                    case CharacterType::Tank:
-                        std::cout << ((getTeamFor(pos) == PlayerTeam::Cthulhu) ? "T" : "t");
-                        break;
-
-                    case CharacterType::Scout:
-                        std::cout << ((getTeamFor(pos) == PlayerTeam::Cthulhu) ? "E" : "e");
-                        break;
-
-                    case CharacterType::Support:
-                        std::cout << ((getTeamFor(pos) == PlayerTeam::Cthulhu) ? "S" : "s");
-                        break;
-                    }
-                } else {
-                    std::cout << " ";
-                }
-                std::cout << " ";
-            }
-            std::cout << std::endl;
-        }
-    }
+    void display() const;
 
     PlayerTeam getPlayingTeam() const
     {
@@ -299,6 +277,7 @@ public:
     {
         std::vector<gf::Vector2i> results{};
         forEach([this, &results, &team](auto pos) {
+            assert(m_array.isValid(pos));
             if (m_array(pos) && m_array(pos)->getTeam() == team) {
                 results.push_back(pos);
             }
@@ -346,16 +325,20 @@ public:
         m_lastActions.pop();
     }
 
-    std::vector<int> getGoalsDistance(const gf::Vector2i pos) const
+    std::array<int, 2 * goalsPerTeam> getGoalsDistance(const gf::Vector2i pos) const
     {
-        std::vector<int> ret;
-        for (auto goal : m_goals) {
-            auto gPos = goal.getPosition();
-            if (!goal.isActivated()) {
-                ret.push_back((gPos.x - pos.x) * (gPos.x - pos.x) + (gPos.y - pos.y) * (gPos.y - pos.y));
+        std::array<int, 2 * goalsPerTeam> ret{};
+        for (std::size_t i = 0; i < ret.size(); ++i) {
+            if (!m_goals[i].isActivated()) {
+                ret[i] = gf::manhattanDistance(pos, m_goals[i].getPosition());
             }
         }
         return ret;
+    }
+
+    bool operator==(const Gameboard& other) const
+    {
+        return std::tie(m_array, m_goals, m_playingTeam) == std::tie(other.m_array, other.m_goals, other.m_playingTeam);
     }
 
 private:

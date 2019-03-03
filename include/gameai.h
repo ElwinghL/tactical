@@ -8,13 +8,13 @@
 #include "action.h"
 #include "gameboard.h"
 #include "player.h"
-#include "queues.h"
+#include "pollingqueue.h"
 #include "utility.h"
 
+#include <atomic>
 #include <chrono>
 #include <iostream>
 #include <thread>
-#include <utility.h>
 
 /**
  * The artificial intelligence class
@@ -23,7 +23,6 @@
  */
 class GameAI : public Player {
 public:
-    using depthActionsExploration = std::pair<Action, std::pair<long, long>>; // FIXME Maybe tuple or struct?
     /**
      * Constructor
      * \param team The team the AI controls
@@ -36,13 +35,19 @@ public:
 
     virtual ~GameAI() noexcept
     {
-        m_threadInput.fail();
+        m_gameOpen = false;
         m_computingThread.join();
     }
 
-    void setInitialGameboard(const Gameboard& board);
+    void askToPlay(const Gameboard& board)
+    {
+        m_threadInput.push(board);
+    }
 
-    bool playTurn(Gameboard& board);
+    void tryToPlay(Gameboard& board);
+
+private:
+    using depthActionsExploration = std::pair<Action, std::pair<long, long>>; // FIXME Maybe tuple or struct?
 
     /**
      * Give a score to a state (9999 means win and -9999 means defeat
@@ -60,19 +65,17 @@ public:
      * @param depth
      * @return
      */
-    depthActionsExploration bestActionInFuture(Gameboard& board, unsigned int depth);
+    depthActionsExploration bestActionInFuture(const Gameboard& board, unsigned int depth);
 
-private:
     /**
      * Simulate the actions
      */
     void simulateActions();
 
-    bool m_waitingForThread{false};
-    bool m_initialBoardSet{false};
+    std::atomic_bool m_gameOpen{true};
 
     std::thread m_computingThread{&GameAI::simulateActions, this};
-    BlockingQueue<Gameboard> m_threadInput{};
+    PollingQueue<Gameboard> m_threadInput{};
     PollingQueue<Action> m_threadOutput{};
 };
 
