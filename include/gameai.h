@@ -47,7 +47,7 @@ public:
     void tryToPlay(Gameboard& board);
 
 private:
-//    class GameboardStateMap;
+    class GameboardStateMap;
     using depthActionsExploration = std::pair<Action, std::pair<long, long>>; // FIXME Maybe tuple or struct?
 
     /**

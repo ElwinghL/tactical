@@ -58,7 +58,7 @@ private:
 
 class Gameboard {
 public:
-    using HashType = std::pair<std::uint64_t, std::uint64_t>;
+    using BitsType = std::pair<std::uint64_t, std::uint64_t>;
 
     constexpr static int goalsPerTeam = 2;
     constexpr static int charactersPerTeam = 6;
@@ -343,7 +343,7 @@ public:
         return std::tie(m_array, m_goals, m_playingTeam) == std::tie(other.m_array, other.m_goals, other.m_playingTeam);
     }
 
-    HashType computeHash() const;
+    BitsType computeBitRepresentation() const;
 
 private:
     void tryGoalActivation(PlayerTeam team, const gf::Vector2i& position)

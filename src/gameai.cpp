@@ -1,32 +1,121 @@
 #include "gameai.h"
 
-#include <queue>
+#include <algorithm>
+#include <array>
+#include <forward_list>
 #include <bitset>
+#include <queue>
 
-//class GameAI::GameboardStateMap {
-//public:
-//    const Action& operator[](const Gameboard& board) const
-//    {
-//
-//    }
-//
-//    bool insert(const Gameboard& board, const Action& action)
-//    {
-//
-//    }
-//
-//    bool contains(const Gameboard& board)
-//    {
-//
-//    }
-//
-//private:
-//};
+#include <cstdint>
+
+namespace {
+std::uint64_t fnv1aHash(const Gameboard::BitsType& data)
+{
+    std::uint64_t hash = 14695981039346656037UL;
+
+    auto halfHash = [&hash](const std::uint64_t& halfData) {
+        for (std::size_t i = 0; i < 8; ++i) {
+            hash ^= (halfData & (0xFFUL << (i * 8UL))) >> (i * 8UL);
+            hash *= 1099511628211UL;
+        }
+    };
+
+    halfHash(data.first);
+    halfHash(data.second);
+
+    return hash;
+}
+} // namespace
+
+class GameAI::GameboardStateMap {
+public:
+    const Action& operator[](const Gameboard& board) const
+    {
+        Gameboard::BitsType bitRepresentation = board.computeBitRepresentation();
+        auto& bucket = getBucket(bitRepresentation);
+
+        auto it = std::find_if(bucket.begin(), bucket.end(), [&bitRepresentation](auto& entry) {
+            return entry.board == bitRepresentation;
+        });
+        assert(it != bucket.end());
+
+        return it->action;
+    }
+
+    bool insert(const Gameboard& board, const Action& action, int turn)
+    {
+        Gameboard::BitsType bitRepresentation = board.computeBitRepresentation();
+
+        if (contains(bitRepresentation)) {
+            return false;
+        }
+
+        getBucket(bitRepresentation).push_front(EntryType{action, bitRepresentation, turn});
+        ++m_count;
+
+        if (10000 * m_count / size >= 5000) {
+            removeOldEntries(turn);
+        }
+
+        return true;
+    }
+
+    bool contains(const Gameboard& board) const
+    {
+        return contains(board.computeBitRepresentation());
+    }
+
+private:
+    struct EntryType {
+        Action action;
+        Gameboard::BitsType board;
+        int turn{0};
+    };
+
+    bool contains(const Gameboard::BitsType& board) const
+    {
+        auto& bucket = getBucket(board);
+
+        return std::any_of(bucket.begin(), bucket.end(), [&board](auto& entry) {
+            return entry.board == board;
+        });
+    }
+
+    std::forward_list<EntryType>& getBucket(const Gameboard::BitsType& board)
+    {
+        std::uint64_t hash = fnv1aHash(board);
+        return m_table[static_cast<std::size_t>(hash % size)];
+    }
+
+    const std::forward_list<EntryType>& getBucket(const Gameboard::BitsType& board) const
+    {
+        std::uint64_t hash = fnv1aHash(board);
+        return m_table[static_cast<std::size_t>(hash % size)];
+    }
+
+    void removeOldEntries(int turn)
+    {
+        std::cout << "Cleaning hash map..." << std::endl;
+        for (auto& bucket : m_table) {
+            bucket.remove_if([&turn](auto& entry) {
+                return turn - entry.turn >= 5;
+            });
+        }
+    }
+
+    static constexpr std::size_t size = 256;
+
+    std::size_t m_count{0};
+    std::array<std::forward_list<EntryType>, size> m_table{}; // TODO open addressing?
+};
 
 void GameAI::simulateActions()
 {
     Gameboard currentBoard{};
     std::queue<Action> nextActions{};
+
+    int currentTurn = 0;
+    GameboardStateMap actionMap{};
 
     while (m_gameOpen) {
         // 1. Who is playing?
@@ -42,6 +131,8 @@ void GameAI::simulateActions()
                 action.display();
                 m_threadOutput.push(std::move(action));
                 nextActions.pop();
+
+                ++currentTurn;
             }
         } else if (!m_threadInput.empty()) {
             // 1.b.1. Do the action
@@ -64,17 +155,28 @@ void GameAI::simulateActions()
         }
 
         // 2. Compute action
-        // TODO change for saving actions according to a state
         if (nextActions.empty()) {
-//            depthActionsExploration actionToDo = bestActionInFuture(currentBoard, 0);
-//            nextActions.push(actionToDo.first);
-            nextActions.push(currentBoard.getPossibleActions()[0]);
+            Action action = [this, &actionMap, &currentBoard, &currentTurn] {
+                if (actionMap.contains(currentBoard)) {
+                    return actionMap[currentBoard];
+                }
+
+                depthActionsExploration actionToDo = bestActionInFuture(currentBoard,
+                                                                        0); // TODO in depths, save states in map
+                actionMap.insert(currentBoard, actionToDo.first, currentTurn);
+                return actionToDo.first;
+            }();
+
+//            nextActions.push(currentBoard.getPossibleActions()[0]);
+            nextActions.push(action);
+
             currentBoard.display();
-            Gameboard::HashType hash = currentBoard.computeHash();
-            std::cout << "Hash: " << ((std::bitset<128>{hash.first} << 64) | std::bitset<128>{hash.second}).to_string()
-                      << std::endl;
-//            std::cout << "Score = " << actionToDo.second.first << " Best score reached = " << actionToDo.second.second << "\n";
-//            std::cout << "Possible actions : " << allActions.size() << "\n";
+            Gameboard::BitsType bitRepresentation = currentBoard.computeBitRepresentation();
+            std::cout << "Bits: " << ((std::bitset<128>{bitRepresentation.first} << 64) |
+                                      std::bitset<128>{bitRepresentation.second}).to_string()
+                      << "\n";
+            auto hash = fnv1aHash(bitRepresentation);
+            std::cout << "Hash: " << hash << " (" << (hash & 0xFFUL) << ")" << std::endl;
         }
     }
 }

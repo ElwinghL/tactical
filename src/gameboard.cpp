@@ -363,7 +363,7 @@ void Gameboard::display() const
     std::cout << "Playing: " << ((m_playingTeam == PlayerTeam::Cthulhu) ? "Cthulhu" : "Satan") << std::endl;
 }
 
-Gameboard::HashType Gameboard::computeHash() const
+Gameboard::BitsType Gameboard::computeBitRepresentation() const
 {
     constexpr std::size_t xBitCount = 4;
     constexpr std::size_t yBitCount = 3;
@@ -434,7 +434,7 @@ Gameboard::HashType Gameboard::computeHash() const
         bitResult.set(resultBitCount - 1);
     }
 
-    HashType result{0, 0};
+    BitsType result{0, 0};
     result.second = static_cast<uint64_t>(
         (bitResult & std::bitset<resultBitCount>{std::numeric_limits<unsigned long long>::max()}).to_ullong() &
         std::numeric_limits<uint64_t>::max());
