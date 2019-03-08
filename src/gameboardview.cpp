@@ -14,49 +14,53 @@ GameboardView::GameboardView(const Gameboard& board, gf::ResourceManager& resMgr
     m_resMgr{&resMgr},
     m_entityMgr{&entityMgr}
 {
-    auto initSprite = [this](CharacterType type, PlayerTeam team) {
-        std::string path{};
-        switch (type) {
-        case CharacterType::Tank: {
-            path = "tank.png";
+    auto initSprite = [this](CharacterType type, PlayerTeam team, gf::Animation *animPtr) {
+        initAnimations();
+        switch(type){
+            case CharacterType::Tank:{
+                if(team == PlayerTeam::Cthulhu){
+                    animPtr = &m_animCthulhuTank;
+                }else{
+                    animPtr = &m_animSatanTank;
+                }
+                break;
+            }
+            case CharacterType::Support:{
+                if(team == PlayerTeam::Cthulhu){
+                    animPtr = &m_animCthulhuSupport;
+                }else{
+                    animPtr = &m_animSatanSupport;
+                }
+                break;
+            }
+            case CharacterType::Scout:{
+                if(team == PlayerTeam::Cthulhu){
+                    animPtr = &m_animCthulhuScout;
+                }else{
+                    animPtr = &m_animSatanScout;
+                }
+                break;
+            }
         }
-            break;
-
-        case CharacterType::Support: {
-            path = "support.png";
-        }
-            break;
-
-        case CharacterType::Scout: {
-            path = "scout.png";
-        }
-            break;
-        }
-
-        gf::Sprite spr{m_resMgr->getTexture(path)};
+        gf::AnimatedSprite spr{};
         spr.setAnchor(gf::Anchor::BottomCenter);
         spr.setOrigin(spr.getOrigin() - gf::Vector2f{0.f, 20.f});
-
-        if (team == PlayerTeam::Cthulhu) {
-            spr.setScale({-1.0f, 1.0f});
-        } else {
-            spr.setColor(gf::Color::Red);
-        }
-
+        spr.setScale(1.0f);
         return spr;
     };
 
     board.forEach([this, &board, &initSprite](auto pos) {
         if (board.isOccupied(pos)) {
             Character c = board.getCharacter(pos);
-            auto putEntity = [this, &pos, &c](gf::Sprite&& spr) {
+            auto putEntity = [this, &pos, &c](gf::AnimatedSprite&& spr, gf::Animation *animPtr) {
                 spr.setPosition(gameToScreenPos(pos));
                 auto createdEntity = std::make_unique<EntityCharacter>(*this, spr, c.getHP(), pos);
+                createdEntity->setCurrentAnimation(animPtr);
                 m_entityMgr->addEntity(*createdEntity);
                 m_entities.emplace(pos, std::move(createdEntity));
             };
-
-            putEntity(initSprite(c.getType(), c.getTeam()));
+            gf::Animation *animPtr = nullptr;
+            putEntity(initSprite(c.getType(), c.getTeam(), animPtr),animPtr);
         }
     });
 
@@ -162,7 +166,10 @@ void GameboardView::EntityCharacter::update(gf::Time time)
 {
     m_timeFrac += time.asSeconds() / 0.8f;
     m_timeFrac = gf::clamp(m_timeFrac, 0.0f, 1.0f);
-
+    if(m_currentAnimation){
+        m_sprite.setAnimation(*m_currentAnimation);
+        m_sprite.update(time);
+    }
     auto pos = getEasingPos(gf::Ease::smooth, m_origin, m_dest, m_timeFrac);
     setPriority(getPriorityFromPos(pos));
     m_sprite.setPosition(gameToScreenPos(pos));
