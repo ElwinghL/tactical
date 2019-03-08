@@ -274,6 +274,17 @@ public:
 
         return result;
     }
+    
+    template<typename UnaryPositionFunc>
+    constexpr void forEach(UnaryPositionFunc f) const
+    {
+        gf::Vector2i size = getSize();
+        for (int y = 0; y < size.height; ++y) {
+            for (int x = size.width - 1; x >= 0; --x) {
+                f(gf::Vector2i{x, y});
+            }
+        }
+    }
 
     std::vector<gf::Vector2i> getTeamPositions(PlayerTeam team) const
     {
@@ -286,17 +297,6 @@ public:
         });
 
         return results;
-    }
-
-    template<typename UnaryPositionFunc>
-    constexpr void forEach(UnaryPositionFunc f) const
-    {
-        gf::Vector2i size = getSize();
-        for (int y = 0; y < size.height; ++y) {
-            for (int x = size.width - 1; x >= 0; --x) {
-                f(gf::Vector2i{x, y});
-            }
-        }
     }
 
     bool hasWon(PlayerTeam team) const
