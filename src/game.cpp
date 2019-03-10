@@ -401,11 +401,11 @@ void Game::drawUI()
 {
     if (m_gameState == GameState::Playing) {
         if (m_selectedPos) {
-            gf::Vector2i posButtonAttack{500, 15};
+            gf::Vector2i posButtonAttack{480, 15};
             m_buttonAttack.setPosition(posButtonAttack);
-            gf::Vector2i posButtonCapacity{570, 15};
+            gf::Vector2i posButtonCapacity{550, 15};
             m_buttonCapacity.setPosition(posButtonCapacity);
-            gf::Vector2i posButtonPass{570, 80};
+            gf::Vector2i posButtonPass{550, 80};
             m_buttonPass.setPosition(posButtonPass);
             m_uiWidgets.render(m_renderer);
         }

@@ -17,8 +17,6 @@
 #include <gf/EntityContainer.h>
 #include <gf/ResourceManager.h>
 #include <gf/Sprite.h>
-#include <gf/AnimatedSprite.h>
-#include <gf/Animation.h>
 
 #include <gf/Time.h>
 #include <array>
@@ -58,7 +56,7 @@ public:
 private:
     class EntityCharacter : public gf::Entity {
     public:
-        explicit EntityCharacter(GameboardView& gbView, gf::AnimatedSprite sprite, int hp, const gf::Vector2i& pos) :
+        explicit EntityCharacter(GameboardView& gbView, gf::Sprite sprite, int hp, const gf::Vector2i& pos) :
             Entity{getPriorityFromPos(pos)},
             m_gbView{&gbView},
             m_sprite{std::move(sprite)},
@@ -67,7 +65,7 @@ private:
             m_timeFrac{1.0f},
             m_currentHPSprite{checkHP(hp)}
         {
-            m_currentAnimation = nullptr;
+            // Nothing
         }
 
         void update(gf::Time time) override;
@@ -90,11 +88,6 @@ private:
         {
             return gf::almostEquals(m_timeFrac, 1.0f);
         }
-        
-        void setCurrentAnimation(gf::Animation *animPtr)
-        {
-            m_currentAnimation = animPtr;
-        }
 
     private:
         std::size_t checkHP(int hp)
@@ -106,7 +99,7 @@ private:
         void drawLife(gf::RenderTarget& target, const gf::RenderStates& states);
 
         GameboardView* m_gbView;
-        gf::AnimatedSprite m_sprite;
+        gf::Sprite m_sprite;
 
         gf::Vector2f m_origin;
         gf::Vector2f m_dest;
@@ -116,53 +109,11 @@ private:
         std::size_t m_currentHPSprite;
 
         bool m_locked{false};
-        
-        gf::Animation *m_currentAnimation;
     };
 
     std::size_t getActivationIndex(bool activated) const
     {
         return activated ? 1 : 0;
-    }
-    
-    void initAnimations()
-    {
-        std::string path = "characters/cthulhu_tank_back.png";
-        m_animCthulhuTank = gf::Animation{};
-        for(std::size_t i = 0; i < 6; ++i){
-            gf::RectF bounds{i * 256.0f,0.0f,256.0f,256.0f};
-            m_animCthulhuTank.addFrame(m_resMgr->getTexture(path), bounds, gf::milliseconds(200));
-        }
-        path = "characters/satan_tank.png";
-        m_animSatanTank = gf::Animation{};
-        for(std::size_t i = 0; i < 6; ++i){
-            gf::RectF bounds{i * 256.0f,0.0f,256.0f,256.0f};
-            m_animSatanTank.addFrame(m_resMgr->getTexture(path), bounds, gf::milliseconds(200));
-        }
-        path = "characters/cthulhu_support_back.png";
-        m_animCthulhuSupport = gf::Animation{};
-        for(std::size_t i = 0; i < 6; ++i){
-            gf::RectF bounds{i * 256.0f,0.0f,256.0f,256.0f};
-            m_animCthulhuSupport.addFrame(m_resMgr->getTexture(path), bounds, gf::milliseconds(200));
-        }
-        path = "characters/satan_support.png";
-        m_animSatanSupport = gf::Animation{};
-        for(std::size_t i = 0; i < 6; ++i){
-            gf::RectF bounds{i * 256.0f,0.0f,256.0f,256.0f};
-            m_animSatanSupport.addFrame(m_resMgr->getTexture(path), bounds, gf::milliseconds(200));
-        }
-        path = "characters/cthulhu_scout_back.png";
-        m_animCthulhuScout = gf::Animation{};
-        for(std::size_t i = 0; i < 5; ++i){
-            gf::RectF bounds{i * 256.0f,0.0f,256.0f,256.0f};
-            m_animCthulhuScout.addFrame(m_resMgr->getTexture(path), bounds, gf::milliseconds(200));
-        }
-        path = "characters/satan_scout.png";
-        m_animSatanScout = gf::Animation{};
-        for(std::size_t i = 0; i < 6; ++i){
-            gf::RectF bounds{i * 256.0f,0.0f,256.0f,256.0f};
-            m_animSatanScout.addFrame(m_resMgr->getTexture(path), bounds, gf::milliseconds(200));
-        }
     }
 
     const Gameboard* m_board;
@@ -172,12 +123,6 @@ private:
 
     gf::Sprite m_darkTile{m_resMgr->getTexture("case.png")};
     gf::Sprite m_brightTile{m_resMgr->getTexture("case2.png")};
-    gf::Animation m_animCthulhuTank;
-    gf::Animation m_animSatanTank;
-    gf::Animation m_animCthulhuSupport;
-    gf::Animation m_animSatanSupport;
-    gf::Animation m_animCthulhuScout;
-    gf::Animation m_animSatanScout;
 
     std::array<gf::Sprite, 2> m_goalCthulhu{
         m_resMgr->getTexture("caseGoalCthulhu.png"),

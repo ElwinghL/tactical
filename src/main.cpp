@@ -8,6 +8,7 @@ int main()
     resMgr.addSearchDir("../assets/");
     resMgr.addSearchDir("../assets/fonts");
     resMgr.addSearchDir("../assets/placeholders");
+    resMgr.addSearchDir("../assets/characters");
 
     Game game{resMgr};
 

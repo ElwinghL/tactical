@@ -21,7 +21,6 @@
 #include <gf/RenderWindow.h>
 #include <gf/ResourceManager.h>
 #include <gf/Sprite.h>
-#include <gf/AnimatedSprite.h>
 #include <gf/Text.h>
 #include <gf/Vector.h>
 #include <gf/ViewContainer.h>
