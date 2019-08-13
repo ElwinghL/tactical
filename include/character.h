@@ -12,8 +12,8 @@
 #include <gf/Vector.h>
 #include <gf/VectorOps.h>
 
-#include <boost/optional.hpp>
 #include <iostream>
+#include <optional>
 #include <set>
 #include <vector>
 

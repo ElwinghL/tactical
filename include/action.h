@@ -11,7 +11,7 @@
 #include <gf/Array2D.h>
 #include <gf/Vector.h>
 
-#include <boost/optional.hpp>
+#include <optional>
 
 class Gameboard;
 

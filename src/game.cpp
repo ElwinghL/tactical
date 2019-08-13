@@ -92,7 +92,7 @@ void Game::processEvents()
                         m_selectedPos = tile;
                         stateSelectionUpdate(PlayerTurnSelection::MoveSelection);
                     } else {
-                        m_selectedPos = boost::none;
+                        m_selectedPos = std::nullopt;
                         stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                     }
                 } break;
@@ -109,11 +109,11 @@ void Game::processEvents()
                             m_selectedPos = tile;
                             stateSelectionUpdate(PlayerTurnSelection::AttackSelection);
                         } else {
-                            m_selectedPos = boost::none;
+                            m_selectedPos = std::nullopt;
                             stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                         }
                     } else {
-                        m_selectedPos = boost::none;
+                        m_selectedPos = std::nullopt;
                         stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                     }
                 } break;
@@ -124,7 +124,7 @@ void Game::processEvents()
                         m_selectedPos = tile;
                         endPlayerTurn();
                     } else if (!m_humanPlayer.hasMoved()) {
-                        m_selectedPos = boost::none;
+                        m_selectedPos = std::nullopt;
                         stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                     }
                 } break;
@@ -136,7 +136,7 @@ void Game::processEvents()
                         m_selectedPos = tile;
                         endPlayerTurn();
                     } else if (!m_humanPlayer.hasMoved()) {
-                        m_selectedPos = boost::none;
+                        m_selectedPos = std::nullopt;
                         stateSelectionUpdate(PlayerTurnSelection::NoSelection);
                     }
                 } break;
@@ -498,20 +498,20 @@ void Game::drawTargets()
         bool showPossibleTargets = m_selectedPos && m_possibleTargets.count(pos) > 0;
         bool showTargetsInRange = m_selectedPos && m_targetsInRange.count(pos) > 0;
 
-        auto overTileSpr = [this, &tileSelected, &showPossibleTargets, &showTargetsInRange] {
+        auto overTileSpr = [this, &tileSelected, &showPossibleTargets, &showTargetsInRange]() -> gf::Sprite* {
             if (tileSelected) {
-                return boost::optional<gf::Sprite&>{m_selectedTile};
+                return &m_selectedTile;
             }
 
             if (showPossibleTargets) {
-                return boost::optional<gf::Sprite&>{m_possibleTargetsTile};
+                return &m_possibleTargetsTile;
             }
 
             if (showTargetsInRange) {
-                return boost::optional<gf::Sprite&>{m_targetsInRangeTile};
+                return &m_targetsInRangeTile;
             }
 
-            return boost::optional<gf::Sprite&>{};
+            return nullptr;
         }();
 
         if (overTileSpr) {
@@ -526,7 +526,7 @@ void Game::endPlayerTurn()
 {
     assert(m_board.getPlayingTeam() == m_humanPlayer.getTeam());
 
-    m_selectedPos = boost::none;
+    m_selectedPos = std::nullopt;
     stateSelectionUpdate(PlayerTurnSelection::NoSelection);
     m_humanPlayer.setMoved(false);
 

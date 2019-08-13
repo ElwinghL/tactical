@@ -5,7 +5,7 @@
 #include <bitset>
 
 Gameboard::Gameboard() :
-    m_array{getSize(), boost::none},
+    m_array{getSize(), std::nullopt},
     m_goals{
             Goal{PlayerTeam::Cthulhu, {10, 1}},
             Goal{PlayerTeam::Cthulhu, {10, 4}},

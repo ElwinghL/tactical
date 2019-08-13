@@ -11,7 +11,7 @@
 #include <gf/VectorOps.h>
 #include <gf/View.h>
 
-#include <boost/optional.hpp>
+#include <optional>
 #include <tuple>
 
 /**

@@ -36,7 +36,9 @@ add_executable(game
     src/humanplayer.cpp
     src/utility.cpp
     src/gameboard.cpp
-    src/gameboardview.cpp include/gameboardview.h)
+    src/gameboardview.cpp)
+
+target_compile_features(game PRIVATE cxx_std_17)
 
 target_include_directories(game PRIVATE
 	${Boost_INCLUDE_DIRS}

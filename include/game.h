@@ -29,7 +29,7 @@
 #include <gf/Widgets.h>
 #include <gf/Window.h>
 
-#include <boost/optional.hpp>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -164,7 +164,7 @@ private:
     HumanPlayer m_humanPlayer{PlayerTeam::Cthulhu};
     GameAI m_aiPlayer{PlayerTeam::Satan};
 
-    boost::optional<gf::Vector2i> m_selectedPos;
+    std::optional<gf::Vector2i> m_selectedPos;
 
     std::unique_ptr<GameboardView> m_gbView{nullptr}; // Deleted after gameboard because of callbacks
     Gameboard m_board{};

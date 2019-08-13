@@ -12,8 +12,8 @@
 
 #include <gf/Array2D.h>
 
-#include <boost/optional.hpp>
 #include <functional>
+#include <optional>
 #include <queue>
 #include <set>
 #include <vector>
@@ -198,12 +198,12 @@ public:
 
     bool isEmpty(const gf::Vector2i& tile) const
     {
-        return m_array.isValid(tile) && m_array(tile) == boost::none;
+        return m_array.isValid(tile) && m_array(tile) == std::nullopt;
     }
 
     bool isOccupied(const gf::Vector2i& tile) const
     {
-        return m_array.isValid(tile) && m_array(tile) != boost::none;
+        return m_array.isValid(tile) && m_array(tile) != std::nullopt;
     }
 
     Character getCharacter(const gf::Vector2i& tile) const
@@ -360,7 +360,7 @@ private:
         assert(isOccupied(origin));
         assert(origin == dest || isEmpty(dest));
 
-        boost::swap(m_array(origin), m_array(dest));
+        std::swap(m_array(origin), m_array(dest));
         tryGoalActivation(m_array(dest)->getTeam(), dest);
     }
 
@@ -369,7 +369,7 @@ private:
         assert(isOccupied(origin));
         assert(isOccupied(dest));
 
-        boost::swap(m_array(origin), m_array(dest));
+        std::swap(m_array(origin), m_array(dest));
         tryGoalActivation(m_array(dest)->getTeam(), dest);
     }
 
@@ -411,7 +411,7 @@ private:
     void removeIfDead(const gf::Vector2i& target)
     {
         if (isOccupied(target) && m_array(target)->isDead()) {
-            m_array(target) = boost::none;
+            m_array(target) = std::nullopt;
         }
     }
 
@@ -427,7 +427,7 @@ private:
         m_lastActions.emplace(std::bind(m_hpChangeCallback, pos, hp));
     }
 
-    gf::Array2D<boost::optional<Character>> m_array;
+    gf::Array2D<std::optional<Character>> m_array;
     std::array<Goal, 2 * goalsPerTeam> m_goals;
     PlayerTeam m_playingTeam{PlayerTeam::Cthulhu};
 
