@@ -12,8 +12,6 @@
 #include "utility.h"
 
 #include <atomic>
-#include <chrono>
-#include <iostream>
 #include <thread>
 
 /**
@@ -27,27 +25,14 @@ public:
      * Constructor
      * \param team The team the AI controls
      */
-    explicit GameAI(PlayerTeam team) :
-        Player{team}
-    {
-        // Nothing
-    }
+    explicit inline GameAI(PlayerTeam team);
+    virtual inline ~GameAI() noexcept;
 
-    virtual ~GameAI() noexcept
-    {
-        m_gameOpen = false;
-        m_computingThread.join();
-    }
-
-    void askToPlay(const Gameboard& board)
-    {
-        m_threadInput.push(board);
-    }
+    inline void askToPlay(const Gameboard& board);
 
     void tryToPlay(Gameboard& board);
 
 private:
-    class GameboardStateMap;
     using depthActionsExploration = std::pair<Action, std::pair<long, long>>; // FIXME Maybe tuple or struct?
 
     /**
@@ -79,5 +64,7 @@ private:
     PollingQueue<Gameboard> m_threadInput{};
     PollingQueue<Action> m_threadOutput{};
 };
+
+#include "impl/gameai.h"
 
 #endif // GAMEAI_H

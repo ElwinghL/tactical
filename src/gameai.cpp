@@ -2,14 +2,15 @@
 
 #include <algorithm>
 #include <array>
-#include <forward_list>
 #include <bitset>
+#include <forward_list>
+#include <iostream>
 #include <queue>
 
 #include <cstdint>
 
 namespace {
-std::uint64_t fnv1aHash(const Gameboard::BitsType& data)
+[[nodiscard]] std::uint64_t fnv1aHash(const Gameboard::BitsType& data)
 {
     std::uint64_t hash = 14695981039346656037UL;
 
@@ -25,89 +26,104 @@ std::uint64_t fnv1aHash(const Gameboard::BitsType& data)
 
     return hash;
 }
-} // namespace
 
-class GameAI::GameboardStateMap {
+class GameboardStateMap {
 public:
-    const Action& operator[](const Gameboard& board) const
-    {
-        Gameboard::BitsType bitRepresentation = board.computeBitRepresentation();
-        auto& bucket = getBucket(bitRepresentation);
+    [[nodiscard]] const Action& operator[](const Gameboard& board) const;
 
-        auto it = std::find_if(bucket.begin(), bucket.end(), [&bitRepresentation](auto& entry) {
-            return entry.board == bitRepresentation;
-        });
-        assert(it != bucket.end());
+    bool insert(const Gameboard& board, const Action& action, int turn);
 
-        return it->action;
-    }
-
-    bool insert(const Gameboard& board, const Action& action, int turn)
-    {
-        Gameboard::BitsType bitRepresentation = board.computeBitRepresentation();
-
-        if (contains(bitRepresentation)) {
-            return false;
-        }
-
-        getBucket(bitRepresentation).push_front(EntryType{action, bitRepresentation, turn});
-        ++m_count;
-
-        if (10000 * m_count / size >= 5000) {
-            removeOldEntries(turn);
-        }
-
-        return true;
-    }
-
-    bool contains(const Gameboard& board) const
-    {
-        return contains(board.computeBitRepresentation());
-    }
+    [[nodiscard]] inline bool contains(const Gameboard& board) const;
 
 private:
-    struct EntryType {
-        Action action;
-        Gameboard::BitsType board;
-        int turn{0};
-    };
+    struct EntryType;
 
-    bool contains(const Gameboard::BitsType& board) const
-    {
-        auto& bucket = getBucket(board);
+    [[nodiscard]] inline bool contains(const Gameboard::BitsType& board) const;
 
-        return std::any_of(bucket.begin(), bucket.end(), [&board](auto& entry) {
-            return entry.board == board;
-        });
-    }
+    [[nodiscard]] inline std::forward_list<EntryType>& getBucket(const Gameboard::BitsType& board);
+    [[nodiscard]] inline const std::forward_list<EntryType>& getBucket(const Gameboard::BitsType& board) const;
 
-    std::forward_list<EntryType>& getBucket(const Gameboard::BitsType& board)
-    {
-        std::uint64_t hash = fnv1aHash(board);
-        return m_table[static_cast<std::size_t>(hash % size)];
-    }
-
-    const std::forward_list<EntryType>& getBucket(const Gameboard::BitsType& board) const
-    {
-        std::uint64_t hash = fnv1aHash(board);
-        return m_table[static_cast<std::size_t>(hash % size)];
-    }
-
-    void removeOldEntries(int turn)
-    {
-        std::cout << "Cleaning hash map..." << std::endl;
-        for (auto& bucket : m_table) {
-            bucket.remove_if([&turn](auto& entry) {
-                return turn - entry.turn >= 5;
-            });
-        }
-    }
+    void removeOldEntries(int turn);
 
     static constexpr std::size_t size = 256;
 
     std::size_t m_count{0};
     std::array<std::forward_list<EntryType>, size> m_table{}; // TODO open addressing?
 };
+
+struct GameboardStateMap::EntryType {
+    Action action;
+    Gameboard::BitsType board;
+    int turn{0};
+};
+
+[[nodiscard]] const Action& GameboardStateMap::operator[](const Gameboard& board) const
+{
+    Gameboard::BitsType bitRepresentation = board.computeBitRepresentation();
+    auto& bucket = getBucket(bitRepresentation);
+
+    auto it = std::find_if(bucket.begin(), bucket.end(), [&bitRepresentation](auto& entry) {
+        return entry.board == bitRepresentation;
+    });
+    assert(it != bucket.end());
+
+    return it->action;
+}
+
+bool GameboardStateMap::insert(const Gameboard& board, const Action& action, int turn)
+{
+    Gameboard::BitsType bitRepresentation = board.computeBitRepresentation();
+
+    if (contains(bitRepresentation)) {
+        return false;
+    }
+
+    getBucket(bitRepresentation).push_front(EntryType{action, bitRepresentation, turn});
+    ++m_count;
+
+    if (10000 * m_count / size >= 5000) {
+        removeOldEntries(turn);
+    }
+
+    return true;
+}
+
+[[nodiscard]] inline bool GameboardStateMap::contains(const Gameboard& board) const
+{
+    return contains(board.computeBitRepresentation());
+}
+
+[[nodiscard]] inline bool GameboardStateMap::contains(const Gameboard::BitsType& board) const
+{
+    auto& bucket = getBucket(board);
+
+    return std::any_of(bucket.begin(), bucket.end(), [&board](auto& entry) {
+        return entry.board == board;
+    });
+}
+
+[[nodiscard]] inline std::forward_list<GameboardStateMap::EntryType>& GameboardStateMap::getBucket(const Gameboard::BitsType& board)
+{
+    std::uint64_t hash = fnv1aHash(board);
+    return m_table[static_cast<std::size_t>(hash % size)];
+}
+
+[[nodiscard]] inline const std::forward_list<GameboardStateMap::EntryType>& GameboardStateMap::getBucket(const Gameboard::BitsType& board) const
+{
+    std::uint64_t hash = fnv1aHash(board);
+    return m_table[static_cast<std::size_t>(hash % size)];
+}
+
+void GameboardStateMap::removeOldEntries(int turn)
+{
+    std::cout << "Cleaning hash map..." << std::endl;
+    for (auto& bucket : m_table) {
+        bucket.remove_if([&turn](auto& entry) {
+            return turn - entry.turn >= 5;
+        });
+    }
+}
+} // namespace
 
 void GameAI::simulateActions()
 {

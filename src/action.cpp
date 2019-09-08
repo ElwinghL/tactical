@@ -2,7 +2,9 @@
 
 #include "gameboard.h"
 
-bool Action::isValid(const Gameboard& board) const
+#include <iostream>
+
+[[nodiscard]] bool Action::isValid(const Gameboard& board) const
 {
     if (!board.isOccupied(m_origin) || !board.canMove(m_origin, m_dest)) {
         return false;
@@ -36,6 +38,30 @@ void Action::execute(Gameboard& board) const
     } break;
 
     case ActionType::None:
+        break;
+    }
+}
+
+void Action::display() const
+{
+    if (m_origin != m_dest) {
+        std::cout << "Move from (" << m_origin.x << ", " << m_origin.y << ") to (" << m_dest.x << ", " << m_dest.y
+                  << ") then ";
+    } else {
+        std::cout << "From (" << m_origin.x << ", " << m_origin.y << "), ";
+    }
+
+    switch (m_type) {
+    case ActionType::Attack:
+        std::cout << "attack (" << m_target.x << ", " << m_target.y << ")" << std::endl;
+        break;
+
+    case ActionType::Capacity:
+        std::cout << "use capacity on (" << m_target.x << ", " << m_target.y << ")" << std::endl;
+        break;
+
+    case ActionType::None:
+        std::cout << "do nothing" << std::endl;
         break;
     }
 }

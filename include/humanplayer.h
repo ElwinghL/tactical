@@ -7,36 +7,22 @@
 
 #include "player.h"
 
-/**
- * 
- *
- * 
- */
 class HumanPlayer : public Player {
 public:
     /**
      * Constructor
      * \param team The team the human controls
      */
-    explicit HumanPlayer(PlayerTeam team) :
-        Player{team}
-    {
-        // Nothing
-    }
+    explicit constexpr HumanPlayer(PlayerTeam team);
 
-    bool hasMoved() const
-    {
-        return m_hasMoved;
-    }
-
-    void setMoved(bool newValue)
-    {
-        m_hasMoved = newValue;
-    }
+    [[nodiscard]] constexpr bool hasMoved() const;
+    constexpr void setMoved(bool newValue);
 
 
 private:
     bool m_hasMoved{false};
 };
+
+#include "impl/humanplayer.h"
 
 #endif // HUMANPLAYER_H

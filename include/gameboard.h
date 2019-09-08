@@ -32,25 +32,12 @@ public:
     static constexpr auto Unavailable = Value::Unavailable;
     static constexpr auto Able = Value::Able;
 
-    constexpr Ability(Value value) :
-        m_value{value}
-    {
-    }
+    constexpr Ability(Value value);
 
-    constexpr operator bool() const
-    {
-        return m_value == Able;
-    }
+    constexpr operator bool() const;
+    constexpr bool operator!() const;
 
-    constexpr bool operator!() const
-    {
-        return m_value != Able;
-    }
-
-    constexpr operator Value() const
-    {
-        return m_value;
-    }
+    constexpr operator Value() const;
 
 private:
     Value m_value;
@@ -70,42 +57,32 @@ public:
      * \param usedForNotPossibleDisplay Used for display purpose only. If true, does not consider view and if there is character on the case
      * \return The set of possible relative vector movements
      */
-    std::set<gf::Vector2i, PositionComp> getAllPossibleMoves(const gf::Vector2i& origin,
-                                                             bool usedForNotPossibleDisplay = false) const
-    {
-        return getAllPossibleActionsOfAType(&Gameboard::canMove, origin, origin, usedForNotPossibleDisplay);
-    }
+    [[nodiscard]] inline std::set<gf::Vector2i, PositionComp>
+        getAllPossibleMoves(const gf::Vector2i& origin, bool usedForNotPossibleDisplay = false) const;
 
     /**
      * Get a set of every possible attack for the character
      * \param usedForNotPossibleDisplay Used for display purpose only. If true, does not consider view and if there is character on the case
      * \return The set of possible relative vector attack
      */
-    std::set<gf::Vector2i, PositionComp> getAllPossibleAttacks(const gf::Vector2i& origin,
-                                                               bool usedForNotPossibleDisplay = false) const
-    {
-        return getAllPossibleActionsOfAType(&Gameboard::canAttack, origin, origin, usedForNotPossibleDisplay);
-    }
+    [[nodiscard]] inline std::set<gf::Vector2i, PositionComp>
+        getAllPossibleAttacks(const gf::Vector2i& origin, bool usedForNotPossibleDisplay = false) const;
 
     /**
      * Get a set of every possible capacity for the character
      * \param usedForNotPossibleDisplay Used for display purpose only. If true, does not consider view and if there is character on the case
      * \return The set of possible relative vector capacity
      */
-    std::set<gf::Vector2i, PositionComp> getAllPossibleCapacities(const gf::Vector2i& origin,
-                                                                  bool usedForNotPossibleDisplay = false) const
-    {
-        return getAllPossibleActionsOfAType(&Gameboard::canUseCapacity, origin, origin, usedForNotPossibleDisplay);
-    }
+    [[nodiscard]] inline std::set<gf::Vector2i, PositionComp>
+        getAllPossibleCapacities(const gf::Vector2i& origin, bool usedForNotPossibleDisplay = false) const;
 
     /**
      * Give all the actions a character can do
      * \param origin The position of the character to get its actions
      * \return A vector with all the possible actions
      */
-    std::vector<Action> getPossibleActions(const gf::Vector2i& origin) const;
-
-    std::vector<Action> getPossibleActions() const;
+    [[nodiscard]] std::vector<Action> getPossibleActions(const gf::Vector2i& origin) const;
+    [[nodiscard]] std::vector<Action> getPossibleActions() const;
 
     /**
      * Attack another character
@@ -129,15 +106,10 @@ public:
      *         Unavailable the attack can't reach an enemy
      *         Able otherwise
      */
-    Ability canAttack(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& executor) const;
+    [[nodiscard]] Ability canAttack(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& executor) const;
+    [[nodiscard]] inline Ability canAttack(const gf::Vector2i& origin, const gf::Vector2i& dest) const;
 
-    Ability canAttack(const gf::Vector2i& origin, const gf::Vector2i& dest) const
-    {
-        return canAttack(origin, dest, origin);
-    }
-
-
-    bool isLocked(const gf::Vector2i& pos) const;
+    [[nodiscard]] bool isLocked(const gf::Vector2i& pos) const;
 
     /**
      * Move this character
@@ -157,10 +129,7 @@ public:
      *         Unavailable if the way to the dest position is blocked
      *         Unable otherwise
      */
-    Ability canMove(const gf::Vector2i& origin, const gf::Vector2i& dest) const
-    {
-        return canMove(origin, dest, origin);
-    }
+    [[nodiscard]] inline Ability canMove(const gf::Vector2i& origin, const gf::Vector2i& dest) const;
 
     /**
      * Use the character's capacity
@@ -181,251 +150,90 @@ public:
      *         Unavailable the capacity is blocked or can't reach its target
      *         Able otherwise
      */
-    Ability canUseCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& executor) const;
+    [[nodiscard]] Ability canUseCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& executor) const;
+    [[nodiscard]] inline Ability canUseCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest) const;
 
-    Ability canUseCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest) const
-    {
-        return canUseCapacity(origin, dest, origin);
-    }
+    [[nodiscard]] inline bool capacityWillHurt(const gf::Vector2i& origin, const gf::Vector2i& dest) const;
 
-    bool capacityWillHurt(const gf::Vector2i& origin, const gf::Vector2i& dest) const
-    {
-        assert(m_array.isValid(origin));
-        int ejectionDistance = 2;
-        return m_array(origin)->getType() == CharacterType::Support && canUseCapacity(origin, dest) &&
-               !isTargetReachable(dest, dest + ejectionDistance * gf::sign(dest - origin));
-    }
+    [[nodiscard]] inline bool isEmpty(const gf::Vector2i& tile) const;
+    [[nodiscard]] inline bool isOccupied(const gf::Vector2i& tile) const;
 
-    bool isEmpty(const gf::Vector2i& tile) const
-    {
-        return m_array.isValid(tile) && m_array(tile) == std::nullopt;
-    }
+    [[nodiscard]] inline Character getCharacter(const gf::Vector2i& tile) const;
 
-    bool isOccupied(const gf::Vector2i& tile) const
-    {
-        return m_array.isValid(tile) && m_array(tile) != std::nullopt;
-    }
+    [[nodiscard]] constexpr gf::Vector2i getSize() const;
 
-    Character getCharacter(const gf::Vector2i& tile) const
-    {
-        assert(isOccupied(tile));
-        return *m_array(tile);
-    }
-
-    gf::Vector2i getSize() const
-    {
-        return gf::Vector2i{12, 6};
-    }
-
-    PlayerTeam getTeamFor(const gf::Vector2i& tile) const
-    {
-        assert(isOccupied(tile));
-        return m_array(tile)->getTeam();
-    }
-
-    CharacterType getTypeFor(const gf::Vector2i& tile) const
-    {
-        assert(isOccupied(tile));
-        return m_array(tile)->getType();
-    }
+    [[nodiscard]] inline PlayerTeam getTeamFor(const gf::Vector2i& tile) const;
+    [[nodiscard]] inline CharacterType getTypeFor(const gf::Vector2i& tile) const;
 
     void display() const;
 
-    PlayerTeam getPlayingTeam() const
-    {
-        return m_playingTeam;
-    }
+    [[nodiscard]] constexpr PlayerTeam getPlayingTeam() const;
 
     /**
      * Switch turn
      */
-    void switchTurn()
-    {
-        m_playingTeam = getEnemyTeam(m_playingTeam);
-    }
+    constexpr void switchTurn();
 
     template<typename UnaryGoalFunc>
-    void doWithGoals(UnaryGoalFunc f) const
-    {
-        for (auto& goal : m_goals) {
-            f(goal);
-        }
-    }
+    constexpr void doWithGoals(UnaryGoalFunc f) const;
 
-    bool isGoal(const gf::Vector2i& pos, PlayerTeam team) const
-    {
-        for (auto& goal : m_goals) {
-            if (goal.getPosition() == pos && goal.getTeam() == team) {
-                return true;
-            }
-        }
+    [[nodiscard]] inline bool isGoal(const gf::Vector2i& pos, PlayerTeam team) const;
 
-        return false;
-    }
-
-    int getNbOfActivatedGoals(PlayerTeam team) const
-    {
-        int result = 0;
-        doWithGoals([&result, &team](const Goal& goal) {
-            if (goal.getTeam() == team && goal.isActivated()) {
-                ++result;
-            }
-        });
-
-        return result;
-    }
+    [[nodiscard]] int getNbOfActivatedGoals(PlayerTeam team) const;
     
     template<typename UnaryPositionFunc>
-    constexpr void forEach(UnaryPositionFunc f) const
-    {
-        gf::Vector2i size = getSize();
-        for (int y = 0; y < size.height; ++y) {
-            for (int x = size.width - 1; x >= 0; --x) {
-                f(gf::Vector2i{x, y});
-            }
-        }
-    }
+    constexpr void forEach(UnaryPositionFunc f) const;
 
-    std::vector<gf::Vector2i> getTeamPositions(PlayerTeam team) const
-    {
-        std::vector<gf::Vector2i> results{};
-        forEach([this, &results, &team](auto pos) {
-            assert(m_array.isValid(pos));
-            if (m_array(pos) && m_array(pos)->getTeam() == team) {
-                results.push_back(pos);
-            }
-        });
+    [[nodiscard]] std::vector<gf::Vector2i> getTeamPositions(PlayerTeam team) const;
 
-        return results;
-    }
-
-    bool hasWon(PlayerTeam team) const
-    {
-        return getNbOfActivatedGoals(team) == goalsPerTeam || getTeamPositions(getEnemyTeam(team)).empty();
-    }
+    [[nodiscard]] inline bool hasWon(PlayerTeam team) const;
 
     template<typename BinaryFunc>
-    void setMoveCallback(BinaryFunc f)
-    {
-        m_moveCallback = f;
-    }
+    inline void setMoveCallback(BinaryFunc f);
 
     template<typename BinaryFunc>
-    void setHPChangeCallback(BinaryFunc f)
-    {
-        m_hpChangeCallback = f;
-    }
+    inline void setHPChangeCallback(BinaryFunc f);
 
-    bool isCallbackNeeded() const
-    {
-        return !m_lastActions.empty();
-    }
+    [[nodiscard]] inline bool isCallbackNeeded() const;
 
-    void doFirstCallback()
-    {
-        (m_lastActions.front())();
-        m_lastActions.pop();
-    }
+    inline void doFirstCallback();
 
-    std::array<int, 2 * goalsPerTeam> getGoalsDistance(const gf::Vector2i pos) const
-    {
-        std::array<int, 2 * goalsPerTeam> ret{};
-        for (std::size_t i = 0; i < ret.size(); ++i) {
-            if (!m_goals[i].isActivated()) {
-                ret[i] = gf::manhattanDistance(pos, m_goals[i].getPosition());
-            }
-        }
-        return ret;
-    }
+    [[nodiscard]] std::array<int, 2 * goalsPerTeam> getGoalsDistance(const gf::Vector2i& pos) const;
 
-    bool operator==(const Gameboard& other) const
-    {
-        return std::tie(m_array, m_goals, m_playingTeam) == std::tie(other.m_array, other.m_goals, other.m_playingTeam);
-    }
+    inline bool operator==(const Gameboard& other) const;
 
-    BitsType computeBitRepresentation() const;
+    [[nodiscard]] BitsType computeBitRepresentation() const;
 
 private:
-    void tryGoalActivation(PlayerTeam team, const gf::Vector2i& position)
-    {
-        for (auto& goal : m_goals) {
-            if (goal.getPosition() == position && goal.getTeam() == team) {
-                goal.activate();
-            }
-        }
-    }
+    void tryGoalActivation(PlayerTeam team, const gf::Vector2i& position);
 
-    void swapPositions(const gf::Vector2i& origin, const gf::Vector2i& dest)
-    {
-        assert(isOccupied(origin));
-        assert(origin == dest || isEmpty(dest));
+    inline void swapPositions(const gf::Vector2i& origin, const gf::Vector2i& dest);
+    inline void swapOccupiedPositions(const gf::Vector2i& origin, const gf::Vector2i& dest);
 
-        std::swap(m_array(origin), m_array(dest));
-        tryGoalActivation(m_array(dest)->getTeam(), dest);
-    }
+    [[nodiscard]] Ability canMove(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& /*executor*/) const;
 
-    void swapOccupiedPositions(const gf::Vector2i& origin, const gf::Vector2i& dest)
-    {
-        assert(isOccupied(origin));
-        assert(isOccupied(dest));
+    [[nodiscard]] inline std::set<gf::Vector2i, PositionComp>
+        getAllPossibleAttacks(const gf::Vector2i& origin, const gf::Vector2i& executor) const;
+    [[nodiscard]] inline std::set<gf::Vector2i, PositionComp>
+        getAllPossibleCapacities(const gf::Vector2i& origin, const gf::Vector2i& executor) const;
 
-        std::swap(m_array(origin), m_array(dest));
-        tryGoalActivation(m_array(dest)->getTeam(), dest);
-    }
-
-    Ability canMove(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& /*executor*/) const;
-
-    std::set<gf::Vector2i, PositionComp> getAllPossibleAttacks(const gf::Vector2i& origin,
-                                                               const gf::Vector2i& executor) const
-    {
-        return getAllPossibleActionsOfAType(&Gameboard::canAttack, origin, executor, false);
-    }
-
-
-    std::set<gf::Vector2i, PositionComp> getAllPossibleCapacities(const gf::Vector2i& origin,
-                                                                  const gf::Vector2i& executor) const
-    {
-        return getAllPossibleActionsOfAType(&Gameboard::canUseCapacity, origin, executor, false);
-    }
-
-    std::set<gf::Vector2i, PositionComp> getAllPossibleActionsOfAType(
+    [[nodiscard]] std::set<gf::Vector2i, PositionComp> getAllPossibleActionsOfAType(
             Ability (Gameboard::*canDoSomething)(const gf::Vector2i&, const gf::Vector2i&, const gf::Vector2i&) const,
             const gf::Vector2i& origin,
             const gf::Vector2i& executor,
             bool usedForNotPossibleDisplay) const;
 
-    gf::Vector2i getLastReachablePos(const gf::Vector2i& origin, const gf::Vector2i& dest, bool excludeDest = false) const;
-
-    bool isTargetReachable(const gf::Vector2i& origin, const gf::Vector2i& dest, bool excludeDest = false) const
-    {
-        gf::Vector2i lastReachablePos = getLastReachablePos(origin, dest, excludeDest);
-
-        assert(gf::cross(dest - origin, lastReachablePos - origin) == 0);
-        return gf::dot(dest - origin, lastReachablePos - dest) >= 0;
-    }
+    [[nodiscard]] gf::Vector2i getLastReachablePos(const gf::Vector2i& origin, const gf::Vector2i& dest, bool excludeDest = false) const;
+    [[nodiscard]] inline bool isTargetReachable(const gf::Vector2i& origin, const gf::Vector2i& dest, bool excludeDest = false) const;
 
     /**
      * Remove a character if its HP have fallen to 0
      * \param target the position of the character to test
      */
-    void removeIfDead(const gf::Vector2i& target)
-    {
-        if (isOccupied(target) && m_array(target)->isDead()) {
-            m_array(target) = std::nullopt;
-        }
-    }
+    inline void removeIfDead(const gf::Vector2i& target);
 
-    void pushLastMove(const gf::Vector2i& origin, const gf::Vector2i& dest)
-    {
-        if (origin != dest) {
-            m_lastActions.emplace(std::bind(m_moveCallback, origin, dest));
-        }
-    }
-
-    void pushLastHPChange(const gf::Vector2i& pos, int hp)
-    {
-        m_lastActions.emplace(std::bind(m_hpChangeCallback, pos, hp));
-    }
+    inline void pushLastMove(const gf::Vector2i& origin, const gf::Vector2i& dest);
+    inline void pushLastHPChange(const gf::Vector2i& pos, int hp);
 
     gf::Array2D<std::optional<Character>> m_array;
     std::array<Goal, 2 * goalsPerTeam> m_goals;
@@ -437,5 +245,6 @@ private:
     std::queue<std::function<void()>> m_lastActions{};
 };
 
+#include "impl/gameboard.h"
 
 #endif //CTHULHUVSSATAN_GAMEBOARD_H

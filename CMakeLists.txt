@@ -6,7 +6,8 @@ project(CthulhuVsSatan
 
 option(SHOW_BOUNDING_BOXES "Show bounding boxes of sprites" OFF)
 
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -std=c++14 -O0 -g")
+# -fsanitize=address -fno-omit-frame-pointer
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(LATEX)
@@ -17,7 +18,6 @@ endif(LATEX_FOUND)
 
 find_package(Threads REQUIRED)
 find_package(gf REQUIRED)
-find_package(Boost REQUIRED)
 
 add_custom_target(check
     COMMAND clang-format -style=file -i src/* include/*
@@ -27,21 +27,22 @@ add_custom_target(check
 
 add_executable(game
     src/action.cpp
-    src/character.cpp
     src/game.cpp
     src/gameai.cpp
-    src/goal.cpp
     src/main.cpp
-    src/player.cpp
-    src/humanplayer.cpp
     src/utility.cpp
     src/gameboard.cpp
     src/gameboardview.cpp)
 
+target_compile_options(game PRIVATE
+    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
+    -Wall>
+    $<$<CXX_COMPILER_ID:MSVC>:
+    /W4>)
+
 target_compile_features(game PRIVATE cxx_std_17)
 
 target_include_directories(game PRIVATE
-	${Boost_INCLUDE_DIRS}
 	include
 )
 

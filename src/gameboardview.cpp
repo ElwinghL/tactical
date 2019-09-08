@@ -3,10 +3,12 @@
 #include <gf/Easings.h>
 #include <gf/SpriteBatch.h>
 
-static constexpr gf::Vector2f getEasingPos(gf::Easing easing, const gf::Vector2f& origin, const gf::Vector2f& dest,
-                                           float timeFrac)
-{
-    return gf::lerp(origin, dest, easing(timeFrac));
+namespace {
+    constexpr gf::Vector2f getEasingPos(gf::Easing easing, const gf::Vector2f& origin, const gf::Vector2f& dest,
+                                        float timeFrac)
+    {
+        return gf::lerp(origin, dest, easing(timeFrac));
+    }
 }
 
 GameboardView::GameboardView(const Gameboard& board, gf::ResourceManager& resMgr, gf::EntityContainer& entityMgr) :
@@ -14,13 +16,13 @@ GameboardView::GameboardView(const Gameboard& board, gf::ResourceManager& resMgr
     m_resMgr{&resMgr},
     m_entityMgr{&entityMgr}
 {
-    auto initSprite = [this](CharacterType type, PlayerTeam team) {
+    auto initSprite = [this] (CharacterType type, PlayerTeam team) {
         std::string path{};
         switch (type) {
         case CharacterType::Tank: {
             if(team == PlayerTeam::Cthulhu){
                 path = "cthulhu_tank_back_fixed.png";
-            }else{
+            } else {
                 path = "satan_tank_fixed.png";
             }
         }
@@ -29,7 +31,7 @@ GameboardView::GameboardView(const Gameboard& board, gf::ResourceManager& resMgr
         case CharacterType::Support: {
             if(team == PlayerTeam::Cthulhu){
                 path = "cthulhu_support_back_fixed.png";
-            }else{
+            } else {
                 path = "satan_support_fixed.png";
             }
         }
@@ -38,7 +40,7 @@ GameboardView::GameboardView(const Gameboard& board, gf::ResourceManager& resMgr
         case CharacterType::Scout: {
             if(team == PlayerTeam::Cthulhu){
                 path = "cthulhu_scout_back_fixed.png";
-            }else{
+            } else {
                 path = "satan_scout_fixed.png";
             }
         }
@@ -94,7 +96,7 @@ void GameboardView::update()
     }
 }
 
-bool GameboardView::animationFinished() const
+[[nodiscard]] bool GameboardView::animationFinished() const
 {
     return std::all_of(m_entities.begin(), m_entities.end(), [](auto& entity) {
         assert(entity.second);

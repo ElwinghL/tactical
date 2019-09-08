@@ -2,7 +2,10 @@
 
 #include "action.h"
 
+#include <gf/Orientation.h>
+
 #include <bitset>
+#include <iostream>
 
 Gameboard::Gameboard() :
     m_array{getSize(), std::nullopt},
@@ -34,7 +37,7 @@ Gameboard::Gameboard() :
     initPlayerCharacters(9, PlayerTeam::Satan);
 }
 
-std::vector<Action> Gameboard::getPossibleActions(const gf::Vector2i& origin) const
+[[nodiscard]] std::vector<Action> Gameboard::getPossibleActions(const gf::Vector2i& origin) const
 {
     std::vector<Action> res = std::vector<Action>{};
     std::set<gf::Vector2i, PositionComp> possibleMovements = getAllPossibleMoves(origin);
@@ -70,7 +73,7 @@ bool Gameboard::attack(const gf::Vector2i& origin, const gf::Vector2i& dest)
     return success;
 }
 
-Ability Gameboard::canAttack(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& executor) const
+[[nodiscard]] Ability Gameboard::canAttack(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& executor) const
 {
     assert(isOccupied(executor));
 
@@ -124,59 +127,7 @@ bool Gameboard::move(const gf::Vector2i& origin, const gf::Vector2i& dest)
     return success;
 }
 
-Ability Gameboard::canMove(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& /*executor*/) const
-{
-    assert(isOccupied(origin));
-
-    if (!m_array.isValid(dest)) {
-        return Ability::Unable;
-    }
-
-    if (origin == dest) { // Don't move
-        return Ability::Able;
-    }
-
-    gf::Vector2i relative = dest - origin;
-    Ability result = Ability::Unable;
-
-    switch (getTypeFor(origin)) {
-    case CharacterType::Scout: {
-        constexpr int range = 2;
-
-        if ((isOrthogonal(origin, dest) || isDiagonal(origin, dest)) && gf::chebyshevLength(relative) <= range) {
-            result = isTargetReachable(origin, dest) ? Ability::Able : Ability::Unavailable;
-        }
-    } break;
-
-    case CharacterType::Tank: {
-        constexpr int sideRange = 2;
-
-        if (gf::chebyshevDistance(origin, dest) == 1 || (relative.x == 0 && std::abs(relative.y) == sideRange)) {
-            result = isTargetReachable(origin, dest) ? Ability::Able : Ability::Unavailable;
-        }
-    } break;
-
-    case CharacterType::Support: {
-        if (gf::manhattanDistance(origin, dest) == 3 && relative.x != 0 && relative.y != 0) {
-            result = Ability::Able;
-        }
-    } break;
-    }
-
-    if (result) {
-        if (m_array(dest)) { // If there is already a character at this location
-            result = Ability::Unavailable;
-        } else { // Check for nearby enemy Tank
-            if (isLocked(origin)) {
-                result = Ability::Unavailable;
-            }
-        }
-    }
-
-    return result;
-}
-
-bool Gameboard::isLocked(const gf::Vector2i& pos) const
+[[nodiscard]] bool Gameboard::isLocked(const gf::Vector2i& pos) const
 {
     if (!m_array.isValid(pos)) {
         return false;
@@ -241,7 +192,7 @@ bool Gameboard::useCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest
     return true;
 }
 
-Ability Gameboard::canUseCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& executor) const
+[[nodiscard]] Ability Gameboard::canUseCapacity(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& executor) const
 {
     assert(isOccupied(executor));
 
@@ -273,52 +224,7 @@ Ability Gameboard::canUseCapacity(const gf::Vector2i& origin, const gf::Vector2i
     return Ability::Unable;
 }
 
-gf::Vector2i Gameboard::getLastReachablePos(const gf::Vector2i& origin,
-                                            const gf::Vector2i& dest,
-                                            bool excludeDest) const
-{
-    if ((!isOrthogonal(origin, dest) && !isDiagonal(origin, dest)) || origin == dest) {
-        return origin;
-    }
-
-    const gf::Vector2i direction = gf::sign(dest - origin);
-
-    gf::Vector2i result = origin;
-    gf::Vector2i sq2Check = result + direction;
-
-    while (isEmpty(sq2Check)) {
-        result = sq2Check;
-        sq2Check += direction;
-    }
-
-    if (excludeDest && isOccupied(sq2Check)) {
-        return sq2Check;
-    }
-
-    return result;
-}
-
-std::set<gf::Vector2i, PositionComp> Gameboard::getAllPossibleActionsOfAType(
-        Ability (Gameboard::*canDoSomething)(const gf::Vector2i&, const gf::Vector2i&, const gf::Vector2i&) const,
-        const gf::Vector2i& origin,
-        const gf::Vector2i& executor,
-        bool usedForNotPossibleDisplay) const
-{
-    std::set<gf::Vector2i, PositionComp> res;
-    forEach([this, &canDoSomething, &origin, &executor, &usedForNotPossibleDisplay, &res](auto pos) {
-        Ability possibleAction = (this->*canDoSomething)(origin, pos, executor);
-        if (usedForNotPossibleDisplay) {
-            if (possibleAction != Ability::Unable) {
-                res.insert(pos);
-            }
-        } else if (possibleAction == Ability::Able) {
-            res.insert(pos);
-        }
-    });
-    return res;
-}
-
-std::vector<Action> Gameboard::getPossibleActions() const
+[[nodiscard]] std::vector<Action> Gameboard::getPossibleActions() const
 {
     std::vector<Action> results{};
     forEach([this, &results](auto pos) {
@@ -363,7 +269,43 @@ void Gameboard::display() const
     std::cout << "Playing: " << ((m_playingTeam == PlayerTeam::Cthulhu) ? "Cthulhu" : "Satan") << std::endl;
 }
 
-Gameboard::BitsType Gameboard::computeBitRepresentation() const
+[[nodiscard]] int Gameboard::getNbOfActivatedGoals(PlayerTeam team) const
+{
+    int result = 0;
+    doWithGoals([&result, &team](const Goal& goal) {
+        if (goal.getTeam() == team && goal.isActivated()) {
+            ++result;
+        }
+    });
+
+    return result;
+}
+
+[[nodiscard]] std::vector<gf::Vector2i> Gameboard::getTeamPositions(PlayerTeam team) const
+{
+    std::vector<gf::Vector2i> results{};
+    forEach([this, &results, &team](auto pos) {
+        assert(m_array.isValid(pos));
+        if (m_array(pos) && m_array(pos)->getTeam() == team) {
+            results.push_back(pos);
+        }
+    });
+
+    return results;
+}
+
+[[nodiscard]] std::array<int, 2 * Gameboard::goalsPerTeam> Gameboard::getGoalsDistance(const gf::Vector2i& pos) const
+{
+    std::array<int, 2 * goalsPerTeam> ret{};
+    for (std::size_t i = 0; i < ret.size(); ++i) {
+        if (!m_goals[i].isActivated()) {
+            ret[i] = gf::manhattanDistance(pos, m_goals[i].getPosition());
+        }
+    }
+    return ret;
+}
+
+[[nodiscard]] Gameboard::BitsType Gameboard::computeBitRepresentation() const
 {
     constexpr std::size_t xBitCount = 4;
     constexpr std::size_t yBitCount = 3;
@@ -440,6 +382,112 @@ Gameboard::BitsType Gameboard::computeBitRepresentation() const
         std::numeric_limits<uint64_t>::max());
     bitResult >>= 64;
     result.first = static_cast<uint64_t>(bitResult.to_ullong() & std::numeric_limits<uint64_t>::max());
+
+    return result;
+}
+
+void Gameboard::tryGoalActivation(PlayerTeam team, const gf::Vector2i& position)
+{
+    for (auto& goal : m_goals) {
+        if (goal.getPosition() == position && goal.getTeam() == team) {
+            goal.activate();
+        }
+    }
+}
+
+[[nodiscard]] Ability Gameboard::canMove(const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& /*executor*/) const
+{
+    assert(isOccupied(origin));
+
+    if (!m_array.isValid(dest)) {
+        return Ability::Unable;
+    }
+
+    if (origin == dest) { // Don't move
+        return Ability::Able;
+    }
+
+    gf::Vector2i relative = dest - origin;
+    Ability result = Ability::Unable;
+
+    switch (getTypeFor(origin)) {
+    case CharacterType::Scout: {
+        constexpr int range = 2;
+
+        if ((isOrthogonal(origin, dest) || isDiagonal(origin, dest)) && gf::chebyshevLength(relative) <= range) {
+            result = isTargetReachable(origin, dest) ? Ability::Able : Ability::Unavailable;
+        }
+    } break;
+
+    case CharacterType::Tank: {
+        constexpr int sideRange = 2;
+
+        if (gf::chebyshevDistance(origin, dest) == 1 || (relative.x == 0 && std::abs(relative.y) == sideRange)) {
+            result = isTargetReachable(origin, dest) ? Ability::Able : Ability::Unavailable;
+        }
+    } break;
+
+    case CharacterType::Support: {
+        if (gf::manhattanDistance(origin, dest) == 3 && relative.x != 0 && relative.y != 0) {
+            result = Ability::Able;
+        }
+    } break;
+    }
+
+    if (result) {
+        if (m_array(dest)) { // If there is already a character at this location
+            result = Ability::Unavailable;
+        } else { // Check for nearby enemy Tank
+            if (isLocked(origin)) {
+                result = Ability::Unavailable;
+            }
+        }
+    }
+
+    return result;
+}
+
+[[nodiscard]] std::set<gf::Vector2i, PositionComp> Gameboard::getAllPossibleActionsOfAType(
+    Ability (Gameboard::*canDoSomething)(const gf::Vector2i&, const gf::Vector2i&, const gf::Vector2i&) const,
+    const gf::Vector2i& origin,
+    const gf::Vector2i& executor,
+    bool usedForNotPossibleDisplay) const
+{
+    std::set<gf::Vector2i, PositionComp> res;
+    forEach([this, &canDoSomething, &origin, &executor, &usedForNotPossibleDisplay, &res](auto pos) {
+        Ability possibleAction = (this->*canDoSomething)(origin, pos, executor);
+        if (usedForNotPossibleDisplay) {
+            if (possibleAction != Ability::Unable) {
+                res.insert(pos);
+            }
+        } else if (possibleAction == Ability::Able) {
+            res.insert(pos);
+        }
+    });
+    return res;
+}
+
+[[nodiscard]] gf::Vector2i Gameboard::getLastReachablePos(const gf::Vector2i& origin,
+                                            const gf::Vector2i& dest,
+                                            bool excludeDest) const
+{
+    if ((!isOrthogonal(origin, dest) && !isDiagonal(origin, dest)) || origin == dest) {
+        return origin;
+    }
+
+    const gf::Vector2i direction = gf::sign(dest - origin);
+
+    gf::Vector2i result = origin;
+    gf::Vector2i sq2Check = result + direction;
+
+    while (isEmpty(sq2Check)) {
+        result = sq2Check;
+        sq2Check += direction;
+    }
+
+    if (excludeDest && isOccupied(sq2Check)) {
+        return sq2Check;
+    }
 
     return result;
 }

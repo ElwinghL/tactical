@@ -23,11 +23,6 @@
 class Player {
 public:
     /**
-     * Deleted default constructor
-     */
-    Player() = delete;
-
-    /**
      * Deleted copy constructor
      */
     Player(const Player&) = delete;
@@ -35,7 +30,7 @@ public:
     /**
      * Default move constructor
      */
-    Player(Player&&) = default;
+    constexpr Player(Player&&) = default;
 
     /**
      * Deleted copy
@@ -53,11 +48,7 @@ public:
      *
      * \param team The team controlled by this player
      */
-    explicit Player(PlayerTeam team) :
-        m_team{team}
-    {
-        // Nothing
-    }
+    explicit constexpr Player(PlayerTeam team);
 
     /**
      * Default virtual destructor
@@ -68,14 +59,13 @@ public:
      * Team getter
      * \return The team this player controls
      */
-    PlayerTeam getTeam() const
-    {
-        return m_team;
-    }
+    [[nodiscard]] constexpr PlayerTeam getTeam() const;
 
 
 private:
     PlayerTeam m_team; ///< The team controlled by this player
 };
+
+#include "impl/player.h"
 
 #endif // PLAYER_H

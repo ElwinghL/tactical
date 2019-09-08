@@ -29,21 +29,11 @@ class Action;
 
 class Goal;
 
-constexpr int getPriorityFromPos(const gf::Vector2i& pos)
-{
-    return pos.y - pos.x - 6; // TODO magic constant
-}
-
-constexpr int getPriorityFromPos(const gf::Vector2f& pos)
-{
-    return static_cast<int>(pos.y - pos.x) - 6;
-}
-
 class GameboardView {
 public:
     explicit GameboardView(const Gameboard& board, gf::ResourceManager& resMgr, gf::EntityContainer& entityMgr);
 
-    bool animationFinished() const;
+    [[nodiscard]] bool animationFinished() const;
 
     void drawGrid(gf::RenderTarget& target, const gf::RenderStates& states = gf::RenderStates{});
 
@@ -56,45 +46,22 @@ public:
 private:
     class EntityCharacter : public gf::Entity {
     public:
-        explicit EntityCharacter(GameboardView& gbView, gf::Sprite sprite, int hp, const gf::Vector2i& pos) :
-            Entity{getPriorityFromPos(pos)},
-            m_gbView{&gbView},
-            m_sprite{std::move(sprite)},
-            m_origin{static_cast<float>(pos.x), static_cast<float>(pos.y)},
-            m_dest{m_origin},
-            m_timeFrac{1.0f},
-            m_currentHPSprite{checkHP(hp)}
-        {
-            // Nothing
-        }
+        inline explicit EntityCharacter(GameboardView& gbView, gf::Sprite sprite, int hp, const gf::Vector2i& pos);
 
         void update(gf::Time time) override;
 
         void render(gf::RenderTarget& target, const gf::RenderStates& states) override;
 
-        void setHP(int hp)
-        {
-            m_currentHPSprite = checkHP(hp);
-        }
+        inline void setHP(int hp);
 
         void moveTo(const gf::Vector2i& pos);
 
-        void setLocked(bool locked)
-        {
-            m_locked = locked;
-        }
+        inline void setLocked(bool locked);
 
-        bool animationFinished() const
-        {
-            return gf::almostEquals(m_timeFrac, 1.0f);
-        }
+        [[nodiscard]] inline bool animationFinished() const;
 
     private:
-        std::size_t checkHP(int hp)
-        {
-            assert(hp > 0);
-            return static_cast<std::size_t>(hp - 1);
-        }
+        [[nodiscard]] static inline std::size_t checkHP(int hp);
 
         void drawLife(gf::RenderTarget& target, const gf::RenderStates& states);
 
@@ -111,10 +78,7 @@ private:
         bool m_locked{false};
     };
 
-    std::size_t getActivationIndex(bool activated) const
-    {
-        return activated ? 1 : 0;
-    }
+    [[nodiscard]] constexpr std::size_t getActivationIndex(bool activated) const;
 
     const Gameboard* m_board;
 
@@ -149,5 +113,7 @@ private:
 
     std::map<gf::Vector2i, std::unique_ptr<EntityCharacter>, PositionComp> m_entities{};
 };
+
+#include "impl/gameboardview.h"
 
 #endif //CTHULHUVSSATAN_GAMEBOARDVIEW_H

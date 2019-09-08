@@ -8,7 +8,6 @@
 #include "character.h"
 #include "utility.h"
 
-#include <gf/Array2D.h>
 #include <gf/Vector.h>
 
 #include <optional>
@@ -32,14 +31,7 @@ public:
      * \param dest The position the character will move to
      * \param target The position which is the attack/capacity destination
      */
-    Action(ActionType type, const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& target) :
-        m_type{type},
-        m_origin{origin},
-        m_dest{dest},
-        m_target{target}
-    {
-        // Nothing
-    }
+    constexpr Action(ActionType type, const gf::Vector2i& origin, const gf::Vector2i& dest, const gf::Vector2i& target);
 
     /**
      * Constructor
@@ -49,11 +41,7 @@ public:
      * \param origin The position of the character executing the action
      * \param dest A vector which is the difference between the start and the end of the movement
      */
-    Action(const gf::Vector2i& origin, const gf::Vector2i& dest) :
-        Action{ActionType::None, origin, dest, origin}
-    {
-        // Nothing
-    }
+    constexpr Action(const gf::Vector2i& origin, const gf::Vector2i& dest);
 
     /**
      * Constructor
@@ -62,11 +50,7 @@ public:
      * \param origin The position of the character executing the action
      * \param target The position which is the attack/capacity destination
      */
-    Action(ActionType type, const gf::Vector2i& origin, const gf::Vector2i& target) :
-        Action{type, origin, origin, target}
-    {
-        // Nothing
-    }
+    constexpr Action(ActionType type, const gf::Vector2i& origin, const gf::Vector2i& target);
 
     /**
      * Tell if the action action is valid
@@ -76,7 +60,7 @@ public:
      * \param board The board of the game
      * \return True if this action is valid, false otherwise
      */
-    bool isValid(const Gameboard& board) const;
+    [[nodiscard]] bool isValid(const Gameboard& board) const;
 
     /**
      * Execute this action. The character moves then attacks or uses a capacity
@@ -84,54 +68,13 @@ public:
      */
     void execute(Gameboard& board) const;
 
-    gf::Vector2i getDest() const
-    {
-        return m_dest;
-    }
+    [[nodiscard]] constexpr gf::Vector2i getDest() const;
+    [[nodiscard]] constexpr gf::Vector2i getTarget() const;
+    [[nodiscard]] constexpr ActionType getType() const;
+    [[nodiscard]] constexpr gf::Vector2i getOrigin() const;
+    [[nodiscard]] constexpr gf::Vector2i getMove() const;
 
-    gf::Vector2i getTarget() const
-    {
-        return m_target;
-    }
-
-    ActionType getType() const
-    {
-        return m_type;
-    }
-
-    gf::Vector2i getOrigin() const
-    {
-        return m_origin;
-    }
-
-    gf::Vector2i getMove() const
-    {
-        return m_dest - m_origin;
-    }
-
-    void display() const
-    {
-        if (m_origin != m_dest) {
-            std::cout << "Move from (" << m_origin.x << ", " << m_origin.y << ") to (" << m_dest.x << ", " << m_dest.y
-                      << ") then ";
-        } else {
-            std::cout << "From (" << m_origin.x << ", " << m_origin.y << "), ";
-        }
-
-        switch (m_type) {
-        case ActionType::Attack:
-            std::cout << "attack (" << m_target.x << ", " << m_target.y << ")" << std::endl;
-            break;
-
-        case ActionType::Capacity:
-            std::cout << "use capacity on (" << m_target.x << ", " << m_target.y << ")" << std::endl;
-            break;
-
-        case ActionType::None:
-            std::cout << "do nothing" << std::endl;
-            break;
-        }
-    }
+    void display() const;
 
 private:
     ActionType m_type; ///< The type of this action
@@ -139,5 +82,7 @@ private:
     gf::Vector2i m_dest; ///< The destination position of the character
     gf::Vector2i m_target; ///< The attack/capacity targeted position
 };
+
+#include "impl/action.h"
 
 #endif // ACTION_H

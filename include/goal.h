@@ -22,58 +22,40 @@ public:
      * \param team The team which has to occupy this goal
      * \param pos The position of this goal
      */
-    Goal(PlayerTeam team, const gf::Vector2i& pos) :
-        m_team{team},
-        m_pos{pos}
-    {
-        // Nothing
-    }
+    constexpr explicit Goal(PlayerTeam team, const gf::Vector2i& pos);
 
     /**
      * Team getter
      * \return The team which has to occupy this goal
      */
-    PlayerTeam getTeam() const
-    {
-        return m_team;
-    }
+    [[nodiscard]] constexpr PlayerTeam getTeam() const;
 
     /**
      * Postion getter
      * \return The position of this goal
      */
-    gf::Vector2i getPosition() const
-    {
-        return m_pos;
-    }
+    [[nodiscard]] constexpr gf::Vector2i getPosition() const;
 
     /**
      * Activate this goal
      */
-    void activate()
-    {
-        m_activated = true;
-    }
+    constexpr void activate();
 
     /**
      * Is this goal activated?
      * \return true if this goal has been activated
      *         by the correct team
      */
-    bool isActivated() const
-    {
-        return m_activated;
-    }
+    [[nodiscard]] constexpr bool isActivated() const;
 
-    bool operator==(const Goal& other) const
-    {
-        return std::tie(m_team, m_pos, m_activated) == std::tie(other.m_team, other.m_pos, other.m_activated);
-    }
+    constexpr bool operator==(const Goal& other) const;
 
 private:
     PlayerTeam m_team; ///< The team aiming to this goal
     gf::Vector2i m_pos; ///< This goal's position
     bool m_activated{false};
 };
+
+#include "impl/goal.h"
 
 #endif // GOAL_H

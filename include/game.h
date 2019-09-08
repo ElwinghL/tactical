@@ -49,10 +49,7 @@ public:
      * Tell if the game is running
      * \return True if the game is running, false if it has closed
      */
-    bool isRunning()
-    {
-        return m_window.isOpen();
-    }
+    [[nodiscard]] inline bool isRunning();
 
     /**
      * Update the input states
@@ -73,10 +70,7 @@ public:
      * Give the name of the game
      * \return The game's name, "Cthulhu vs Satan"
      */
-    std::string getName() const
-    {
-        return "Cthulhu vs Satan";
-    }
+    [[nodiscard]] inline std::string getName() const;
 
 private:
     enum class GameState {
@@ -98,10 +92,7 @@ private:
     void initWidgets();
     void initSprites();
 
-    bool isFromTeam(const gf::Vector2i& tile, PlayerTeam team) const
-    {
-        return m_board.isOccupied(tile) && m_board.getCharacter(tile).getTeam() == team;
-    }
+    [[nodiscard]] inline bool isFromTeam(const gf::Vector2i& tile, PlayerTeam team) const;
 
     void stateSelectionUpdate(PlayerTurnSelection nextState);
 
@@ -204,5 +195,7 @@ private:
 
     gf::WidgetContainer m_uiWidgets{};
 };
+
+#include "impl/game.h"
 
 #endif // GAME_H
