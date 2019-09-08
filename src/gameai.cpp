@@ -267,14 +267,11 @@ long GameAI::functionEval(const Gameboard& board)
         score += nbOfEnemyDeadCharacters * 130;
     }
     std::array<int, 2> max = {0, 0};
-    size_t i;
     //Get points if you're near a goal
     for (auto myPos : myCharacterPositions) {
-        i = 0;
         auto goalDistances = board.getGoalsDistance(myPos);
-        for (auto dist : goalDistances) {
-            max[i] = std::max(max[i], std::abs((125 - dist)));
-            ++i;
+        for (std::size_t i = 0; i < max.size(); ++i) {
+            max[i] = std::max(max[i], std::abs((125 - goalDistances[(getTeam() == PlayerTeam::Cthulhu) ? i : (i+2)])));
         }
     }
     score += max[0];
